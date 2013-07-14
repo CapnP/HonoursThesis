@@ -8,6 +8,28 @@
 \section{Initial Implementation}
 \label{sec:initial}
 
+
+\begin{listing}[H]
+\begin{scalacode}
+ /** Check two Fingerprint features for compatibility based
+   * on the unification table (See page 6 of [Shulz 2012]).
+   * This table is reduced to 4 cases:
+   *   True if Features are equal,
+   *   True if at least one Feature is B,
+   *   True if at least one Feature is A; but no Ns,
+   *   False otherwise  */
+  def compareFeaturesForUnification
+         (a:FPFeature, b:FPFeature) : Boolean =
+  (a==b) || 
+  (Set(a,b) match {
+    case x if (x contains FPB) => true
+    case x if (x contains FPA) => !(x contains FPN)
+    case _ => false})
+\end{scalacode}
+\caption{Scala implementation of the Fingerprint unification table. \protect\cite[p6]{shulz12}}
+\label{lst:example}
+\end{listing}
+
 \subsection{Refactoring Current Implementation}
 
 \subsection{Initial Problems}
