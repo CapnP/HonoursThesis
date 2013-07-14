@@ -15,8 +15,9 @@ but also includes an explanation of any specialised terms and notation used thro
 
 \subsection{FOL basics}
 
-
 \subsection{Calculi and FOL problems}
+
+\subsection{The Superposition Calculus}
 
 \notes{
 Should contain
@@ -39,7 +40,16 @@ Should contain
 Automated Reasoning is a rapidly growing field of research where computer programs
 are used to solve problems stated in first order logic statments or other formal logics.
 
-\cite{spass}, \cite{vampire}, \cite{eprover}
+Some existing theorem provers include:
+
+\subsubsection*{SPASS}
+\cite{spass}
+
+\subsubsection*{Vampire}
+\cite{vampire}
+
+\subsubsection*{E}
+\cite{eprover}
 
 \notes{
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -53,12 +63,19 @@ Should contain
 \section{Term Indexing}
 \label{sec:indexing}
 
-Term indexing is a technique used to 
+Term indexing is a technique used to better locate logical terms which match rules
+in a prover's calculus.
+
+\subsubsection*{Top Symbol Hashing}
+
+\subsubsection*{Discriminant Trees}
+
 
 \section{Fingerprint Indexing}
 \label{sec:fingerprint}
 
-\emph{Fingerprint Indexing} is a recent technique developed by \citeN{shulz12}.
+\emph{Fingerprint Indexing} is a recent technique developed by \citeN{shulz12}, the creator
+of the E prover.
 
 \section{The Beagle Theorem Prover}
 \label{sec:beagle}
@@ -81,26 +98,8 @@ As mentioned above \beagle is written in \emph{Scala}, the Scalable Language. Sc
 is a functional language and may be confusing to those who are not familiar with the
 functional programming paradigm. This thesis will contain occasional snippets of
 Scala code; but note that any snippets used will be accompanied by an explanation
-and in general an understanding of Scala is not required.
+and in general an understanding of Scala/funcitonal programming is not required.
 
-
-
-
-
-We add a few blank pages here to illustrate section
-headings\index{Section~headings} on odd
-pages (other than the first page in a new chapter).
-
-Also, here is an example of a citation, and another
-.  If in the context,
-it makes sense to talk about the work of an author in a more
-integrated way, like, that can be done
-too\index{Books~to~read|textbf}.  Because the information on this page
-is \emph{so} important, it has been indexed too (see the index at the
-back of this thesis).\footnote{However, it is \emph{strongly}
-  advisable to leave indexing until the thesis is complete.  Donald
-  Knuth says to allow about a day for the task of indexing.  In my
-  experience he was spot-on.}
 
 %%% Local Variables: 
 %%% mode: latex
