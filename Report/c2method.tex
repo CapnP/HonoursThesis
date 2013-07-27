@@ -27,7 +27,33 @@
     case _ => false})
 \end{scalacode}
 \caption{Scala implementation of the Fingerprint unification table. \protect\cite[p6]{shulz12}}
-\label{lst:example}
+\label{lst:unitable}
+\end{listing}
+
+\begin{listing}[H]
+\begin{scalacode}
+  /** 
+   * Extract the operator at position pos.
+   * Note that matching Var and Funterm is an exhaustive pattern for Term,
+   * but possibly should be extended to differentiate between lower-order classes
+   * (e.g. AbstVar and GenVar)
+   */
+  def extractFeature(term: Term, pos: Position) : FPFeature = 
+        pos match {
+    case Nil => term match {
+      case t:FunTerm => FPF(t.op) // Found function symbol, return it
+      case t:Var     => FPA       // Found variable, return A
+    }
+    case p :: ps => term match {
+      case t:FunTerm => try   {extractFeature(t.args(p), ps) }
+                        //Attempted to index non-existent position, return N
+      					catch {case e:IndexOutOfBoundsException => FPN}
+      case t:Var     => FPB // Found variable BEFORE end of position, return B
+    }
+  }
+\end{scalacode}
+\caption{Scala code to extract fingerprint features for matching.}
+\label{lst:posextract}
 \end{listing}
 
 \subsection{Refactoring Current Implementation}
@@ -36,6 +62,8 @@
 
 \section{Tailoring to Beagle}
 \label{sec:tailored}
+
+\subsection{Foreground and Background terms}
 
 %%% Local Variables: 
 %%% mode: latex
