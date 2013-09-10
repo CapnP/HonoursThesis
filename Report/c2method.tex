@@ -8,15 +8,21 @@
 \section{Structure of \beagle}
 \label{sec:initial}
 
-To be able to make any significant contribution to the \beagle project, I first
+To be able to make any significant contribution to the \beagle  project, I first
 had to gain a solid understanding of the existing Scala codebase.
 
 *Figure of Clause/Expression syntax tree*
 
-Refer to results for instrumentation.
+Describe main inference loop
+
+Refer to results for instrumentation; showing what may be improved with indexing.
 
 \section{Implementing Fingerprint Indexing}
 \label{sec:initial}
+
+The first step in adding Fingerprint Indexing to \beagle is creating the indexer
+itself; a Scala class which will manage the index and provide functions for adding
+to/retreiving from the Index. 
 
 To compare two fingerprints with each other we look at them side-by-side and check
 that each position shows a Y in the Fingerprint unifcation table. 
@@ -69,7 +75,10 @@ a Term at the given position.
 
 \subsection{Refactoring Current Implementation}
 
-Refer to class diagram from \ref{sec:initial}
+Actually making use of our indexer class will require significant modification
+to \beagle's structure and proving sequence.
+
+Refer to class and flow diagrams from \ref{sec:initial}
 
 \subsection{Initial Problems}
 
@@ -80,6 +89,25 @@ Refer to class diagram from \ref{sec:initial}
 
 In the Heirachic Superposition with Weak Abstraction Calculus all terms have 
 a concept of being 'Foreground' or 'Background'.
+
+*Extended feature match table and code*
+\begin{table}[h]\begin{center}
+  \caption{Extended Fingerprint matches for Unification}
+  \begin{tabular}{| c || c | c | c | c | c || c | c | c | c | c |}
+  \hline
+               &  $f_1$      &  $f_2$      &  \textbf{A} &  \textbf{B} &  \textbf{N} & PBG $f_1$  & PBG $f_2$      & PBG \textbf{A} & PBG \textbf{B} & PBG \textbf{N} \\ \hline \hline
+  $f_1$        &  \compY &  \compN &  \compY &  \compY &  \compN \\ 
+  $f_2$        &  \compN &  \compY &  \compY &  \compY &  \compN \\ 
+\textbf{A}     &  \compY &  \compY &  \compY &  \compY &  \compN \\
+\textbf{B}     &  \compY &  \compY &  \compY &  \compY &  \compY \\ 
+\textbf{N}    &  \compN &  \compN &  \compN &  \compY &  \compY \\ \hline \hline
+PBG   $f_1$    &  \compY &  \compN &  \compY &  \compY &  \compN \\ 
+PBG   $f_2$    &  \compN &  \compY &  \compY &  \compY &  \compN \\ 
+PBG \textbf{A} &  \compY &  \compY &  \compY &  \compY &  \compN \\
+PBG \textbf{B} &  \compY &  \compY &  \compY &  \compY &  \compY \\ 
+PBG \textbf{N} &  \compN &  \compN &  \compN &  \compY &  \compY \\\hline
+  \end{tabular}
+\end{center}\end{table}
 
 %%% Local Variables: 
 %%% mode: latex
