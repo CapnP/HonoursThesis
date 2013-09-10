@@ -5,22 +5,33 @@
 \chapter{Implementing Fingerprint Indexing}
 \label{cha:method}
 
-\section{Initial Implementation}
+\section{Structure of \beagle}
 \label{sec:initial}
 
+To be able to make any significant contribution to the \beagle project, I first
+had to gain a solid understanding of the existing Scala codebase.
 
+*Figure of Clause/Expression syntax tree*
+
+Refer to results for instrumentation.
+
+\section{Implementing Fingerprint Indexing}
+\label{sec:initial}
+
+To compare two fingerprints with each other we look at them side-by-side and check
+that each position shows a Y in the Fingerprint unifcation table. 
 \begin{listing}[H]
 \begin{scalacode}
  /** Check two Fingerprint features for compatibility based
    * on the unification table (See page 6 of [Shulz 2012]).
    * This table is reduced to 4 cases:
-   *   True if Features are equal,
-   *   True if at least one Feature is B,
-   *   True if at least one Feature is A; but no Ns,
-   *   False otherwise  */
+   *  - True if Features are equal,
+   *  - True if at least one Feature is B,
+   *  - True if at least one Feature is A; but no Ns,
+   *  - False otherwise  */
   def compareFeaturesForUnification
          (a:FPFeature, b:FPFeature) : Boolean =
-  (a==b) || 
+  (a == b) || 
   (Set(a,b) match {
     case x if (x contains FPB) => true
     case x if (x contains FPA) => !(x contains FPN)
@@ -30,25 +41,23 @@
 \label{lst:unitable}
 \end{listing}
 
+The following block of Scala code extracts a single Fingerprint Feature from
+a Term at the given position.
 \begin{listing}[H]
 \begin{scalacode}
-  /** 
-   * Extract the operator at position pos.
-   * Note that matching Var and Funterm is an exhaustive pattern for Term,
-   * but possibly should be extended to differentiate between lower-order classes
-   * (e.g. AbstVar and GenVar)
-   */
-  def extractFeature(term: Term, pos: Position) : FPFeature = 
-        pos match {
-    case Nil => term match {
+ /** Extract the operator at position pos. Note that matching Var
+   * and Funterm is an exhaustive pattern for Term. */
+  def extractFeature(term: Term, pos: Position) : FPFeature = pos match {
+    case Nil     => term match {
       case t:FunTerm => FPF(t.op) // Found function symbol, return it
       case t:Var     => FPA       // Found variable, return A
     }
     case p :: ps => term match {
       case t:FunTerm => try   {extractFeature(t.args(p), ps) }
                         //Attempted to index non-existent position, return N
-      					catch {case e:IndexOutOfBoundsException => FPN}
-      case t:Var     => FPB // Found variable BEFORE end of position, return B
+                        catch {case e:IndexOutOfBoundsException => FPN}
+      // Found variable BEFORE end of position, return B
+      case t:Var     => FPB 
     }
   }
 \end{scalacode}
@@ -56,14 +65,21 @@
 \label{lst:posextract}
 \end{listing}
 
+\section{Adding Indexing to \Beagle}
+
 \subsection{Refactoring Current Implementation}
+
+Refer to class diagram from \ref{sec:initial}
 
 \subsection{Initial Problems}
 
-\section{Tailoring to Beagle}
+\section{Tailoring to \Beagle's Heirachic Superposition with Weak Abstraction Calculus}
 \label{sec:tailored}
 
-\subsection{Foreground and Background terms}
+\subsection{Foreground and Background Terms}
+
+In the Heirachic Superposition with Weak Abstraction Calculus all terms have 
+a concept of being 'Foreground' or 'Background'.
 
 %%% Local Variables: 
 %%% mode: latex

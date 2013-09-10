@@ -30,6 +30,8 @@ Should contain
 \item Description of a 'calculus'
 \end{itemize}
 
+\subsection{Specialised Syntax in this Paper}
+
 \begin{itemize}
 \item Positions
 \end{itemize}}
@@ -77,6 +79,32 @@ in a prover's calculus.
 \emph{Fingerprint Indexing} is a recent technique developed by \citeN{shulz12}, the creator
 of the E prover.
 
+\begin{table}[h]\begin{center}
+  \caption{Fingerprint matches for Unification \protect\cite[p6]{shulz12}}
+  \begin{tabular}{| c || c | c | c | c | c |}
+  \hline
+           &  $f_1$      &  $f_2$      &  \textbf{A} &  \textbf{B} &  \textbf{N} \\ \hline \hline
+  $f_1$    &  \textbf{Y} &  \textbf{N} &  \textbf{Y} &  \textbf{Y} &  \textbf{N} \\ 
+  $f_2$    &  \textbf{N} &  \textbf{Y} &  \textbf{Y} &  \textbf{Y} &  \textbf{N} \\ 
+\textbf{A} &  \textbf{Y} &  \textbf{Y} &  \textbf{Y} &  \textbf{Y} &  \textbf{N} \\
+\textbf{B} &  \textbf{Y} &  \textbf{Y} &  \textbf{Y} &  \textbf{Y} &  \textbf{Y} \\ 
+\textbf{N} &  \textbf{N} &  \textbf{N} &  \textbf{N} &  \textbf{Y} &  \textbf{Y} \\ \hline
+  \end{tabular}
+\end{center}\end{table}
+
+\begin{table}[h]\begin{center}
+  \caption{Fingerprint matches for Matching \protect\cite[p6]{shulz12}}
+  \begin{tabular}{| c || c | c | c | c | c |}
+  \hline
+           &  $f_1$      &  $f_2$      &  \textbf{A} &  \textbf{B} &  \textbf{N} \\ \hline \hline
+  $f_1$    &  \textbf{Y} &  \textbf{N} &  \textbf{N} &  \textbf{N} &  \textbf{N} \\ 
+  $f_2$    &  \textbf{N} &  \textbf{Y} &  \textbf{N} &  \textbf{N} &  \textbf{N} \\ 
+\textbf{A} &  \textbf{Y} &  \textbf{Y} &  \textbf{Y} &  \textbf{N} &  \textbf{N} \\
+\textbf{B} &  \textbf{Y} &  \textbf{Y} &  \textbf{Y} &  \textbf{Y} &  \textbf{Y} \\ 
+\textbf{N} &  \textbf{N} &  \textbf{N} &  \textbf{N} &  \textbf{N} &  \textbf{Y} \\ \hline
+  \end{tabular}
+\end{center}\end{table}
+
 \section{The Beagle Theorem Prover}
 \label{sec:beagle}
 %Beagle will already be discussed in intro.
@@ -87,15 +115,16 @@ Its purpose was to demonstrate the capabilities of the \emph{Weak Abstraction wi
 which allows the incorporation of prior knowledge via a `background reasoning' modules.
 
 
-\subsection{The Weak Abstraction with Heirachic Superposition Calculus}
+\subsection{The Heirachic Superposition with Weak Abstraction Calculus}
 
 \subsection{Beagle's Shortcomings}
 
 
 
-\section{Scala}
+\section{Tools Used}
+
+\subsection{Scala}
 \label{sec:scala}
-%TODO: Move to intro?
 
 As mentioned above \beagle is written in \emph{Scala}, the Scalable Language. Scala
 is a functional language and may be confusing to those who are not familiar with the
@@ -103,6 +132,9 @@ functional programming paradigm. This thesis will contain occasional snippets of
 Scala code; but note that any snippets used will be accompanied by an explanation
 and in general an understanding of Scala/funcitonal programming is not required.
 
+\subsection{VisualVM}
+
+\subsection{Eclipse}
 
 %%% Local Variables: 
 %%% mode: latex
