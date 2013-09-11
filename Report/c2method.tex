@@ -88,26 +88,71 @@ Refer to class and flow diagrams from \ref{sec:initial}
 \subsection{Foreground and Background Terms}
 
 In the Heirachic Superposition with Weak Abstraction Calculus all terms have 
-a concept of being 'Foreground' or 'Background'.
+a concept of being 'Foreground' or 'Background'. In Section \ref{sec:beagle} we
+discussed this concept; referring to it as the \emph{layer} of a term. It is
+worht noting at this stage that computing the layer of a term is cheap (or rather,
+zero, as it is computed on the fly during term generation and stored for later use).
 
-*Extended feature match table and code*
+We introduce two new fingerprint features: B+ and A+ for `background' or `abstraction' variables.
+Note that here we may use the foregroundedness of the entire subterm rather than just that
+of the current position.
+
+The layeredness of function symbols is also relevant to our comparison.
+$f$+ in the following table signifies a position where the entire subterm from this position downwards
+is `pure background'. Keep in mind that A+ and B+ differ from this definition slightly.
+
+We present here the (rather large) extended unification table with no justification.
+Refer to the original unification table (Table \ref{tab:unif}) for an in depth
+explanation of how this table should be interpreted \cite{shulz12}.
+
 \begin{table}[h]\begin{center}
-  \caption{Extended Fingerprint matches for Unification}
-  \begin{tabular}{| c || c | c | c | c | c || c | c | c | c | c |}
+  \caption{Fingerprint matches for unification; extended by considering term layers.}
+  \begin{tabular}{| c || c | c | c | c | c || c | c | c | c |}
   \hline
-               &  $f_1$      &  $f_2$      &  \textbf{A} &  \textbf{B} &  \textbf{N} & PBG $f_1$  & PBG $f_2$      & PBG \textbf{A} & PBG \textbf{B} & PBG \textbf{N} \\ \hline \hline
-  $f_1$        &  \compY &  \compN &  \compY &  \compY &  \compN \\ 
-  $f_2$        &  \compN &  \compY &  \compY &  \compY &  \compN \\ 
-\textbf{A}     &  \compY &  \compY &  \compY &  \compY &  \compN \\
-\textbf{B}     &  \compY &  \compY &  \compY &  \compY &  \compY \\ 
-\textbf{N}    &  \compN &  \compN &  \compN &  \compY &  \compY \\ \hline \hline
-PBG   $f_1$    &  \compY &  \compN &  \compY &  \compY &  \compN \\ 
-PBG   $f_2$    &  \compN &  \compY &  \compY &  \compY &  \compN \\ 
-PBG \textbf{A} &  \compY &  \compY &  \compY &  \compY &  \compN \\
-PBG \textbf{B} &  \compY &  \compY &  \compY &  \compY &  \compY \\ 
-PBG \textbf{N} &  \compN &  \compN &  \compN &  \compY &  \compY \\\hline
+            &  $f_1$  &  $f_2$  &  \textbf{A} &  \textbf{B} &  \textbf{N} & $f_1$+  & $f_2$+  & \textbf{A}+ & \textbf{B}+ \\ \hline \hline
+  $f_1$     &  \compY &  \compN &  \compY     &  \compY     &  \compN     & \compN  & \compN  & \compN      & \compN      \\ 
+  $f_2$     &  \compN &  \compY &  \compY     &  \compY     &  \compN     & \compN  & \compN  & \compN      & \compN      \\ 
+\textbf{A}  &  \compY &  \compY &  \compY     &  \compY     &  \compN     & \compY  & \compY  & \compY      & \compY      \\
+\textbf{B}  &  \compY &  \compY &  \compY     &  \compY     &  \compY     & \compY  & \compY  & \compY      & \compY      \\ 
+\textbf{N}  &  \compN &  \compN &  \compN     &  \compY     &  \compY     & \compN  & \compN  & \compN      & \compY      \\ \hline \hline
+$f_1$+      &  \compN &  \compN &  \compY     &  \compY     &  \compN     & \compY  & \compN  & \compY      & \compY      \\ 
+$f_2$+      &  \compN &  \compN &  \compY     &  \compY     &  \compN     & \compN  & \compY  & \compY      & \compY      \\ 
+\textbf{A}+ &  \compN &  \compN &  \compY     &  \compY     &  \compN     & \compY  & \compY  & \compY      & \compY      \\
+\textbf{B}+ &  \compN &  \compN &  \compY     &  \compY     &  \compY     & \compY  & \compY  & \compY      & \compY      \\ \hline
   \end{tabular}
 \end{center}\end{table}
+
+To go with this table we present its corresponding Scala matching code in Listing \ref{lst:extuni}.
+Unfortunately the steep increase in table size results in the amount of code required exploding.
+It also becomes impossible to use our earlier trick of Set matching; due to the need for parametrised
+Fingerprint symbols (i.e. A+ and B+; represented as FPA(true) and FPB(true) ).
+\begin{listing}[H]
+\begin{scalacode}
+ /** Check two Fingerprint features for compatibility based
+   * on the *extended* unification table (See table in report).*/
+  def compareFeaturesForUnification (a:FPFeature, b:FPFeature) : Boolean = 
+  (a,b) match {
+    case (FPF(a), FPF(b))    => (a.op == b.op) && 
+                                (if (a.isFG || b.isFG) 
+                                    (!a.isPureBG && !b.isPureBG)
+                                 else true)
+    case (FPF(t), FPB(true)) => t.isPureBG
+    case (FPB(true), FPF(t)) => t.isPureBG
+    case (_, FPB(_))         => true
+    case (FPB(_), _)         => true
+    case (FPF(t), FPA(true)) => t.isPureBG
+    case (FPA(true), FPF(t)) => t.isPureBG
+    case (FPN, FPA(_))       => false
+    case (FPA(_), FPN)       => false
+    case (_, FPA(_))         => true
+    case (FPA(_), _)         => true
+    case (FPN, FPN)          => true
+    case _                   => false
+  }
+\end{scalacode}
+\caption{Scala code to extract fingerprint features for extended layer matching.}
+\label{lst:extuni}
+\end{listing}
 
 %%% Local Variables: 
 %%% mode: latex
