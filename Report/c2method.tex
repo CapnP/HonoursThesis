@@ -30,6 +30,21 @@ The first step in adding Fingerprint Indexing to \beagle\ is creating the indexe
 itself; a Scala class which will manage the index and provide functions for adding
 to/retreiving from the Index. 
 
+\subsection{Objects and Datatypes}
+
+\begin{listing}[H]
+\begin{scalacode}
+/** Algebraic Data type for our index. Either we are at a leaf
+  * (set of terms) or must continue traversal via the map. */ 
+sealed abstract class Index
+case class Leaf(set: Set[Term])                 extends Index
+case class Node(map: HashMap[FPFeature, Index]) extends Index
+\end{scalacode}
+\caption{Data type for the actual term index. \protect\cite[p7]{shulz12}}
+\label{lst:indexdata}
+\end{listing}
+
+
 \subsection{Building Term Fingerprints}
 
 The following block of Scala code extracts a single Fingerprint Feature from
@@ -54,24 +69,9 @@ a Term at the given position.
 \end{scalacode}
 \caption{Scala code to extract fingerprint features for matching.}
 \label{lst:posextract}
-\end{listing}
+\end{listing} 
 
 \subsection{Adding Terms to the Index}
-
-Hashmap tree structure!!
- 
-\begin{listing}[H]
-\begin{scalacode}
-/** Algebraic Data type for our index. Either we are at a leaf (set of terms)
- *  or must continue traversal via the map (which should map to a new Index). */ 
-sealed abstract class Index
-case class Leaf(set: Set[Term])                 extends Index
-case class Node(map: HashMap[FPFeature, Index]) extends Index
-\end{scalacode}
-\caption{Data type for the actual term index. \protect\cite[p7]{shulz12}}
-\label{lst:indexdata}
-\end{listing}
-
 
 \subsection{Retrieving Compatible terms}
 
@@ -120,13 +120,35 @@ private def retrieveCompatible
 \end{listing}
 
 \subsection{Matching with Subterms}
-dicsuss how we are required to match against subterms. Requires significant modification
-to the fingerprint indexer
 
+In Shulz's paper the indexer he describes is only interested in
+the unification of full, top-level terms with other top-level terms \cite{shulz12}.
+Recall however the main superposition rules for \beagle's resolution calculus \cite{baum13}:
+
+Notice in particular the condition that $s$ may match against a \emph{subterm}
+of $l$. This does not match the usual required definition of unification; where
+we only match top-level terms.
+
+Thus our Fingerprint Index must be able to collect all possible matches for \emph{subterms}.
+To do this we will extend \beagle's Term object with a function collecting all
+subterms; along with the position they were extracted from. For variables and constants
+this is trivial; we just return the symbol and Nil for the subterm position.
+
+\begin{listing}[H]
+\begin{scalacode}
+  def subtermsWithPos : List[(Term, List[Int])] = 
+    (thisterm, Nil) :: (for 
+      (arg    <- args zip args.indices;
+       subarg <- arg._1.subtermsWithPos)
+        yield  (subarg._1, arg._2::subarg._2))
+\end{scalacode}
+\caption{Recursively grab all subterms from a complex term.}
+\label{lst:subterms}
+\end{listing}
 
 So our indexer will now be capable of comprehensively indexing all subterms as required.
-However; this ability has been introduced at the cost of many grave errors which
-(if not detected at this stage) 
+However this ability has been introduced at the cost of a couple of grave errors which,
+if not detected at this stage, would have destroyed the Fingerprint Index altogether.
 
 \subsubsection{Data loss}
 In listing \ref{lst:indexdata} we presented the actual data structure for storing
@@ -135,15 +157,11 @@ but this is acutally no longer suffiecient for our current uses. Now that we are
 we must be able to extract the original parent term; which is impossible given only
 the low-level subterm representation.
 
-\subsubsection{Non-unique Storage}
+\subsubsection{Non-unique Representation}
 It is possible to fix our data loss issue by giving each Expression a pointer
 to its parent Expression (see Figure \ref{fig:expressions}). However, as our index currently only keeps a Set of Terms,
 If multiple terms possessing the same subterm are ever indexed we will only keep
 one of them; losing any representation of the other!
-
-\subsubsection{}
-
-
 
 \subsection{Term Tracing}
 
@@ -192,7 +210,7 @@ In this section we discuss the thought process in developing and implementing
 extensions to Fingerprint Indexing in order to better tailor it to \beagle's
 rather unique logical calculus.
 
-\subsection{Foreground and Background Terms}
+\subsection{Extending the Unification Table with Term Layers}
 
 In the Heirachic Superposition with Weak Abstraction Calculus all terms have 
 a concept of being 'Foreground' or 'Background'. In Section \ref{sec:beagle} we
@@ -264,7 +282,7 @@ which may be expanded to either foreground or pure background terms.
 feature, this feature cannot match any terms which sit in the foreground. It can however
 match both \textbf{A} and \textbf{B} as they may represent either foreground or background
 expressions.
-\item Potential expansion of an abstraction variable \textbf{B}+: Same as for \textbf{A}+
+\item Potential expansion of an abstraction variable (\textbf{B}+): Same as for \textbf{A}+
 but can also match \textbf{N}.
 \end{itemize}
 
@@ -300,6 +318,8 @@ Fingerprint symbols (i.e. \textbf{A}+ and \textbf{B}+ represented as FPA(true) a
 \caption{Scala code to extract fingerprint features for extended layer matching.}
 \label{lst:extuni}
 \end{listing}
+
+\subsection{Extended Matching Table}
 
 %%% Local Variables: 
 %%% mode: latex
