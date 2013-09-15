@@ -16,6 +16,7 @@ had to gain a solid understanding of the existing Scala codebase.
   \includegraphics[clip,trim=2.5cm 5cm 10cm 2cm,width=\textwidth]{resources/logicstructure}
   \caption
    {Class structure for internal representation of logical formulae.}
+   \label{fig:expressions}
 \end{figure}
 
 Describe main inference loop
@@ -29,8 +30,7 @@ The first step in adding Fingerprint Indexing to \beagle\ is creating the indexe
 itself; a Scala class which will manage the index and provide functions for adding
 to/retreiving from the Index. 
 
-\subsection{Adding terms to the index}
-
+\subsection{Building Term Fingerprints}
 
 The following block of Scala code extracts a single Fingerprint Feature from
 a Term at the given position.
@@ -55,6 +55,23 @@ a Term at the given position.
 \caption{Scala code to extract fingerprint features for matching.}
 \label{lst:posextract}
 \end{listing}
+
+\subsection{Adding Terms to the Index}
+
+Hashmap tree structure!!
+ 
+\begin{listing}[H]
+\begin{scalacode}
+/** Algebraic Data type for our index. Either we are at a leaf (set of terms)
+ *  or must continue traversal via the map (which should map to a new Index). */ 
+sealed abstract class Index
+case class Leaf(set: Set[Term])                 extends Index
+case class Node(map: HashMap[FPFeature, Index]) extends Index
+\end{scalacode}
+\caption{Data type for the actual term index. \protect\cite[p7]{shulz12}}
+\label{lst:indexdata}
+\end{listing}
+
 
 \subsection{Retrieving Compatible terms}
 
@@ -81,6 +98,69 @@ that each position shows a Y in the Fingerprint unifcation table.
 \label{lst:unitable}
 \end{listing}
 
+\begin{listing}[H]
+\begin{scalacode}
+private def retrieveCompatible
+  (t: Term, fp: Fingerprint, index: Index) : TermSet =
+  (fp, index) match {
+//Collect all compatible (Feature,Index) pairs and continue traversal
+    case (fp::fps, Node(map)) => (for ((k,v) <- map if compare(fp, k))
+        yield retrieveCompatible(t, fps, v))
+//Collapse all retrieved sets together with the union operator (:::)
+      .foldLeft(Nil:TermSet) ((a,b) => a ::: b)
+    case (Nil, Leaf(set)) => set
+    case (_, Node(_)) => throw new IllegalArgumentException
+         ("Fingerprint is over but we are not at a leaf")
+    case (_, Leaf(_)) => throw new IllegalArgumentException
+         ("Reached a leaf but Fingerprint is not over")
+  }
+\end{scalacode}
+\caption{Scala code to collect compatible terms from the index.}
+\label{lst:retrieve}
+\end{listing}
+
+\subsection{Matching with Subterms}
+dicsuss how we are required to match against subterms. Requires significant modification
+to the fingerprint indexer
+
+
+So our indexer will now be capable of comprehensively indexing all subterms as required.
+However; this ability has been introduced at the cost of many grave errors which
+(if not detected at this stage) 
+
+\subsubsection{Data loss}
+In listing \ref{lst:indexdata} we presented the actual data structure for storing
+indexed Terms. It presented the leaves of this index as simply a set of term objects;
+but this is acutally no longer suffiecient for our current uses. Now that we are indexing full subterms
+we must be able to extract the original parent term; which is impossible given only
+the low-level subterm representation.
+
+\subsubsection{Non-unique Storage}
+It is possible to fix our data loss issue by giving each Expression a pointer
+to its parent Expression (see Figure \ref{fig:expressions}). However, as our index currently only keeps a Set of Terms,
+If multiple terms possessing the same subterm are ever indexed we will only keep
+one of them; losing any representation of the other!
+
+\subsubsection{}
+
+
+
+\subsection{Term Tracing}
+
+All the above issues can be solved by adding \emph{Term Traces}.
+
+Term tracing also solves a horrendous error introduced by matching subterms. 
+
+By indexing subterms we lose information. Must construct a trace in order
+to restore all required data
+
+\subsection{Unit Testing with ScalaTest}
+
+As with any component of a large software project; it is vital to ensure that the
+Fingerprint Index functions on its own. Otherwise if there are issues when adding
+the indexer to functional use there will be no way of knowing what component is
+causing the problem.
+
 
 \section{Adding Indexing to \Beagle}
 
@@ -92,10 +172,6 @@ to \beagle's structure and proving sequence.
 Refer to class and flow diagrams from \ref{sec:initial}
 
 \subsection{Initial Problems}
-
-\subsection{Matching with Subterms}
-dicsuss how we are required to match against subterms. Requires significant modification
-to the fingerprint indexer
 
 \section{Extending the Indexer}
 
