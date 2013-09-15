@@ -20,7 +20,7 @@ Refer to results for instrumentation; showing what may be improved with indexing
 \section{Implementing Fingerprint Indexing}
 \label{sec:initial}
 
-\subection{Adding terms to the index}
+\subsection{Adding terms to the index}
 
 The first step in adding Fingerprint Indexing to \beagle is creating the indexer
 itself; a Scala class which will manage the index and provide functions for adding
@@ -103,6 +103,10 @@ to the fingerprint indexer
 \section{Tailoring to \Beagle's Heirachic Superposition with Weak Abstraction Calculus}
 \label{sec:tailored}
 
+In this section we discuss the thought process in developing and implementing
+extensions to Fingerprint Indexing in order to better tailor it to \beagle's
+rather unique logical calculus.
+
 \subsection{Foreground and Background Terms}
 
 In the Heirachic Superposition with Weak Abstraction Calculus all terms have 
@@ -111,39 +115,59 @@ discussed this concept; referring to it as the \emph{layer} of a term. It is
 worht noting at this stage that computing the layer of a term is cheap (or rather,
 zero, as it is computed on the fly during term generation and stored for later use).
 
-We introduce two new fingerprint features: B+ and A+ for `background' or `abstraction' variables.
-Note that here we may use the foregroundedness of the entire subterm rather than just that
-of the current position.
+Recall the four orignal fingerprint feature symbols from \ref{sec:indexing}:
+\begin{itemize}
+\item $f$: arbitrary constant function symbols.
+\item \textbf{A}: Variable at the exact position.
+\item \textbf{B}: A variable could be expanded to meet the position.
+\item \textbf{N}: Position can never exist regardless of variable assignment.
+\end{itemize}
+We introduce two new fingerprint features: \textbf{A}+ and \textbf{B}+.
+These symbols will be used for the same purpose as the original \textbf{A} and \textbf{B}, but
+only for `\emph{background}' or `\emph{abstraction}' variables. These variables
+can only be used for pure background terms; a fact we may use to restrict the possible
+matches for unification.
 
 The layeredness of function symbols is also relevant to our comparison.
 $f$+ in the following table signifies a position where the entire subterm from this position downwards
-is `pure background'. Keep in mind that A+ and B+ differ from this definition slightly.
+is `pure background'. Keep in mind that this definition is slightly different
+to the definition for \textbf{A}+ and \textbf{B}+; as we must consider all function
+symbols below $f$ itself.
 
 We present here the (rather large) extended unification table with no justification.
-Refer to the original unification table (Table \ref{tab:unif}) for an in depth
+Refer to the original unification table (Table \ref{tab:unif}) for an in-depth
 explanation of how this table should be interpreted \cite{shulz12}.
 
 \begin{table}[h]\begin{center}
   \caption{Fingerprint matches for unification; extended by considering term layers.}
   \begin{tabular}{| c || c | c | c | c | c || c | c | c | c |}
   \hline
-            &  $f_1$  &  $f_2$  &  \textbf{A} &  \textbf{B} &  \textbf{N} & $f_1$+  & $f_2$+  & \textbf{A}+ & \textbf{B}+ \\ \hline \hline
-  $f_1$     &  \compY &  \compN &  \compY     &  \compY     &  \compN     & \compN  & \compN  & \compN      & \compN      \\ 
-  $f_2$     &  \compN &  \compY &  \compY     &  \compY     &  \compN     & \compN  & \compN  & \compN      & \compN      \\ 
-\textbf{A}  &  \compY &  \compY &  \compY     &  \compY     &  \compN     & \compY  & \compY  & \compY      & \compY      \\
-\textbf{B}  &  \compY &  \compY &  \compY     &  \compY     &  \compY     & \compY  & \compY  & \compY      & \compY      \\ 
-\textbf{N}  &  \compN &  \compN &  \compN     &  \compY     &  \compY     & \compN  & \compN  & \compN      & \compY      \\ \hline \hline
-$f_1$+      &  \compN &  \compN &  \compY     &  \compY     &  \compN     & \compY  & \compN  & \compY      & \compY      \\ 
-$f_2$+      &  \compN &  \compN &  \compY     &  \compY     &  \compN     & \compN  & \compY  & \compY      & \compY      \\ 
-\textbf{A}+ &  \compN &  \compN &  \compY     &  \compY     &  \compN     & \compY  & \compY  & \compY      & \compY      \\
-\textbf{B}+ &  \compN &  \compN &  \compY     &  \compY     &  \compY     & \compY  & \compY  & \compY      & \compY      \\ \hline
+            &  $f_1$  &  $f_2$  &  \textbf{A} &  \textbf{B} &  \textbf{N} &    $f_1$+  & $f_2$+  & \textbf{A}+ & \textbf{B}+ \\ \hline \hline
+  $f_1$     &  \compY &  \compN &  \compY     &  \compY     &  \compN     &    \compN  & \compN  & \compN      & \compN      \\ 
+  $f_2$     &  \compN &  \compY &  \compY     &  \compY     &  \compN     &    \compN  & \compN  & \compN      & \compN      \\ 
+\textbf{A}  &  \compY &  \compY &  \compY     &  \compY     &  \compN     &    \compY  & \compY  & \compY      & \compY      \\
+\textbf{B}  &  \compY &  \compY &  \compY     &  \compY     &  \compY     &    \compY  & \compY  & \compY      & \compY      \\ 
+\textbf{N}  &  \compN &  \compN &  \compN     &  \compY     &  \compY     &    \compN  & \compN  & \compN      & \compY      \\ \hline \hline
+%
+$f_1$+      &  \compN &  \compN &  \compY     &  \compY     &  \compN     &    \compY  & \compN  & \compY      & \compY      \\ 
+$f_2$+      &  \compN &  \compN &  \compY     &  \compY     &  \compN     &    \compN  & \compY  & \compY      & \compY      \\ 
+\textbf{A}+ &  \compN &  \compN &  \compY     &  \compY     &  \compN     &    \compY  & \compY  & \compY      & \compY      \\
+\textbf{B}+ &  \compN &  \compN &  \compY     &  \compY     &  \compY     &    \compY  & \compY  & \compY      & \compY      \\ \hline
   \end{tabular}
 \end{center}\end{table}
+
+We now present brief reasoning for all our new entries in the table.
+Note that as this table is for unification it is symmetric along the leading diagonal (as in
+the original unification table); so we need only discuss the lower triangle of the matrix.
+Furthermore, notice that the bottom right segment of the table is actually identical to
+the original unification table. This is expected as when both features we are comparing
+are pure background the comparison behaves normally.
+
 
 To go with this table we present its corresponding Scala matching code in Listing \ref{lst:extuni}.
 Unfortunately the steep increase in table size results in the amount of code required exploding.
 It also becomes impossible to use our earlier trick of Set matching; due to the need for parametrised
-Fingerprint symbols (i.e. A+ and B+; represented as FPA(true) and FPB(true) ).
+Fingerprint symbols (i.e. \textbf{A}+ and \textbf{B}+ represented as FPA(true) and FPB(true) ).
 \begin{listing}[H]
 \begin{scalacode}
  /** Check two Fingerprint features for compatibility based
