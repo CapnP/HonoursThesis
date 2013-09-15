@@ -8,8 +8,13 @@
 \section{Structure of \Beagle}
 \label{sec:initial}
 
-To be able to make any significant contribution to the \beagle\ project, I first
-had to gain a solid understanding of the existing Scala codebase.
+Making any extension to the \beagle\ project (or any sizeable project
+for that matter) will obviously require a solid
+understanding of the existing codebase. This section provides an overview
+of any existing Scala classes and their structure which is relevant to the implemen
+tation of the Fingerprint Index.
+
+\subsection{Syntax and Data Structures}
 
 \begin{figure}[h]
   \centering
@@ -19,18 +24,43 @@ had to gain a solid understanding of the existing Scala codebase.
    \label{fig:expressions}
 \end{figure}
 
-Describe main inference loop
+\subsection{Main Program Loop}
 
-Refer to results for instrumentation; showing what may be improved with indexing.
 
-\section{Implementing Fingerprint Indexing}
+\section{Building the Fingerprint Indexer}
 \label{sec:initial}
 
 The first step in adding Fingerprint Indexing to \beagle\ is creating the indexer
 itself; a Scala class which will manage the index and provide functions for adding
-to/retreiving from the Index. 
+to it and retreiving from it. 
 
 \subsection{Objects and Datatypes}
+
+\subsubsection{Fingerprint Features}
+
+\begin{listing}[H]
+\begin{scalacode}
+/** Pseudo enumerated type for fingerprint features */
+sealed abstract class FPFeature
+case object FPA extends FPFeature 
+case object FPB extends FPFeature
+case object FPN extends FPFeature
+case class  FPF(val subterm : FunTerm) extends FPFeature
+\end{scalacode}
+\caption{Data type for the 4 Fingerprint Features \protect\cite[p5]{shulz12}}
+\label{lst:featuredata}
+\end{listing}
+
+\subsubsection{Positions}
+
+We implement positions in the simple/na\"{\i}ve manner, simply as a list of
+Integers (where Nil is used to index the top-level term).
+
+\subsubsection{Term Fingerprints}
+
+\subsubsection{Fingerprint Index}
+
+The final data structure we require is the 
 
 \begin{listing}[H]
 \begin{scalacode}
@@ -44,6 +74,10 @@ case class Node(map: HashMap[FPFeature, Index]) extends Index
 \label{lst:indexdata}
 \end{listing}
 
+Note that this Index object does not neccecarily take up a significant portion of memory.
+All Terms are already stored within the ClauseSet object (See Figure \ref{fig:expressions});
+so the Index itself will generally only add a fairly lightweight structure of pointers.
+
 
 \subsection{Building Term Fingerprints}
 
@@ -54,16 +88,17 @@ a Term at the given position.
  /** Extract the operator at position pos. Note that matching Var
    * and Funterm is an exhaustive pattern for Term. */
   def extractFeature(term: Term, pos: Position) : FPFeature = pos match {
-    case Nil     => term match {
-      case t:FunTerm => FPF(t.op) // Found function symbol, return it
-      case t:Var     => FPA       // Found variable, return A
-    }
     case p :: ps => term match {
       case t:FunTerm => try   {extractFeature(t.args(p), ps) }
-                        //Attempted to index non-existent position, return N
+                        //Non-existent position, return N
                         catch {case e:IndexOutOfBoundsException => FPN}
       // Found variable BEFORE end of position, return B
       case t:Var     => FPB 
+    }
+    // Reached end of position, check symbol
+    case Nil     => term match {
+      case t:FunTerm => FPF(t.op) // Found function symbol, return it
+      case t:Var     => FPA       // Found variable, return A
     }
   }
 \end{scalacode}
@@ -100,7 +135,7 @@ that each position shows a Y in the Fingerprint unifcation table.
 
 \begin{listing}[H]
 \begin{scalacode}
-private def retrieveCompatible
+def retrieveCompatible
   (t: Term, fp: Fingerprint, index: Index) : TermSet =
   (fp, index) match {
 //Collect all compatible (Feature,Index) pairs and continue traversal
@@ -136,11 +171,12 @@ this is trivial; we just return the symbol and Nil for the subterm position.
 
 \begin{listing}[H]
 \begin{scalacode}
-  def subtermsWithPos : List[(Term, List[Int])] = 
-    (thisterm, Nil) :: (for 
-      (arg    <- args zip args.indices;
-       subarg <- arg._1.subtermsWithPos)
-        yield  (subarg._1, arg._2::subarg._2))
+/** Retrieve all subterms along with their position */
+def subtermsWithPos : List[(Term, List[Int])] = 
+  (thisterm, Nil) :: (for 
+    ((arg,    argpos)    <- args zip args.indices;
+     (subarg, subargpos) <- arg.subtermsWithPos)
+      yield  (subarg, argpos::subargpos))
 \end{scalacode}
 \caption{Recursively grab all subterms from a complex term.}
 \label{lst:subterms}
@@ -163,6 +199,7 @@ to its parent Expression (see Figure \ref{fig:expressions}). However, as our ind
 If multiple terms possessing the same subterm are ever indexed we will only keep
 one of them; losing any representation of the other!
 
+
 \subsection{Term Tracing}
 
 All the above issues can be solved by adding \emph{Term Traces}.
@@ -171,6 +208,10 @@ Term tracing also solves a horrendous error introduced by matching subterms.
 
 By indexing subterms we lose information. Must construct a trace in order
 to restore all required data
+
+Note that adding subterms and their traces has resulted in a significant increase in the
+size of our Index object. This is negligible however since memory is cheap; and we are
+generally only concerned with speed.
 
 \subsection{Unit Testing with ScalaTest}
 
