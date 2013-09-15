@@ -5,13 +5,18 @@
 \chapter{Implementing Fingerprint Indexing}
 \label{cha:method}
 
-\section{Structure of \beagle}
+\section{Structure of \Beagle}
 \label{sec:initial}
 
 To be able to make any significant contribution to the \beagle\ project, I first
 had to gain a solid understanding of the existing Scala codebase.
 
-\includegraphics[clip,trim=2.5cm 5cm 10cm 2cm,width=\textwidth]{resources/logicstructure}
+\begin{figure}[h]
+  \centering
+  \includegraphics[clip,trim=2.5cm 5cm 10cm 2cm,width=\textwidth]{resources/logicstructure}
+  \caption
+   {Class structure for internal representation of logical formulae.}
+\end{figure}
 
 Describe main inference loop
 
@@ -94,6 +99,8 @@ to the fingerprint indexer
 
 \section{Extending the Indexer}
 
+With \beagle\ now fully indexing terms for superposition
+
 \subsection{Matching and Simplification in \Beagle}
 
 \subsection{Generalising our FingerprintIndex}
@@ -140,12 +147,14 @@ At this point it is important to note that these added fingerprint features slig
 the original \textbf{A}, \textbf{B} and $f$ features. These features will now
 only represent the foreground layered positions.
 
-We present here the (rather large) extended unification table with no justification.
+Table \ref{tab:extunif} displays the unification table with our new background
+feature symbols. The table has grown to be a considerable size.
 Refer to the original unification table (Table \ref{tab:unif}) for an in-depth
 explanation of how this table should be interpreted \cite{shulz12}.
 
 \begin{table}[h]\begin{center}
   \caption{Fingerprint matches for unification; extended by considering term layers.}
+  \label{tab:extunif}
   \begin{tabular}{| c || c | c | c | c | c || c | c | c | c |}
   \hline
             &  $f_1$  &  $f_2$  &  \textbf{A} &  \textbf{B} &  \textbf{N} &    $f_1$+  & $f_2$+  & \textbf{A}+ & \textbf{B}+ \\ \hline \hline
@@ -162,7 +171,6 @@ $f_2$+      &  \compN &  \compN &  \compY     &  \compY     &  \compN     &    \
   \end{tabular}
 \end{center}\end{table}
 
-We now present brief reasoning for all our new entries in the table.
 Note that as this table is for unification it is symmetric along the leading diagonal (as in
 the original unification table); so we need only discuss the lower triangle of the matrix.
 Furthermore, notice that the bottom right segment of the table is actually identical to
