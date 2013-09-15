@@ -8,10 +8,10 @@
 \section{Structure of \beagle}
 \label{sec:initial}
 
-To be able to make any significant contribution to the \beagle  project, I first
+To be able to make any significant contribution to the \beagle\ project, I first
 had to gain a solid understanding of the existing Scala codebase.
 
-*Figure of Clause/Expression syntax tree*
+\includegraphics[clip,trim=2.5cm 5cm 10cm 2cm,width=\textwidth]{resources/logicstructure}
 
 Describe main inference loop
 
@@ -20,11 +20,11 @@ Refer to results for instrumentation; showing what may be improved with indexing
 \section{Implementing Fingerprint Indexing}
 \label{sec:initial}
 
-\subsection{Adding terms to the index}
-
-The first step in adding Fingerprint Indexing to \beagle is creating the indexer
+The first step in adding Fingerprint Indexing to \beagle\ is creating the indexer
 itself; a Scala class which will manage the index and provide functions for adding
 to/retreiving from the Index. 
+
+\subsection{Adding terms to the index}
 
 
 The following block of Scala code extracts a single Fingerprint Feature from
@@ -97,6 +97,8 @@ to the fingerprint indexer
 \subsection{Matching and Simplification in \Beagle}
 
 \subsection{Generalising our FingerprintIndex}
+
+explain available options, their reasoning and their implementations.
 
 \subsection{Applying new Indices to Simplification}
 
@@ -176,7 +178,10 @@ match the foreground version of the same symbol. It does however match both
 which may be expanded to either foreground or pure background terms.
 \item Abstraction variables (\textbf{A}+): Similarly to the pure background function symbol
 feature, this feature cannot match any terms which sit in the foreground. It can however
- 
+match both \textbf{A} and \textbf{B} as they may represent either foreground or background
+expressions.
+\item Potential expansion of an abstraction variable \textbf{B}+: Same as for \textbf{A}+
+but can also match \textbf{N}.
 \end{itemize}
 
 To go with this table we present its corresponding Scala matching code in Listing \ref{lst:extuni}.
