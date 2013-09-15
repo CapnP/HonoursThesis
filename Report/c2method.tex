@@ -134,6 +134,10 @@ is `pure background'. Keep in mind that this definition is slightly different
 to the definition for \textbf{A}+ and \textbf{B}+; as we must consider all function
 symbols below $f$ itself.
 
+At this point it is important to note that these added fingerprint features slightly modify
+the original \textbf{A}, \textbf{B} and $f$ features. These features will now
+only represent the foreground layered positions.
+
 We present here the (rather large) extended unification table with no justification.
 Refer to the original unification table (Table \ref{tab:unif}) for an in-depth
 explanation of how this table should be interpreted \cite{shulz12}.
@@ -160,9 +164,20 @@ We now present brief reasoning for all our new entries in the table.
 Note that as this table is for unification it is symmetric along the leading diagonal (as in
 the original unification table); so we need only discuss the lower triangle of the matrix.
 Furthermore, notice that the bottom right segment of the table is actually identical to
-the original unification table. This is expected as when both features we are comparing
-are pure background the comparison behaves normally.
+the original unification table. This is expected as when we compare two
+pure background features the comparison behaves normally.
 
+We will justify the new section of the table line by line:
+\begin{itemize}
+\item Background function symbols ($f$+): Recall that this feature is only applicable
+if the entire subterm below $f$ is pure background. Therefore it does not
+match the foreground version of the same symbol. It does however match both
+\textbf{A} and \textbf{B}. This is required since these symbols still match `\emph{impure}' background variables;
+which may be expanded to either foreground or pure background terms.
+\item Abstraction variables (\textbf{A}+): Similarly to the pure background function symbol
+feature, this feature cannot match any terms which sit in the foreground. It can however
+ 
+\end{itemize}
 
 To go with this table we present its corresponding Scala matching code in Listing \ref{lst:extuni}.
 Unfortunately the steep increase in table size results in the amount of code required exploding.
@@ -172,18 +187,19 @@ Fingerprint symbols (i.e. \textbf{A}+ and \textbf{B}+ represented as FPA(true) a
 \begin{scalacode}
  /** Check two Fingerprint features for compatibility based
    * on the *extended* unification table (See table in report).*/
-  def compareFeaturesForUnification (a:FPFeature, b:FPFeature) : Boolean = 
+  def compareFeaturesForUnification
+      (a:FPFeature, b:FPFeature) : Boolean = 
   (a,b) match {
-    case (FPF(a), FPF(b))    => (a.op == b.op) && 
-                                (if (a.isFG || b.isFG) 
-                                    (!a.isPureBG && !b.isPureBG)
-                                 else true)
-    case (FPF(t), FPB(true)) => t.isPureBG
-    case (FPB(true), FPF(t)) => t.isPureBG
+    case (FPF(f1), FPF(f2))    => (f1.op == f2.op) && 
+                                  (if (f1.isFG || f2.isFG) 
+                                      (!f1.isPureBG && !f2.isPureBG)
+                                   else true)
+    case (FPF(f), FPB(true)) => f.isPureBG
+    case (FPB(true), FPF(f)) => f.isPureBG
     case (_, FPB(_))         => true
     case (FPB(_), _)         => true
-    case (FPF(t), FPA(true)) => t.isPureBG
-    case (FPA(true), FPF(t)) => t.isPureBG
+    case (FPF(f), FPA(true)) => f.isPureBG
+    case (FPA(true), FPF(f)) => f.isPureBG
     case (FPN, FPA(_))       => false
     case (FPA(_), FPN)       => false
     case (_, FPA(_))         => true
