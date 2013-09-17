@@ -79,6 +79,8 @@ in a prover's calculus.
 \emph{Fingerprint Indexing} is a recent technique developed by \citeN{shulz12}, the creator
 of the E prover.
 
+\subsection{Term Fingerprints}
+
 \begin{table}[h]\begin{center}
   \caption{Fingerprint matches for Unification \protect\cite[p6]{shulz12}}
   \label{tab:unif}
@@ -106,6 +108,10 @@ of the E prover.
   \end{tabular}
 \end{center}\end{table}
 
+\subsection{The Fingerprint Index}
+
+\subsection{Position Variants}
+
 \section{The \Beagle\ Theorem Prover}
 \label{sec:beagle}
 %Beagle will already be discussed in intro.
@@ -115,8 +121,14 @@ The core implementation of \beagle was developed by Peter Baumgartner et al. of 
 Its purpose was to demonstrate the capabilities of the \emph{Weak Abstraction with Heirachic Superposition Calculus};
 which allows the incorporation of prior knowledge via `background reasoning' modules.
 
+\subsection{Weak Abstraction}
 
-\subsection{The Heirachic Superposition with Weak Abstraction Calculus}
+\subsection{Base Inference Rules}
+
+
+\[ \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{\text{abstr}((s[r] \approx t \lor C \lor D)\sigma)} \]
+
+\[ \frac{l \approx r \lor C\quad \quad s[u] \lnot\approx t \lor D}{\text{abstr}((s[r] \lnot\approx t \lor C \lor D)\sigma)} \]
 
 \subsection{\Beagle's Shortcomings}
 
