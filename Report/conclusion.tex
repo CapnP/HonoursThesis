@@ -8,6 +8,33 @@
 \section{Why this is a Very Clever Thesis}
 \label{sec:why}
 
+\section{Future Improvements}
+\label{sec:future}
+
+Here we list some thoughts on possible improvments to \beagle\ and Fingerprint
+indexing in general; which were either not relevant to the current work or
+cut due to time constraints.
+
+\subsection{Extended Data Structures}
+The focus of this thesis has been with high-level logical improvements.
+Add some low-level speed at the cost of memory.
+
+Drop the tree structure. Have an entry for each possible fingerprint and add terms
+to each bin they are compatible with during indexing. Moves runtime from
+retrieval (called VERY often) to indexing (called barley ever) but creates memory
+EXPLOSION
+
+\subsection{More Fingerprint Indices}
+
+\subsection{Extensions to Fingerprint Indexing}
+
+\subsubsection{Symbol count}
+\subsubsection{Dynamic Fingerprinting}
+
+\subsection{Combining Indexing Techniques}
+
+\section{Final Thoughts}
+
 %%% Local Variables: 
 %%% mode: latex
 %%% TeX-master: "thesis"

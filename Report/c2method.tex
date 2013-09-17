@@ -110,6 +110,10 @@ a Term at the given position.
 
 \subsection{Retrieving Compatible terms}
 
+Our Index framework is now capable of creating Fingerprints and storing Terms in
+our pointer structure. The next task in building our index is allowing retrieval
+of terms.
+
 To compare two fingerprints with each other we look at them side-by-side and check
 that each position shows a Y in the Fingerprint unifcation table. 
 \begin{listing}[H]
@@ -132,6 +136,11 @@ that each position shows a Y in the Fingerprint unifcation table.
 \caption{Scala implementation of the Fingerprint unification table. \protect\cite[p6]{shulz12}}
 \label{lst:unitable}
 \end{listing}
+
+To check whether or not two fingerprints match is now a simple matter of iterating
+through the list and checking that each position is a match according to our unification
+table check. This side-by-side comparison could potentially be improved by employing
+some sort of hashing function; 
 
 \begin{listing}[H]
 \begin{scalacode}
@@ -222,27 +231,53 @@ causing the problem.
 
 
 \section{Adding Indexing to \Beagle}
+We now have a class fully capable 
+
+\[ \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{\text{abstr}((s[r] \approx t \lor C \lor D)\sigma)} \]
+
+
+\subsection{Initial Problems}
 
 \subsection{Refactoring Current Implementation}
 
 Actually making use of our indexer class will require significant modification
 to \beagle's structure and proving sequence.
 
-Refer to class and flow diagrams from \ref{sec:initial}
+Refer to class and main loop flow diagrams from \ref{sec:initial}
 
-\subsection{Initial Problems}
 
 \section{Extending the Indexer}
 
-With \beagle\ now fully indexing terms for superposition
+\Beagle\ is now fully capable of indexing its terms for superposition. There
+are still many ways in which this form of indexing may be improved; but it is likely
+to be far more effective to re-examine where \beagle now spends most of its runtime
+and look into other areas which may be improved. By instrumenting the (now indexed)
+\beagle\ in VisualVM (see Section \ref{section:instr} and \ref{section:instr2})
+we observe that the most significant runtime cost is now most often in simplification.
 
 \subsection{Matching and Simplification in \Beagle}
+\Beagle has several simplification rules to aid the logical inference process.
+Generally these rules are not part of the actual rule based calculus but rather
+just implement some external insights which allow some special cases to be
+pre-processed
+
+\subsubsection{Negative Unit Simplification}
+
+\[ \frac{a\not\approx b \quad \quad a \approx b  \lor C}{C} \]
+
+\subsubsection{Demodulation}
+
+
+\subsection{First Attempt at Indexing Simplification}
+Re-using current index produced little improvement. Cost of indexing
+subterms, matching against equations with $\$equal$
 
 \subsection{Generalising our FingerprintIndex}
 
 explain available options, their reasoning and their implementations.
 
 \subsection{Applying new Indices to Simplification}
+
 
 \section{Tailoring to \Beagle's Heirachic Superposition with Weak Abstraction Calculus}
 \label{sec:tailored}
