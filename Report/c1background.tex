@@ -14,11 +14,6 @@ is required. This section provides a rudimentary overview of FOL syntax and uses
 but also includes an explanation of any specialised terms and notation used throughout the paper.
 
 \subsection{FOL basics}
-
-\subsection{Calculi and FOL problems}
-
-\subsection{The Superposition Calculus}
-
 \notes{
 Should contain
 \begin{itemize}
@@ -30,7 +25,17 @@ Should contain
 \item Description of a 'calculus'
 \end{itemize}}
 
-\subsection{Specialised Syntax in this Paper}
+\subsection{Logic Terminology used in this Paper}
+
+\subsubsection{Positions}
+
+\subsubsection{Substitution}
+
+\subsection{Calculi and FOL problems}
+
+\subsection{The Superposition Calculus}
+
+
 
 \begin{itemize}
 \item Positions
@@ -40,9 +45,9 @@ Should contain
 \label{sec:proving}
 
 Automated Reasoning is a rapidly growing field of research where computer programs
-are used to solve problems stated in first order logic statments or other formal logics.
+are used to solve problems stated in first order logic statements or other formal logics.
 
-Some existing theorem provers include:
+Some existing resolution theorem provers include:
 
 \subsection{SPASS}
 \cite{spass}
@@ -52,15 +57,6 @@ Some existing theorem provers include:
 
 \subsection{E}
 \cite{eprover}
-
-\notes{
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Should contain
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{itemize}
-\item Theorem prover examples
-\end{itemize}
-}
 
 \section{Term Indexing}
 \label{sec:indexing}
@@ -77,7 +73,13 @@ in a prover's calculus.
 \label{sec:fingerprint}
 
 \emph{Fingerprint Indexing} is a recent technique developed by \citeN{shulz12}, the creator
-of the E prover.
+of the E prover. It works by computing a \emph{fingerprint} for each logic term;
+which can compared for unification or match compatibility.
+It is a \emph{non-perfect} technique in that compatible fingerprints will not
+always imply that the associated terms successfully unify/match. The technique
+makes up for this by being adjustable to arbitrary levels of precision; ranging between
+what essentially amounts to Top-Symbol Hashing (See section \ref{sec:indexing})
+to comprehensive, but slow to compute, term comparisons.
 
 \subsection{Term Fingerprints}
 
@@ -117,18 +119,21 @@ of the E prover.
 %Beagle will already be discussed in intro.
 %Here we can be more technical due to background info
 
-The core implementation of \beagle was developed by Peter Baumgartner et al. of NICTA.
-Its purpose was to demonstrate the capabilities of the \emph{Weak Abstraction with Heirachic Superposition Calculus};
+The core implementation of {\beagle} was developed by Peter Baumgartner et al. of NICTA.
+Its purpose was to demonstrate the capabilities of the \emph{\HSWA};
 which allows the incorporation of prior knowledge via `background reasoning' modules.
 
 \subsection{Weak Abstraction}
 
-\subsection{Base Inference Rules}
+\subsection{Base Inference System}
 
+The inference rules for the {\HSWA} are essentially identical to the standard 
+superposition calculus; except for the fact that they come with additional
+conditions to accommodate background reasoning.
 
-\[ \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{\text{abstr}((s[r] \approx t \lor C \lor D)\sigma)} \]
+\[ \textbf{Positive Superposition}\quad\quad \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{\text{abstr}((s[r] \approx t \lor C \lor D)\sigma)} \]
 
-\[ \frac{l \approx r \lor C\quad \quad s[u] \lnot\approx t \lor D}{\text{abstr}((s[r] \lnot\approx t \lor C \lor D)\sigma)} \]
+\[ \textbf{Negative Superposition}\quad\quad \frac{l \approx r \lor C\quad \quad s[u] \not\approx t \lor D}{\text{abstr}((s[r] \not\approx t \lor C \lor D)\sigma)} \]
 
 \subsection{\Beagle's Shortcomings}
 
@@ -143,11 +148,12 @@ As mentioned above \beagle\ is written in \emph{Scala}, the Scalable Language. S
 is a functional language and may be confusing to those who are not familiar with the
 functional programming paradigm. This thesis will contain occasional snippets of
 Scala code; but note that any snippets used will be accompanied by an explanation
-and in general an understanding of Scala/funcitonal programming is not required.
+and in general an understanding of Scala/functional programming is not required.
 
 \subsection{VisualVM}
 
 \subsection{Eclipse}
+Integration with Scala and ScalaTest
 
 %%% Local Variables: 
 %%% mode: latex

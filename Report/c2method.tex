@@ -11,8 +11,7 @@
 Making any extension to the \beagle\ project (or any sizeable project
 for that matter) will obviously require a solid
 understanding of the existing codebase. This section provides an overview
-of any existing Scala classes and their structure which is relevant to the implemen
-tation of the Fingerprint Index.
+of any existing Scala classes and their structure which is relevant to the implementation of the Fingerprint Index.
 
 \subsection{Syntax and Data Structures}
 
@@ -32,7 +31,7 @@ tation of the Fingerprint Index.
 
 The first step in adding Fingerprint Indexing to \beagle\ is creating the indexer
 itself; a Scala class which will manage the index and provide functions for adding
-to it and retreiving from it. 
+to it and retrieving from it. 
 
 \subsection{Objects and Datatypes}
 
@@ -74,7 +73,7 @@ case class Node(map: HashMap[FPFeature, Index]) extends Index
 \label{lst:indexdata}
 \end{listing}
 
-Note that this Index object does not neccecarily take up a significant portion of memory.
+Note that this Index object does not necessarily take up a significant portion of memory.
 All Terms are already stored within the ClauseSet object (See Figure \ref{fig:expressions});
 so the Index itself will generally only add a fairly lightweight structure of pointers.
 
@@ -115,7 +114,7 @@ our pointer structure. The next task in building our index is allowing retrieval
 of terms.
 
 To compare two fingerprints with each other we look at them side-by-side and check
-that each position shows a Y in the Fingerprint unifcation table. 
+that each position shows a Y in the Fingerprint unification table. 
 \begin{listing}[H]
 \begin{scalacode}
  /** Check two Fingerprint features for compatibility based
@@ -198,7 +197,7 @@ if not detected at this stage, would have destroyed the Fingerprint Index altoge
 \subsubsection{Data loss}
 In listing \ref{lst:indexdata} we presented the actual data structure for storing
 indexed Terms. It presented the leaves of this index as simply a set of term objects;
-but this is acutally no longer suffiecient for our current uses. Now that we are indexing full subterms
+but this is actually no longer sufficient for our current uses. Now that we are indexing full subterms
 we must be able to extract the original parent term; which is impossible given only
 the low-level subterm representation.
 
@@ -281,7 +280,7 @@ explain available options, their reasoning and their implementations.
 \subsection{Applying new Indices to Simplification}
 
 
-\section{Tailoring to \Beagle's Heirachic Superposition with Weak Abstraction Calculus}
+\section{Tailoring to \Beagle's \HSWA}
 \label{sec:tailored}
 
 In this section we discuss the thought process in developing and implementing
@@ -290,13 +289,13 @@ rather unique logical calculus.
 
 \subsection{Extending the Unification Table with Term Layers}
 
-In the Heirachic Superposition with Weak Abstraction Calculus all terms have 
+In the {\HSWA} all terms have 
 a concept of being 'Foreground' or 'Background'. In Section \ref{sec:beagle} we
 discussed this concept; referring to it as the \emph{layer} of a term. It is
-worht noting at this stage that computing the layer of a term is cheap (or rather,
+worth noting at this stage that computing the layer of a term is cheap (or rather,
 zero, as it is computed on the fly during term generation and stored for later use).
 
-Recall the four orignal fingerprint feature symbols from \ref{sec:indexing}:
+Recall the four original fingerprint feature symbols from \ref{sec:indexing}:
 \begin{itemize}
 \item $f$: arbitrary constant function symbols.
 \item \textbf{A}: Variable at the exact position.
@@ -309,7 +308,7 @@ only for `\emph{background}' or `\emph{abstraction}' variables. These variables
 can only be used for pure background terms; a fact we may use to restrict the possible
 matches for unification.
 
-The layeredness of function symbols is also relevant to our comparison.
+The layered-ness of function symbols is also relevant to our comparison.
 $f$+ in the following table signifies a position where the entire subterm from this position downwards
 is `pure background'. Keep in mind that this definition is slightly different
 to the definition for \textbf{A}+ and \textbf{B}+; as we must consider all function
@@ -366,7 +365,7 @@ but can also match \textbf{N}.
 
 To go with this table we present its corresponding Scala matching code in Listing \ref{lst:extuni}.
 Unfortunately the steep increase in table size results in the amount of code required exploding.
-It also becomes impossible to use our earlier trick of Set matching; due to the need for parametrised
+It also becomes impossible to use our earlier trick of Set matching; due to the need for parameterised
 Fingerprint symbols (i.e. \textbf{A}+ and \textbf{B}+ represented as FPA(true) and FPB(true) ).
 \begin{listing}[H]
 \begin{scalacode}
