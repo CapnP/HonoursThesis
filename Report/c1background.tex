@@ -26,6 +26,7 @@ Should contain
 \end{itemize}}
 
 \subsection{Logic Terminology used in this Paper}
+\label{sec:terminology}
 
 \subsubsection{Positions}
 
@@ -82,6 +83,26 @@ what essentially amounts to Top-Symbol Hashing (See section \ref{sec:indexing})
 to comprehensive, but slow to compute, term comparisons.
 
 \subsection{Term Fingerprints}
+
+A term's \emph{fingerprint} is a list of \emph{fingerprint features} which
+indicate what the term looks like at a given position. The 4 possible
+fingerprint features are:
+\begin{itemize}
+\item \textbf{A}: the term has a variable at the position.
+\item $f$ (any function or constant in the current system): This
+feature indicates that $f$ is at the given position in the term.
+\item \textbf{B}: the position does not exist in the term, but can be created
+by expanding a variable via substitution.
+\item \textbf{N}: the position does not exist and cannot be created.
+\end{itemize}
+Term fingerprints are computed with respect to a list of positions. We do this by simply
+computing which feature exists at each position. An example fingerprint computation
+follows. In the example $\{f,g\}$ are functions, $\{a,b\}$ are
+constants and $\{x,y\}$ are variables. See Section \label{sec:terminology} for an explanation of position syntax.
+\[t = f(a, g(a, x, y), b)\]
+\[\text{positions} = [\epsilon, 1, 2.2, 2.3.3, 3.2] \]
+\[t|_{\epsilon} = f \quad\quad t|_{1} = a \quad\quad  t|_{2.2} = x \quad\quad  t|_{2.3.3} = \text{Nil} \quad\quad  t|_{3.2} = \text{Nil}\]
+\[\fp(t, \text{positions}) = [f, a, \textbf{A}, \textbf{B}, \textbf{N}] \]
 
 \begin{table}[h]\begin{center}
   \caption{Fingerprint matches for Unification \protect\cite[p6]{shulz12}}
