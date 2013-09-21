@@ -258,9 +258,8 @@ we observe that the most significant runtime cost is now most often in simplific
 
 \subsection{Matching and Simplification in \Beagle}
 \Beagle has several simplification rules to aid the logical inference process.
-Generally these rules are not part of the actual rule based calculus but rather
-just implement some external insights which allow some special cases to be
-pre-processed
+These rules are not technically part of the actual rule based calculus
+(hence they are not mentioned in section \ref{sec:calc}
 
 \subsubsection{Negative Unit Simplification}
 
@@ -280,7 +279,7 @@ explain available options, their reasoning and their implementations.
 \subsection{Applying new Indices to Simplification}
 
 
-\section{Tailoring to \Beagle's \HSWA}
+\section{Tailoring to \Beagle's \HSWAC}
 \label{sec:tailored}
 
 In this section we discuss the thought process in developing and implementing
@@ -289,7 +288,7 @@ rather unique logical calculus.
 
 \subsection{Extending the Unification Table with Term Layers}
 
-In the {\HSWA} all terms have 
+In the {\HSWAC} all terms have 
 a concept of being 'Foreground' or 'Background'. In Section \ref{sec:beagle} we
 discussed this concept; referring to it as the \emph{layer} of a term. It is
 worth noting at this stage that computing the layer of a term is cheap (or rather,

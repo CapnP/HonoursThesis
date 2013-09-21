@@ -29,18 +29,42 @@ Should contain
 \label{sec:terminology}
 
 \subsubsection{Positions}
+Many concepts in this paper require the ability to precisely point out a specific
+subterm/symbol within a term. Thus we introduce a syntax for term \emph{positions}.
+This sort of syntax is a standard concept in the field of logic; but here we
+will be using a slightly extended syntax as we will have need to reference
+positions which do not exist \cite{shulz12}.
+
+A \emph{position} is given as a (possibly empty) list of natural numbers.
+$t|_p$ refers to the subterm of $t$ at position $p$.
+The empty position, $t|_\epsilon$, refers to the outermost function or variable
+of a term. A position $t|_n$ refers to the $n^{th}$ argument of the outermost function,
+$t|_{n.m}$ to the $m^{th}$ argument of that $n^{th}$ argument; and so on. If the position
+does not exist in the term we return Nil. Consider the following example:
+\[t = f(a, g(a, x, y), b)\]
+\[t|_{\epsilon} = f \quad\quad t|_{1} = a \quad\quad  t|_{2.2} = x \quad\quad  t|_{2.3.3} = \text{Nil} \quad\quad  t|_{3.2} = \text{Nil}\]
 
 \subsubsection{Substitution}
 
-\subsection{Calculi and FOL problems}
+\subsection{Popular Problems in First Order Logic}
 
 \subsection{The Superposition Calculus}
+\label{sec:supcalc}
 
+Based on resolution, exists to allow ... \cite{supcalc}
 
+\begin{align*}
+\textbf{Positive Superposition} &&& \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{(s[r] \approx t \lor C \lor D)\sigma}
+\intertext{\tcent{Where $\sigma = $ mgu $(l,u)$, and $u$ is not a variable}}
+\textbf{Negative Superposition} &&& \frac{l \approx r \lor C\quad \quad s[u] \not\approx t \lor D}{(s[r] \not\approx t \lor C \lor D)\sigma}
+\intertext{\tcent{Where $\sigma = $ mgu $(l,u)$, and $u$ is not a variable}}
+\textbf{Equality Resolution}    &&& \frac{s \not\approx t \lor C}{C\sigma}
+\intertext{\tcent{Where $\sigma = $ mgu $(s,t)$}}
+\textbf{Equality Factoring}     &&& \frac{l \approx r \lor s \approx t \lor C}{(l \approx t \lor r \not \approx t \lor C)\sigma}
+\intertext{\tcent{Where $\sigma = $ mgu $(s,l)$}}
+\end{align*}
 
-\begin{itemize}
-\item Positions
-\end{itemize}
+These rules
 
 \section{Automated Reasoning and Theorem Proving}
 \label{sec:proving}
@@ -96,16 +120,17 @@ by expanding a variable via substitution.
 \item \textbf{N}: the position does not exist and cannot be created.
 \end{itemize}
 Term fingerprints are computed with respect to a list of positions. We do this by simply
-computing which feature exists at each position. An example fingerprint computation
-follows. In the example $\{f,g\}$ are functions, $\{a,b\}$ are
-constants and $\{x,y\}$ are variables. See Section \label{sec:terminology} for an explanation of position syntax.
+computing which feature exists at each position. We will now revisit the example from
+the explanation of term positions (Section \label{sec:terminology}) to show
+the computation of a fingerprint. In the example $\{f,g\}$ are functions, $\{a,b\}$ are
+constants and $\{x,y\}$ are variables.
 \[t = f(a, g(a, x, y), b)\]
 \[\text{positions} = [\epsilon, 1, 2.2, 2.3.3, 3.2] \]
 \[t|_{\epsilon} = f \quad\quad t|_{1} = a \quad\quad  t|_{2.2} = x \quad\quad  t|_{2.3.3} = \text{Nil} \quad\quad  t|_{3.2} = \text{Nil}\]
 \[\fp(t, \text{positions}) = [f, a, \textbf{A}, \textbf{B}, \textbf{N}] \]
 
 \begin{table}[h]\begin{center}
-  \caption{Fingerprint matches for Unification \protect\cite[p6]{shulz12}}
+  \caption{Fingerprint Feature compare table for Unification \protect\cite[p6]{shulz12}}
   \label{tab:unif}
   \begin{tabular}{| c || c | c | c | c | c |}
   \hline
@@ -119,7 +144,7 @@ constants and $\{x,y\}$ are variables. See Section \label{sec:terminology} for a
 \end{center}\end{table}
 
 \begin{table}[h]\begin{center}
-  \caption{Fingerprint matches for Matching \protect\cite[p6]{shulz12}}
+  \caption{Fingerprint Feature compare table for Matching \protect\cite[p6]{shulz12}}
   \begin{tabular}{| c || c | c | c | c | c |}
   \hline
            &  $f_1$      &  $f_2$      &  \textbf{A} &  \textbf{B} &  \textbf{N} \\ \hline \hline
@@ -141,20 +166,69 @@ constants and $\{x,y\}$ are variables. See Section \label{sec:terminology} for a
 %Here we can be more technical due to background info
 
 The core implementation of {\beagle} was developed by Peter Baumgartner et al. of NICTA.
-Its purpose was to demonstrate the capabilities of the \emph{\HSWA};
-which allows the incorporation of prior knowledge via `background reasoning' modules.
+Its purpose was to demonstrate the capabilities of the \emph{\HSWAC};
+which allows the incorporation of prior knowledge via `background reasoning' modules. \cite{baum13}
+
+\subsection{Hierarchic Reasoning}
+The logical calculus behind {\beagle} is far from the first occurrence of using a hierarchy for
+logical reasoning. A calculus was developed by \citeN{bach94} to take advantage
+of this technique. Note that Waldmann continued on to co-write the paper outlining
+{\HSWA} \cite{baum13}.
+
+The hierarchic reasoning system also involves an ordering on terms.
 
 \subsection{Weak Abstraction}
 
-\subsection{Base Inference System}
+\subsection{Rule Based Inference System}
+\label{sec:calc}
 
-The inference rules for the {\HSWA} are essentially identical to the standard 
-superposition calculus; except for the fact that they come with additional
-conditions to accommodate background reasoning.
+The base inference rules for the {\HSWAC} are essentially identical to the standard 
+superposition calculus; except for the fact that they come with many additional
+conditions to accommodate background reasoning. These conditions include respecting
+clause orderings and disallowing the use of pure background terms.
 
-\[ \textbf{Positive Superposition}\quad\quad \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{\text{abstr}((s[r] \approx t \lor C \lor D)\sigma)} \]
+The results of any inferences must also have weak abstraction performed on them. This
+ensures that we only ever have weakly abstracted terms in our logical system. The
+base inference rules follow, taken directly from Section 6 of the {\HSWA} paper \cite{baum13}.
+See Section \ref{sec:supcalc} to compare these rules to the original
+superposition calculus.
 
-\[ \textbf{Negative Superposition}\quad\quad \frac{l \approx r \lor C\quad \quad s[u] \not\approx t \lor D}{\text{abstr}((s[r] \not\approx t \lor C \lor D)\sigma)} \]
+\begin{align*}
+\textbf{Positive Superposition} &&& \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{\text{abstr}((s[r] \approx t \lor C \lor D)\sigma)} 
+\intertext{\tcent{Where
+(i) $\sigma = $ simple mgu $(l,u)$,
+(ii) $u$ is not a variable,
+(iii) $r\sigma \not\succeq l\sigma$,
+(iv) $t\sigma \not\succeq s\sigma$,\\
+(v) $l$ and $u$ are not pure background terms,
+(vi) $(l \approx r)\sigma$ is strictly maximal in $(l \approx r \lor C)\sigma$, and
+(vii) $(s \approx t)\sigma$ is strictly maximal in $(s \approx t \lor D)\sigma$ }}
+\textbf{Negative Superposition} &&& \frac{l \approx r \lor C\quad \quad s[u] \not\approx t \lor D}{\text{abstr}((s[r] \not\approx t \lor C \lor D)\sigma)}
+\intertext{\tcent{Where 
+(i) $\sigma = $ simple mgu $(l,u)$,
+(ii) $u$ is not a variable,
+(iii) $r\sigma \not\succeq l\sigma$,
+(iv) $t\sigma \not\succeq s\sigma$,\\
+(v) $l$ and $u$ are not pure background terms,
+(vi) $(l \approx r)\sigma$ is strictly maximal in $(l \approx r \lor C)\sigma$, and
+(vii) $(s \not\approx t)\sigma$ is strictly maximal in $(s \not\approx t \lor D)\sigma$ }}
+\textbf{Equality Resolution}    &&& \frac{s \not\approx t \lor C}{\text{abstr}(C\sigma)}
+\intertext{\tcent{Where 
+(i) $\sigma = $ simple mgu $(s,t)$,
+(ii) $s$ and $t$ are not pure background terms,\\ and
+(iii) $(s \not\approx t)\sigma$ is strictly maximal in $(s \not\approx t \lor C)\sigma$}}
+\textbf{Equality Factoring}     &&& \frac{l \approx r \lor s \approx t \lor C}{\text{abstr}((l \approx t \lor r \not \approx t \lor C)\sigma)}
+\intertext{\tcent{Where 
+(i) $\sigma = $ simple mgu $(l,u)$,
+(ii) $r\sigma \not\succeq l\sigma$,
+(iii) $t\sigma \not\succeq s\sigma$,
+(iv) $l$ and $s$ are not pure background terms, and
+(v) $(l \approx r)\sigma$ is strictly maximal in $(l \approx r \lor s \approx t \lor C)\sigma$}}
+\end{align*}
+
+Note the use of a slightly different unification operator, for \emph{simple} mgus.
+This operator only produces mgus where abstraction variables are mapped
+to pure background terms.
 
 \subsection{\Beagle's Shortcomings}
 
@@ -165,7 +239,7 @@ conditions to accommodate background reasoning.
 \subsection{Scala}
 \label{sec:scala}
 
-As mentioned above \beagle\ is written in \emph{Scala}, the Scalable Language. Scala
+\Beagle\ is written in \emph{Scala}, the Scalable Language. Scala
 is a functional language and may be confusing to those who are not familiar with the
 functional programming paradigm. This thesis will contain occasional snippets of
 Scala code; but note that any snippets used will be accompanied by an explanation
