@@ -6,6 +6,7 @@
 \usepackage{graphicx}
 \usepackage{thesis}
 \usepackage{makeidx}
+\usepackage{listings}
 \usepackage{acmnew-xref}
 \usepackage[usenames,dvipsnames]{xcolor}
 \usepackage[section]{placeins}
@@ -31,6 +32,10 @@
 \linespread{1.05}         % Palatino needs more leading (space between lines)
 \usepackage[T1]{fontenc}
 \usepackage{minted}
+
+\lstset{basicstyle=\ttfamily,
+escapeinside={||},
+mathescape=true}
 
 \newcommand{\beagle}{\emph{beagle}}
 \newcommand{\Beagle}{\emph{Beagle}}

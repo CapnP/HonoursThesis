@@ -23,7 +23,34 @@ of any existing Scala classes and their structure which is relevant to the imple
    \label{fig:expressions}
 \end{figure}
 
-\subsection{Main Program Loop}
+\subsection{Main Inference Procedure}
+
+
+\begin{listing}[H]
+\begin{lstlisting}
+Create two ClauseSets, new and old
+While new is not empty
+   Select a clause from new, removing it
+   Simplify it |\textbf{with respect to all other clauses (new and old)}|
+   If the simplified clause is a tautology:
+       Continue
+   If the simplified clause is the empty clause:
+       return UNSAT
+   If one of the Define, Split or Inst rules apply:
+       Apply the rule
+       Add result to new
+       Continue
+   Add simplified clause to old
+   Attempt all inference rules:
+       Equality Resolution
+       Equality Factoring
+       Superposition |\textbf{with respect to all clauses in old}|
+   Add all results to new
+end While
+\end{lstlisting}
+\caption{Pseudocode for \beagle's main inference procedure.}
+\label{lst:featuredata}
+\end{listing}
 
 
 \section{Building the Fingerprint Indexer}
@@ -257,24 +284,73 @@ and look into other areas which may be improved. By instrumenting the (now index
 we observe that the most significant runtime cost is now most often in simplification.
 
 \subsection{Matching and Simplification in \Beagle}
-\Beagle has several simplification rules to aid the logical inference process.
+\Beagle\ has several simplification rules to aid the logical inference process.
 These rules are not technically part of the actual rule based calculus
-(hence they are not mentioned in section \ref{sec:calc}
+(hence they are not mentioned in section \ref{sec:calc}) but rather
+implement some special cases of those rules. Providing separate implementations
+of these cases can provide a significant speed-up in problems where they occur
+frequently.  
 
 \subsubsection{Negative Unit Simplification}
 
-\[ \frac{a\not\approx b \quad \quad a \approx b  \lor C}{C} \]
+\[ \textbf{Negative Unit Simplification} \quad\quad \frac{s\not\approx t \quad \quad s \approx t  \lor C}{C} \]
 
 \subsubsection{Demodulation}
 
 
-\subsection{First Attempt at Indexing Simplification}
+It is important to note that \emph{Positive Unit Simplification}, identical
+to Negative Unit Simplification save that the $\approx$ and $\not\approx$ are
+swapped, is a special case of Demodulation.
+
+\subsection{Problems with Indexing Simplification}
+\label{sec:simpprob}
 Re-using current index produced little improvement. Cost of indexing
 subterms, matching against equations with $\$equal$
 
 \subsection{Generalising our Fingerprint Index}
+There is a simple solution to overcome the problems listed above. Creating multiple
+indices. No longer restricted to the conditions of the superposition index.
 
-explain available options, their reasoning and their implementations.
+This use of multiple indices obviously introduces a memory overhead. We
+shall argue however that this overhead is negligible for the following reasons.
+
+Here we introduce an options object to pass to our Fingerprint Index class.
+This object will allow us to create multiple term indices that behave in different
+ways.
+
+\begin{listing}[H]
+\begin{scalacode}
+/** Configuration object for a Fingerprint Index */
+class IndexConfig(
+  val positionsToSample : PositionList,
+  val indexSubterms     : Boolean,
+  val indexPureBG       : Boolean,
+  val eqnToTerm         : Boolean,
+  val comparator        : (FPFeature, FPFeature) => Boolean)
+\end{scalacode}
+\caption{Class to pass settings to an arbitrary Fingerprint Index. Note that
+this class does not require an implementation.}
+\label{lst:subterms}
+\end{listing}
+
+\begin{itemize}
+\item \textbf{positionsToSample}: A list of positions indicating what should be sampled
+to create term fingerprints.
+\item \textbf{indexSubterms}: Whether or not to index subterms. With this setting switched
+off terms are only indexed at the top level. This is very useful as subterm indexing
+is very slow and only required for superposition.
+\item \textbf{indexPureBG}: Whether or not to index pure background terms. Useful
+since this is not required for superposition.
+\item \textbf{eqnToTerm}: Whether or not to convert equations to terms. In Section
+\ref{sec:simpprob} we pointed out that Negative Unit Simplification
+converts equations to terms joined by $\$equal$. Thus our Fingerprint Index
+must be able to index these converted terms.
+\item \textbf{comparator}: The comparison function used to compare Fingerprint Features.
+This function must implement a comparison table such as those seen in Section 
+\ref{sec:fingerprints} or Figure \ref{tab:extunif}. Passing a different
+function here allows creation of separate indices for matching and unification.
+\end{itemize}
+
 
 \subsection{Applying new Indices to Simplification}
 
@@ -294,7 +370,7 @@ discussed this concept; referring to it as the \emph{layer} of a term. It is
 worth noting at this stage that computing the layer of a term is cheap (or rather,
 zero, as it is computed on the fly during term generation and stored for later use).
 
-Recall the four original fingerprint feature symbols from \ref{sec:indexing}:
+Recall the four original fingerprint feature symbols from Section \ref{sec:indexing}:
 \begin{itemize}
 \item $f$: arbitrary constant function symbols.
 \item \textbf{A}: Variable at the exact position.
@@ -303,7 +379,7 @@ Recall the four original fingerprint feature symbols from \ref{sec:indexing}:
 \end{itemize}
 We introduce two new fingerprint features: \textbf{A}+ and \textbf{B}+.
 These symbols will be used for the same purpose as the original \textbf{A} and \textbf{B}, but
-only for `\emph{background}' or `\emph{abstraction}' variables. These variables
+only for \emph{background} or \emph{abstraction} sorted variables. These variables
 can only be used for pure background terms; a fact we may use to restrict the possible
 matches for unification.
 
