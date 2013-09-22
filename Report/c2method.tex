@@ -178,8 +178,9 @@ side-by-side we are only ever interested in retrieving \emph{all} compatible
 terms from a particular Fingerprint Index (see Section \ref{sec:fpindex}
 and Section \ref{sec:datatypes}).
 
-So, 
-
+So, rather than individually comparing the Fingerprints of each term in the
+index, we must build a function which traverses a Fingerprint Index structure
+and collects all compatible terms.
 
 \begin{listing}[H]
 \begin{scalacode}
@@ -203,12 +204,15 @@ def retrieveCompatible
 \label{lst:retrieve}
 \end{listing}
 
+\verb!compare! here is a function implementing a Fingerprint Feature comparison
+table. It can be passed to the Fingerprint Index as part of its configuration
+object (see Section \ref{sec:config}).
+
 \subsection{Matching with Subterms}
 
 In Shulz's paper the indexer he describes is only interested in
 the unification of full, top-level terms with other top-level terms \cite{shulz12}.
-Recall however the main superposition rules for \beagle's resolution calculus \cite{baum13}:
-
+Recall however the main superposition rules for \beagle's resolution calculus (Section \ref{sec:calc} and \cite{baum13}).
 Notice in particular the condition that $s$ may match against a \emph{subterm}
 of $l$. This does not match the usual required definition of unification; where
 we only match top-level terms.
@@ -293,9 +297,13 @@ Refer to class and main loop flow diagrams from \ref{sec:initial}
 \Beagle\ is now fully capable of indexing its terms for superposition. There
 are still many ways in which this form of indexing may be improved; but it is likely
 to be far more effective to re-examine where \beagle now spends most of its runtime
-and look into other areas which may be improved. By instrumenting the (now indexed)
-\beagle\ in VisualVM (see Section \ref{section:instr} and \ref{section:instr2})
-we observe that the most significant runtime cost is now most often in simplification.
+and look into other areas which may be improved. 
+
+Refer to main section, simplification other loop.
+
+We may confirm this suspicion by instrumenting the (now indexed)
+\beagle\ in VisualVM. The results in Section \ref{section:instr} and \ref{section:instr2}
+indicate (as expected) that the most significant runtime cost is now typically simplification.
 
 \subsection{Matching and Simplification in \Beagle}
 \Beagle\ has several simplification rules to aid the logical inference process.
@@ -322,6 +330,8 @@ Re-using current index produced little improvement. Cost of indexing
 subterms, matching against equations with $\$equal$
 
 \subsection{Generalising our Fingerprint Index}
+\label{sec:config}
+
 There is a simple solution to overcome the problems listed above. Creating multiple
 indices. No longer restricted to the conditions of the superposition index.
 
