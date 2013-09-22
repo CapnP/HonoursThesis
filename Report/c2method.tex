@@ -49,7 +49,7 @@ While new is not empty
 end While
 \end{lstlisting}
 \caption{Pseudocode for \beagle's main inference procedure.}
-\label{lst:featuredata}
+\label{lst:main}
 \end{listing}
 
 
@@ -61,6 +61,7 @@ itself; a Scala class which will manage the index and provide functions for addi
 to it and retrieving from it. 
 
 \subsection{Objects and Datatypes}
+\label{sec:datatypes}
 
 \subsubsection{Fingerprint Features}
 
@@ -140,17 +141,22 @@ Our Index framework is now capable of creating Fingerprints and storing Terms in
 our pointer structure. The next task in building our index is allowing retrieval
 of terms.
 
-To compare two fingerprints with each other we look at them side-by-side and check
-that each position shows a Y in the Fingerprint unification table. 
+To compare two Fingerprints with each other we look at them side-by-side and check
+that each Fingerprint Feature shows a Y in the Fingerprint unification table from Section \ref{sec:fingerprints}.
+Note that we do not need to explicitly cover each entry in the table, as it is possible
+to reduce it to only four cases:
+\begin{enumerate}
+\item True if the two Features are equal.
+\item True if one of the Features is \textbf{B}.
+\item True if one of the Features is \textbf{A}; but the other is not \textbf{N}.
+\item False otherwise 
+\end{enumerate}
+We may implement these four cases in Scala by using the \verb!match! construct
+to compare \verb!Set! objects.
 \begin{listing}[H]
 \begin{scalacode}
  /** Check two Fingerprint features for compatibility based
-   * on the unification table (See page 6 of [Shulz 2012]).
-   * This table is reduced to 4 cases:
-   *  - True if Features are equal,
-   *  - True if at least one Feature is B,
-   *  - True if at least one Feature is A; but no Ns,
-   *  - False otherwise  */
+   * on the unification table (See page 6 of [Shulz 2012]). */
   def compareFeaturesForUnification
          (a:FPFeature, b:FPFeature) : Boolean =
   (a == b) || 
@@ -163,10 +169,17 @@ that each position shows a Y in the Fingerprint unification table.
 \label{lst:unitable}
 \end{listing}
 
-To check whether or not two fingerprints match is now a simple matter of iterating
+To check whether or not two Fingerprints match is now a simple matter of iterating
 through the list and checking that each position is a match according to our unification
 table check. This side-by-side comparison could potentially be improved by employing
-some sort of hashing function; 
+some variety of hashing function; however this sort of improvement does not
+apply to our uses for term Fingerprints. Rather than comparing two Fingerprints
+side-by-side we are only ever interested in retrieving \emph{all} compatible
+terms from a particular Fingerprint Index (see Section \ref{sec:fpindex}
+and Section \ref{sec:datatypes}).
+
+So, 
+
 
 \begin{listing}[H]
 \begin{scalacode}
@@ -178,6 +191,7 @@ def retrieveCompatible
         yield retrieveCompatible(t, fps, v))
 //Collapse all retrieved sets together with the union operator (:::)
       .foldLeft(Nil:TermSet) ((a,b) => a ::: b)
+//Once we reach a leaf node 
     case (Nil, Leaf(set)) => set
     case (_, Node(_)) => throw new IllegalArgumentException
          ("Fingerprint is over but we are not at a leaf")
@@ -440,7 +454,7 @@ but can also match \textbf{N}.
 
 To go with this table we present its corresponding Scala matching code in Listing \ref{lst:extuni}.
 Unfortunately the steep increase in table size results in the amount of code required exploding.
-It also becomes impossible to use our earlier trick of Set matching; due to the need for parameterised
+It also becomes impossible to use our earlier trick of Set matching (from Listing \ref{lst:unitable}); due to the need for parameterised
 Fingerprint symbols (i.e. \textbf{A}+ and \textbf{B}+ represented as FPA(true) and FPB(true) ).
 \begin{listing}[H]
 \begin{scalacode}
