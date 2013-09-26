@@ -29,7 +29,16 @@ Show the set and justify inclusions/exclusions
 \subsection{Speed}
 
 \subsection{False Positives}
-Explain this metric and how it impacts performance
+Explain this metric and how it impacts performance.
+
+Not as good results due to extreme other conditions on inference rules.
+refer to differences in background rules. Also matching subterms!
+Cheap throwaway FPs are not a concern.
+totally useless even. Comment on change in how they are measured.
+
+It is possible to naiivley boost FP to 0 with perfect indexing; but this
+would not yield any speed improvement. Balancing FPs with fingerprint
+length is key.
 
 \section{Indexing Subsumption}
 \label{sec:indexresults}

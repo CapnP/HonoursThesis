@@ -28,24 +28,23 @@ of any existing Scala classes and their structure which is relevant to the imple
 
 \begin{listing}[H]
 \begin{lstlisting}
-Create two ClauseSets, new and old
+new := input ClauseSet
+old := empty ClauseSet
 While new is not empty
-   Select a clause from new, removing it
-   Simplify it |\textbf{with respect to all other clauses (new and old)}|
-   If the simplified clause is a tautology:
+   select := Pop a clause from new
+   simpl  := |\textbf{Simplify(select,new,old)}|
+   If simpl is a tautology:
        Continue
-   If the simplified clause is the empty clause:
+   If simpl is the empty clause:
        return UNSAT
-   If one of the Define, Split or Inst rules apply:
-       Apply the rule
-       Add result to new
+   If one of the Define, Split or Inst rules apply to simpl:
+       new := new U ApplicableRule(simpl)
        Continue
-   Add simplified clause to old
+   old := old U simpl
    Attempt all inference rules:
-       Equality Resolution
-       Equality Factoring
-       Superposition |\textbf{with respect to all clauses in old}|
-   Add all results to new
+       new := new U EqualityResolution(simpl)
+       new := new U EqualityFactoring(simpl)
+       new := new U |\textbf{Superposition(simpl,old)}|
 end While
 \end{lstlisting}
 \caption{Pseudocode for \beagle's main inference procedure.}
@@ -317,12 +316,21 @@ frequently.
 
 \[ \textbf{Negative Unit Simplification} \quad\quad \frac{s\not\approx t \quad \quad s \approx t  \lor C}{C} \]
 
+Note that we do not have a concept of \emph{Positive} Unit Simplification 
+since it would be covered as a special case of the Demodulation rule.
+
 \subsubsection{Demodulation}
-
-
-It is important to note that \emph{Positive Unit Simplification}, identical
-to Negative Unit Simplification save that the $\approx$ and $\not\approx$ are
-swapped, is a special case of Demodulation.
+\begin{align*}
+\textbf{Demodulation} &&& \frac{l \approx r \quad \quad s[u] \approx t  \lor D}{ (s[r] \approx t \lor D)\sigma}
+\intertext{\tcent{Where
+$\sigma = $ simple mgu $(l,u)$.\\
+The clause $s[u] \approx t  \lor D$ may be removed.}}
+\textbf{Negative Demodulation} &&& \frac{l \approx r \quad \quad s[u] \not\approx t  \lor D}{ (s[r] \not\approx t \lor D)\sigma}
+\intertext{\tcent{Where
+$\sigma = $ simple mgu $(l,u)$.\\
+The clause $s[u] \not\approx t  \lor D$ may be removed.}}
+\end{align*}
+Demodulation allows us to more quickly remove variables and terms which are \emph{redundant}.
 
 \subsection{Problems with Indexing Simplification}
 \label{sec:simpprob}
