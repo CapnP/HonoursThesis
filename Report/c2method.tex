@@ -57,13 +57,34 @@ or background (i.e. an \emph{abstraction} variable, see Section \ref{sec:hier})
 
 For example, the first-order logic term $f(a, g(x))$ (where $x$ is a foreground
 variable and other symbols are functions of the appropriate arity) would be expressed as:
-\[\text{FunTerm}(f, [\text{FunTerm}(a, []), \text{FunTerm}(g, [\text{Var}(x, FG)]) )\]
+\[\text{FunTerm}(f, [\text{FunTerm}(a, []), \text{FunTerm}(g, [\text{Var}(x, FG)])] )\]
 Knowledge of this structure will be very useful when we move on to constructing
 Term Fingerprints in Section \ref{sec:fpbuild}.
 
 \subsection{Main Inference Procedure}
 
+Now that we have a solid understanding of \beagle's relevant data structures
+we may move on to examining the main loop of the program. This loop repeatedly
+attempts all the inference rules in the {\HSWAC} (see Section \ref{sec:calc})
+to generate new information. It also includes some optional rules and optimisations
+which are not strictly part of the calculus, but drastically increase performance
+in special cases. This includes:
+\begin{itemize}
+\item \textbf{Simplification:} Removes redundant variables and pre-processes some simple clauses.
+Covered in detail in Section \ref{sec:simp}.
+\item \textbf{The Split rule:} In some cases the Literals of a Clause may be partitioned
+in two, with each partition consistent with our current knowledge. The Split rule allows
+us to create a whole new instance of \beagle's main loop, to be run in parallel,
+so that we may consider both options. These `branches' may be closed if they return
+unsatisfiable.
+\item \textbf{The Instantiate rule:} Applies to Clauses with background variables in `finite domains'.
+If there are finitely many terms which a variable may represent it is sometimes useful
+to remove that variable and replace it with one Clause per possible instantiation.
+\end{itemize}
 
+In Listing \ref{lst:main} we present a simplified pseudocode version of the main inference loop.
+\verb!input ClauseSet! here represents our database of knowledge along with
+the \emph{negation} of what we are trying to prove.
 \begin{listing}[H]
 \begin{lstlisting}
 new := input ClauseSet
@@ -75,7 +96,7 @@ While new is not empty
        Continue
    If simpl is the empty clause:
        return UNSAT
-   If one of the Define, Split or Inst rules apply to simpl:
+   If one of the Define, Split or Instantiate rules apply to simpl:
        new := new U ApplicableRule(simpl)
        Continue
    old := old U simpl
@@ -88,6 +109,12 @@ end While
 \caption{Pseudocode for \beagle's main inference procedure.}
 \label{lst:main}
 \end{listing}
+
+Notice the two bolded subroutines in the main procedure. All other
+routines in the main loop require only the input of \verb!simpl!, but these two
+also require \verb!old! and/or \verb!new!. This means that their runtime is dependant
+on the size of the current ClauseSets; and considering that both sets grow overtime
+these two functions are likely to dominate \beagle's runtime.
 
 
 \section{Building the Fingerprint Indexer}
@@ -349,6 +376,7 @@ Refer to scalability, future index generalisation \ref{sec:config}
 
 
 \section{Extending the Indexer}
+\label{sec:simp}
 
 \Beagle\ is now fully capable of indexing its terms for superposition. There
 are still many ways in which this form of indexing may be improved; but it is likely
