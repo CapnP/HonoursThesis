@@ -17,19 +17,44 @@ of any existing Scala classes and their structure which is relevant to the imple
 
 \subsection{Syntax and Data Structures}
 
-The first aspect of \beagle\ we must examine is its existing data structures.
-Our term indexer must be able to understand the structure of \beagle's internal
+The first aspect of \beagle\ we must examine is its existing data structures;
+since our term indexer must be able to understand the structure of \beagle's internal
 logical objects.
 
+Figure \ref{fig:expressions} shows how first-order logic terms are stored. Terms
+are contained within an Eqn (for Equation) object, which may be ordered ($\to$)
+or unordered ($=$). Equations are then directly passed to a Literal container
+which stores whether the Equation is positive or negative (true or false). A list
+of Literals is maintained for each Clause which are in turn stored in a ClauseSet.
+These lists are to be interpreted in \emph{Conjunctive Normal Form} (See Section \ref{sec:fol})
+and thus their ordering is not relevant; save for retrieving specific Clauses / Literals.
 
+This structure is fairly typical and quite directly translates the definitions
+from Section \ref{sec:fol}. The structure could potentially be shortened by
+removing the Eqn object and having Literals directly contain the left and right Terms;
+but this would be inconsistent with most first-order logic literature and could cause confusion.
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
-  \includegraphics[clip,trim=2.5cm 5cm 10cm 2cm,width=\textwidth]{resources/logicstructure}
+  \includegraphics[clip,trim=2.5cm 5cm 13cm 2cm,width=0.75\textwidth]{resources/logicstructure}
   \caption
    {Class structure for internal representation of logical formulae.}
    \label{fig:expressions}
 \end{figure}
+
+The object of most concern to our Term Indexer is, naturally, the Term object.
+We must be able to pull apart Terms in order to sample them at various positions
+to build indexing fingerprints (see Section \ref{sec:fingerprint}). The Term
+class itself is actually an \emph{abstract} class with two different main cases:
+\begin{itemize}
+\item[] \textbf{FunTerm:} Used to express a function application. Consists of
+a function operator and a (possibly empty) set of arguments. Each argument
+is another Term object.
+\item[] \textbf{Var:} Used to express variables. Variables have a \emph{name}
+and a \emph{sort}, used to identify if the variable is in the foreground
+or background (i.e. an \emph{abstraction} variable, see Section \ref{sec:hier})
+\end{itemize}
+
 
 \subsection{Main Inference Procedure}
 
@@ -70,6 +95,12 @@ to it and retrieving from it.
 \subsection{Objects and Datatypes}
 \label{sec:datatypes}
 
+\subsubsection{Positions}
+
+We implement positions in the simple na\"{\i}ve manner, as a list of
+Integers (where Nil is used to index the top-level term). This
+directly reflects our position notation given in Section \ref{sec:terminology}.
+
 \subsubsection{Fingerprint Features}
 
 \begin{listing}[H]
@@ -85,16 +116,21 @@ case class  FPF(val subterm : FunTerm) extends FPFeature
 \label{lst:featuredata}
 \end{listing}
 
-\subsubsection{Positions}
-
-We implement positions in the simple/na\"{\i}ve manner, simply as a list of
-Integers (where Nil is used to index the top-level term).
-
 \subsubsection{Term Fingerprints}
+
+With Positions and Fingerprint Features defined it is now very simple
+to define the Fingerprint for a Term. We take this as simply a list
+of Fingerpint Features, to be acquired by sampling at various positions. 
 
 \subsubsection{Fingerprint Index}
 
-The final data structure we require is the 
+The final data structure we require is the actual Index itself, a structure
+which stores all the indexed terms and their Fingerprints so that they may be later
+retrieved.
+
+The na\"{\i}ve method for implementing the Index would be to simply use a HashMap
+from Fingerprints to their corresponding Term. This method would however cause
+many problems which would make correct retrieval of terms impossible.
 
 \begin{listing}[H]
 \begin{scalacode}
