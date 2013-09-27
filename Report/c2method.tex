@@ -5,6 +5,8 @@
 \chapter{Implementing Fingerprint Indexing}
 \label{cha:method}
 
+Re-iterate goals
+
 \section{Structure of \Beagle}
 \label{sec:initial}
 
@@ -14,6 +16,12 @@ understanding of the existing codebase. This section provides an overview
 of any existing Scala classes and their structure which is relevant to the implementation of the Fingerprint Index.
 
 \subsection{Syntax and Data Structures}
+
+The first aspect of \beagle\ we must examine is its existing data structures.
+Our term indexer must be able to understand the structure of \beagle's internal
+logical objects.
+
+
 
 \begin{figure}[h]
   \centering
@@ -286,7 +294,13 @@ to \beagle's structure and proving sequence.
 
 Superposition loop does not suit well to indexing. 
 
+Adding a single Indexer caused duplication and got messy
+
 Refer to class and main loop flow diagrams from \ref{sec:initial}
+
+\subsection{Attaching an Index to ClauseSet}
+
+Refer to scalability, future index generalisation \ref{sec:config}
 
 \subsection{Indexing Superposition}
 
