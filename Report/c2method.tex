@@ -48,13 +48,18 @@ to build indexing fingerprints (see Section \ref{sec:fingerprint}). The Term
 class itself is actually an \emph{abstract} class with two different main cases:
 \begin{itemize}
 \item[] \textbf{FunTerm:} Used to express a function application. Consists of
-a function operator and a (possibly empty) set of arguments. Each argument
+a function operator and a (possibly empty) list of arguments. Each argument
 is another Term object.
 \item[] \textbf{Var:} Used to express variables. Variables have a \emph{name}
 and a \emph{sort}, used to identify if the variable is in the foreground
 or background (i.e. an \emph{abstraction} variable, see Section \ref{sec:hier})
 \end{itemize}
 
+For example, the first-order logic term $f(a, g(x))$ (where $x$ is a foreground
+variable and other symbols are functions of the appropriate arity) would be expressed as:
+\[\text{FunTerm}(f, [\text{FunTerm}(a, []), \text{FunTerm}(g, [\text{Var}(x, FG)]) )\]
+Knowledge of this structure will be very useful when we move on to constructing
+Term Fingerprints in Section \ref{sec:fpbuild}.
 
 \subsection{Main Inference Procedure}
 
@@ -150,6 +155,7 @@ so the Index itself will generally only add a fairly lightweight structure of po
 
 
 \subsection{Building Term Fingerprints}
+\label{sec:fpbuild}
 
 The following block of Scala code extracts a single Fingerprint Feature from
 a Term at the given position.
@@ -231,10 +237,11 @@ def retrieveCompatible
   (t: Term, fp: Fingerprint, index: Index) : TermSet =
   (fp, index) match {
 //Collect all compatible (Feature,Index) pairs and continue traversal
-    case (fp::fps, Node(map)) => (for ((k,v) <- map if compare(fp, k))
-        yield retrieveCompatible(t, fps, v))
+    case (fp::fps, Node(map)) => 
+        {for ((k,v) <- map if compare(fp, k))
+            yield retrieveCompatible(t, fps, v)}
 //Collapse all retrieved sets together with the union operator (:::)
-      .foldLeft(Nil:TermSet) ((a,b) => a ::: b)
+        .foldLeft(Nil:TermSet) ((a,b) => a ::: b)
 //Once we reach a leaf node 
     case (Nil, Leaf(set)) => set
     case (_, Node(_)) => throw new IllegalArgumentException
