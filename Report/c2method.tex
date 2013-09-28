@@ -45,7 +45,7 @@ but this would be inconsistent with most first-order logic literature and could 
 The object of most concern to our Term Indexer is, naturally, the Term object.
 We must be able to pull apart Terms in order to sample them at various positions
 to build indexing fingerprints (see Section \ref{sec:fingerprint}). The Term
-class itself is actually an \emph{abstract} class with two different main cases:
+class itself is actually an \emph{abstract} class with two different primary cases:
 \begin{itemize}
 \item[] \textbf{FunTerm:} Used to express a function application. Consists of
 a function operator and a (possibly empty) list of arguments. Each argument
@@ -73,11 +73,11 @@ in special cases. This includes:
 \item \textbf{Simplification:} Removes redundant variables and pre-processes some simple clauses.
 Covered in detail in Section \ref{sec:simp}.
 \item \textbf{The Split rule:} In some cases the Literals of a Clause may be partitioned
-in two, with each partition consistent with our current knowledge. The Split rule allows
+in two; with each partition consistent with our current knowledge. The Split rule allows
 us to create a whole new instance of \beagle's main loop, to be run in parallel,
-so that we may consider both options. These `branches' may be closed if they return
+so that we may consider both options. These `\emph{branches}' may be closed if they return
 unsatisfiable.
-\item \textbf{The Instantiate rule:} Applies to Clauses with background variables in `finite domains'.
+\item \textbf{The Instantiate rule:} Applies to Clauses with background variables in `\emph{finite domains}'.
 If there are finitely many terms which a variable may represent it is sometimes useful
 to remove that variable and replace it with one Clause per possible instantiation.
 \end{itemize}
@@ -116,16 +116,30 @@ also require \verb!old! and/or \verb!new!. This means that their runtime is depe
 on the size of the current ClauseSets; and considering that both sets grow overtime
 these two functions are likely to dominate \beagle's runtime.
 
+So \emph{simplification} and \emph{superposition} are the two main areas
+we should target for improvement with indexing. This is consistent
+with our earlier analysis of the abstract calculus (see Section \ref{sec:shortcomings})
+where superposition was identified as the most costly inference rule.
 
 \section{Building the Fingerprint Indexer}
 \label{sec:initial}
 
-The first step in adding Fingerprint Indexing to \beagle\ is creating the indexer
-itself; a Scala class which will manage the index and provide functions for adding
-to it and retrieving from it. 
+The first step in adding fingerprint indexing to \beagle\ is creating the indexer
+itself; an object which will manage the index and provide functions for adding
+to it and retrieving from it.
 
-\subsection{Objects and Datatypes}
+This Section details the creation of the FingerprintIndex Scala class. It contains
+all the data types and functions we will need for indexing; including building
+and comparing term fingerprints, addition and retrieval from a complex index structure
+and any auxiliary functions to assist with these computations.
+
+\subsection{Objects and Data Types}
 \label{sec:datatypes}
+
+Here we define in detail any data structures which will be a part of our index.
+These data structures must be capable of expressing any concepts from
+the abstract definition of fingerprint indexing, outlined in Section \ref{sec:fingerprint}
+and the original paper\cite{shulz12}.
 
 \subsubsection{Positions}
 
@@ -135,6 +149,14 @@ directly reflects our position notation given in Section \ref{sec:terminology}.
 
 \subsubsection{Fingerprint Features}
 
+Fingerprint features are the four possible symbols we get when sampling a term
+at an arbitrary position. The meaning of these features is given in Section \ref{sec:fingerprints},
+so here we provide only the Scala definition. We essentially only require an
+enumerated type for Fingerprint Features, except for the fact that we must be able
+to specify a function symbol. Thus we implement this type as four separate classes
+implementing an abstract \verb!FPFeature! class; with one of these classes taking
+a function name as a parameter.
+
 \begin{listing}[H]
 \begin{scalacode}
 /** Pseudo enumerated type for fingerprint features */
@@ -142,7 +164,7 @@ sealed abstract class FPFeature
 case object FPA extends FPFeature 
 case object FPB extends FPFeature
 case object FPN extends FPFeature
-case class  FPF(val subterm : FunTerm) extends FPFeature
+case class  FPF(val f : String) extends FPFeature
 \end{scalacode}
 \caption{Data type for the 4 Fingerprint Features \protect\cite[p5]{shulz12}}
 \label{lst:featuredata}
@@ -162,7 +184,13 @@ retrieved.
 
 The na\"{\i}ve method for implementing the Index would be to simply use a HashMap
 from Fingerprints to their corresponding Term. This method would however cause
-many problems which would make correct retrieval of terms impossible.
+several problems which would make the correct and efficient retrieval of terms impossible.
+A term's Fingerprint does not only match itself but also matches any compatible
+Fingerprints with respect to some comparison table (see Section \ref{sec:fingerprints}).
+So our Index object must store Terms in a way that allows compatible sets to be
+collected together. In Listing \ref{lst:indexdata} we present an algebraic data
+type for an Index, structured as a tree of HashMaps. Each Index is either a
+collection of Terms (a Leaf) or a mapping from FPFeatures to more Index objects (a Node).
 
 \begin{listing}[H]
 \begin{scalacode}
@@ -183,33 +211,79 @@ so the Index itself will generally only add a fairly lightweight structure of po
 
 \subsection{Building Term Fingerprints}
 \label{sec:fpbuild}
+With our required data structures in place we may now begin implementing our
+Fingerprint Index proper. There are two main components in this implementation:
+adding to, and removing from the index. A logical first choice is addition; the
+first step of which is creating functions to sample terms at positions in order to
+create term fingerprints.
 
-The following block of Scala code extracts a single Fingerprint Feature from
+Listing \ref{lst:posextract} provides a function to extract a single Fingerprint Feature from
 a Term at the given position.
 \begin{listing}[H]
 \begin{scalacode}
- /** Extract the operator at position pos. Note that matching Var
-   * and Funterm is an exhaustive pattern for Term. */
-  def extractFeature(term: Term, pos: Position) : FPFeature = pos match {
-    case p :: ps => term match {
-      case t:FunTerm => try   {extractFeature(t.args(p), ps) }
-                        //Non-existent position, return N
-                        catch {case e:IndexOutOfBoundsException => FPN}
-      // Found variable BEFORE end of position, return B
-      case t:Var     => FPB 
-    }
-    // Reached end of position, check symbol
-    case Nil     => term match {
-      case t:FunTerm => FPF(t.op) // Found function symbol, return it
-      case t:Var     => FPA       // Found variable, return A
-    }
+/** Extract the FPFeature at Position pos of the given Term object. */
+def extractFeature(term: Term, pos: Position) : FPFeature = pos match {
+  // Reached end of position, check symbol
+  case Nil     => term match {
+    case t:FunTerm => FPF(t.op) // Found function symbol, return it
+    case t:Var     => FPA       // Found variable, return A
   }
+  case p :: ps => term match {
+    case t:FunTerm => try   {extractFeature(t.args(p), ps)}
+                      //Non-existent position, return N
+                      catch {case e:IndexOutOfBoundsException => FPN}
+    // Found variable BEFORE end of position, return B
+    case t:Var     => FPB 
+  }
+}
 \end{scalacode}
 \caption{Scala code to extract fingerprint features for matching.}
 \label{lst:posextract}
-\end{listing} 
+\end{listing}
+This code is intended to be a fairly direct implementation of the four
+fingerprint features described in Section \ref{sec:fingerprints}
+(and \cite{shulz12}). We simply traverse through the Term until
+we reach the desired position or we find a variable.
+
+Generating the actual Fingerprint for a Term is now a straightforward process
+of repeating this function for each desired Position.
 
 \subsection{Adding Terms to the Index}
+Now that we can generate Term Fingerprints we must use them to store Term objects
+at the correct position of our Index data structure (see Section \ref{sec:datatypes}).
+
+\begin{listing}[H]
+\begin{scalacode}
+/** Add a term into the index. Traverses index tree
+  * (adding nodes where needed) and adds Term t to a Leaf set. */
+private def add (t:Term, index: Index):Index =
+(generateFingerprint(t), index)  match {
+  //Reached a leaf at the end of the Fingerprint. Add to set.
+  case (Nil,   Leaf(set)) => Leaf(t::set)
+  //Still traversing tree. Add new Node or Leaf if necessary
+  case (f::fs, Node(map)) => (fs, map.get(f)) match {
+    //Mapping exists. Traverse through it.
+    case (_,   Some(index)) => {map += (f -> add(t, fs, index))
+                                Node(map)}
+    //At end of Fingerprint. Create Leaf and add to it
+    case (Nil, None) => {map += (f -> Leaf(List(t)))
+                         Node(map)}
+    //Fingerprint not over. Create Node and continue traversing
+    case (_,   None) => {val newIndex:Index = new Node()
+                         map += (f -> newIndex)
+                         add(t, fs, newIndex)
+                         Node(map)}
+  }
+  case (_, Node(_)) => throw new IllegalArgumentException
+                ("Fingerprint is over but we are not at a leaf")
+  case (_, Leaf(_)) => throw new IllegalArgumentException
+                ("Reached a leaf but Fingerprint is not over")
+}
+\end{scalacode}
+\caption{Code to add a Term to the correct Leaf node of the Index data
+structure defined in Section \ref{sec:datatypes}.}
+\label{lst:addterm}
+\end{listing} 
 
 \subsection{Retrieving Compatible terms}
 
@@ -281,9 +355,15 @@ def retrieveCompatible
 \label{lst:retrieve}
 \end{listing}
 
+We present \verb!retrieveCompatible! (Listing \ref{lst:retrieve}); which takes
+a Term, a Fingerprint and an Index and returns all Terms in the Index which
+are compatible with respect to the \verb!compare! function.
 \verb!compare! here is a function implementing a Fingerprint Feature comparison
-table. It can be passed to the Fingerprint Index as part of its configuration
+table; such as \verb!compareFeaturesForUnification! from Listing \ref{lst:unitable}. It can be passed to the Fingerprint Index as part of its configuration
 object (see Section \ref{sec:config}).
+
+In accordance with programming best practices the final two cases in the Listing
+throw meaningful error messages in the case of unexpected input.
 
 \subsection{Matching with Subterms}
 
