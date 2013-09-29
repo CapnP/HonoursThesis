@@ -62,6 +62,7 @@ Knowledge of this structure will be very useful when we move on to constructing
 Term Fingerprints in Section \ref{sec:fpbuild}.
 
 \subsection{Main Inference Procedure}
+\label{sec:mloop}
 
 Now that we have a solid understanding of \beagle's relevant data structures
 we may move on to examining the main loop of the program. This loop repeatedly
@@ -293,6 +294,8 @@ should initially be the Term's generated Fingerprint (relative to the Index's li
 but with each recursive call of \verb!add! we strip of one Fingerprint Feature and follow
 it's mapping in the Index. Throughout this process we create new Index Nodes as required;
 and at the end of the Fingerprint we create or add to a Leaf.
+In accordance with programming best practices the final two cases in the Listing
+throw meaningful error messages in the case of unexpected input.
 
 We may now index an arbitrary Term object but it is desirable to be able to index
 whole Clauses with a single function call. This is done with a straightforward lifting
@@ -351,22 +354,21 @@ and collects all compatible terms.
 
 \begin{listing}[H]
 \begin{scalacode}
-def retrieveCompatible
-  (t: Term, fp: Fingerprint, index: Index) : TermSet =
-  (fp, index) match {
+def retrieveCompatible (fp: Fingerprint, index: Index) : TermSet =
+(fp, index) match {
 //Collect all compatible (Feature,Index) pairs and continue traversal
-    case (fp::fps, Node(map)) => 
-        {for ((k,v) <- map if compare(fp, k))
-            yield retrieveCompatible(t, fps, v)}
+    case (f::fs, Node(map)) => 
+        {for ((k,v) <- map if compare(f, k))
+            yield retrieveCompatible(fs, v)}
 //Collapse all retrieved sets together with the union operator (:::)
         .foldLeft(Nil:TermSet) ((a,b) => a ::: b)
-//Once we reach a leaf node 
+//Once we reach a Leaf we simply return the compatible set 
     case (Nil, Leaf(set)) => set
     case (_, Node(_)) => throw new IllegalArgumentException
          ("Fingerprint is over but we are not at a leaf")
     case (_, Leaf(_)) => throw new IllegalArgumentException
          ("Reached a leaf but Fingerprint is not over")
-  }
+}
 \end{scalacode}
 \caption{Scala code to collect compatible terms from the index.}
 \label{lst:retrieve}
@@ -376,25 +378,38 @@ We present \verb!retrieveCompatible! (Listing \ref{lst:retrieve}); which takes
 a Term, a Fingerprint and an Index and returns all Terms in the Index which
 are compatible with respect to the \verb!compare! function.
 \verb!compare! here is a function implementing a Fingerprint Feature comparison
-table; such as \verb!compareFeaturesForUnification! from Listing \ref{lst:unitable}. It can be passed to the Fingerprint Index as part of its configuration
+table; such as \verb!compareFeaturesForUnification! from Listing \ref{lst:unitable}.
+It can be passed to the Fingerprint Index as part of its configuration
 object (see Section \ref{sec:config}).
 
-In accordance with programming best practices the final two cases in the Listing
-throw meaningful error messages in the case of unexpected input.
+\verb!retrieveCompatible! works similarly to \verb!add! from Listing \ref{lst:addterm};
+recursively stripping off a Fingerprint Feature and traversing the Index tree.
+The difference here is that we must `branch off', making a recursive call for
+each feature which is compatible (according to \verb!compare!). The \verb!for-yield!
+loop takes care of this, returning a list of TermSets to be collected together
+\verb!foldLeft! and the union operation. As in Listing \ref{lst:addterm}, we cover
+unexpected input cases with meaningful error messages.
+
 
 \subsection{Matching with Subterms}
 
-In Shulz's paper the indexer he describes is only interested in
-the unification of full, top-level terms with other top-level terms \cite{shulz12}.
-Recall however the main superposition rules for \beagle's resolution calculus (Section \ref{sec:calc} and \cite{baum13}).
+At this stage we have a complete implementation of abstract fingerprint indexing;
+as described in Shulz's paper \cite{shulz12}. However, this index is not
+quite at the point where it is usable in \beagle\ 
+Recall the main superposition rules for \beagle's resolution calculus (Section \ref{sec:calc} and \cite{baum13}).
 Notice in particular the condition that $s$ may match against a \emph{subterm}
-of $l$. This does not match the usual required definition of unification; where
-we only match top-level terms.
+of $l$ (this condition also exists in the original superposition calculus, Section \ref{sec:supcalc}).
+This does not match our current implementation which is only capable of indexing
+whole, top-level terms.
 
-Thus our Fingerprint Index must be able to collect all possible matches for \emph{subterms}.
-To do this we will extend \beagle's Term object with a function collecting all
+Thus our Fingerprint Index must be able to index and collect all possible matches against \emph{subterms}.
+To do this we will extend \beagle's Term object with a function to generate all
 subterms; along with the position they were extracted from. For variables and constants
-this is trivial; we just return the symbol and Nil for the subterm position.
+this is trivial; we just return the symbol and Nil for the subterm position. For
+functional terms however we must collect a list of each argument along with
+all subterms of those arguments. Listing \ref{lst:subterms} performs this
+operation by recursively finding the subterms of each argument and collecting
+them together. 
 
 \begin{listing}[H]
 \begin{scalacode}
@@ -408,43 +423,53 @@ def subtermsWithPos : List[(Term, List[Int])] =
 \caption{Recursively grab all subterms from a complex term.}
 \label{lst:subterms}
 \end{listing}
-
+With this extension in place we can index subterms by extending our addition function
+(Listing \ref{lst:addterm}) to also add all subterms.
 So our indexer will now be capable of comprehensively indexing all subterms as required.
-However this ability has been introduced at the cost of a couple of grave errors which,
-if not detected at this stage, would have destroyed the Fingerprint Index altogether.
+Our Index however is still unfit for live use in optimising \beagle's inference rules.
+This is due to a subtle issue which prevents correct retrieval of all
+the information needed by the inference calculus.
 
-\subsection{Current Problems with the Fingerprint Index}
+\subsection{Current Problems and Term Traces}
+\label{sec:problems}
 At this stage we have a Fingerprint Index which is capable of comprehensively indexing a Clause
-all the way down to individual subterms.
+all the way down to individual subterms. However, as previously mentioned,
+there is a subtle issue remaining. We shall refer to this issue as \emph{Term Alienation}.
+The issue was caught during the process of \emph{Unit Testing} (see Section {sec:unittest}) and relates
+to retrieving the Clause structure associated with any Terms retrieved as compatible.
 
-\subsubsection{Data loss}
+\subsubsection{Term Alienation}
 In listing \ref{lst:indexdata} we presented the actual data structure for storing
-indexed Terms. It presented the leaves of this index as simply a set of term objects;
-but this is actually no longer sufficient for our current uses. Now that we are indexing full subterms
-we must be able to extract the original parent term; which is impossible given only
-the low-level subterm representation.
+indexed Terms. It presented the leaves of this index as simply a set of Term objects.
+At this stage we notice that this representation is actually insufficient. \Beagle's
+inference rules require knowledge of the Clauses which we are operating on, so
+storing only the bottom level Term does not give us enough information to perform any
+inferences. This is especially true considering that the stored Term may even
+be a subterm of what we are actually wish to use for inference.
 
-\subsubsection{Non-unique Representation}
-It is possible to fix our data loss issue by giving each Expression a pointer
-to its parent Expression (see Figure \ref{fig:expressions}). However, as our index currently only keeps a Set of Terms,
-If multiple terms possessing the same subterm are ever indexed we will only keep
-one of them; losing any representation of the other!
+A first attempt to solve this issue involved giving every object in the expression
+tree (Figure \ref{fig:expressions}) a pointer to its `\emph{parent}' expression.
+Ensuring that these pointers were correct at all times however proved to be
+difficult. Furthermore the pointers were difficult to use in practice; since there
+are several steps involved in going from a subterm all the way up to a Clause.
 
+\subsubsection{Term Tracing}
 
-\subsection{Term Tracing}
-
-All the above issues can be solved by adding \emph{Term Traces}.
-
-Term tracing also solves a horrendous error introduced by matching subterms. 
-
-By indexing subterms we lose information. Must construct a trace in order
-to restore all required data
-
-Note that adding subterms and their traces has resulted in a significant increase in the
-size of our Index object. This is negligible however since memory is cheap; and we are
-generally only concerned with speed.
+Term Alienation can be better solved by introducing \emph{Term Traces}. A Term Trace
+is an object which will be stored alongside any Term in our Index; containing any
+required information regarding where the Term originally came from. This includes
+pointers to each object higher up in the expression syntax tree (the associated Eqn, Literal
+and Clause) and the (possibly nil) subterm Position. Term Traces allow us to quickly
+and easily retrieve any information required for inferences.
+ 
+It is worth noting at this point that by indexing subterms and adding Term Traces we have
+increased the size and complexity of our Index data structure considerably.
+This is negligible however since we only introduce pointers rather than whole
+copies of expressions. Even in the case of copying data this would be of little
+concern since memory is cheap; and we are generally only concerned with speed.
 
 \subsection{Unit Testing with ScalaTest}
+\label{sec:unittest}
 
 As with any component of a large software project; it is vital to ensure that the
 Fingerprint Index functions on its own. Otherwise if there are issues when adding
@@ -453,28 +478,61 @@ causing the problem.
 
 
 \section{Adding Indexing to \Beagle}
-We now have a class fully capable 
+Our Fingerprint Index class is now fully capable of indexing terms for inference
+with the \HSWAC. Our task now is to add the indexer itself into \beagle's inference
+loop and make use of it wherever appropriate.
 
-\[ \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{\text{abstr}((s[r] \approx t \lor C \lor D)\sigma)} \]
+Recall our analysis of \beagle's main loop from Section \ref{sec:mloop}; where we identified
+the two sections most appropriate for being augmented with term indexing. We will
+start by adding indexing to the \emph{superposition} inference rules; which is
+the primary way \beagle\ and the \HSWAC\ creates new information.
+
 
 
 \subsection{Initial Problems}
 
-Actually making use of our indexer class will require significant modification
-to \beagle's structure and proving sequence.
+Actually making use of our Fingerprint Index class will require significant modification
+to \beagle's structure and proving sequence. In particular we will need
+to add an Index object and replace any loops over the 
 
 Superposition loop does not suit well to indexing. 
 
+Originally indexing was added by 
 Adding a single Indexer caused duplication and got messy
 
 Refer to class and main loop flow diagrams from \ref{sec:initial}
 
 \subsection{Attaching an Index to ClauseSet}
 
+Considering the issues above; the notion of having only a single
+ClauseSet was re-considered. 
+
 Refer to scalability, future index generalisation \ref{sec:config}
 
 \subsection{Indexing Superposition}
 
+Recall the two superposition inference rules in the \HSWAC\ (taken unmodified
+from \cite{baum13}):
+\begin{align*}
+\textbf{Positive Superposition} &&& \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{\text{abstr}((s[r] \approx t \lor C \lor D)\sigma)} 
+\intertext{\tcent{Where
+(i) $\sigma = $ simple mgu $(l,u)$,
+(ii) $u$ is not a variable,
+(iii) $r\sigma \not\succeq l\sigma$,
+(iv) $t\sigma \not\succeq s\sigma$,\\
+(v) $l$ and $u$ are not pure background terms,
+(vi) $(l \approx r)\sigma$ is strictly maximal in $(l \approx r \lor C)\sigma$, and
+(vii) $(s \approx t)\sigma$ is strictly maximal in $(s \approx t \lor D)\sigma$ }}
+\textbf{Negative Superposition} &&& \frac{l \approx r \lor C\quad \quad s[u] \not\approx t \lor D}{\text{abstr}((s[r] \not\approx t \lor C \lor D)\sigma)}
+\intertext{\tcent{Where 
+(i) $\sigma = $ simple mgu $(l,u)$,
+(ii) $u$ is not a variable,
+(iii) $r\sigma \not\succeq l\sigma$,
+(iv) $t\sigma \not\succeq s\sigma$,\\
+(v) $l$ and $u$ are not pure background terms,
+(vi) $(l \approx r)\sigma$ is strictly maximal in $(l \approx r \lor C)\sigma$, and
+(vii) $(s \not\approx t)\sigma$ is strictly maximal in $(s \not\approx t \lor D)\sigma$ }}
+\end{align*}
 
 \section{Extending the Indexer}
 \label{sec:simp}
@@ -548,7 +606,7 @@ class IndexConfig(
 \end{scalacode}
 \caption{Class to pass settings to an arbitrary Fingerprint Index. Note that
 this class does not require an implementation.}
-\label{lst:subterms}
+\label{lst:config}
 \end{listing}
 
 \begin{itemize}
@@ -690,6 +748,25 @@ Fingerprint symbols (i.e. \textbf{A}+ and \textbf{B}+ represented as FPA(true) a
 \end{listing}
 
 \subsection{Extended Matching Table}
+
+\subsection{Other Tailored Optimisations}
+
+The inference rules in the \HSWAC\ carry with them \emph{far} more restrictions
+than the standard superposition calculus. There are several ways which we can
+use these restrictions to further optimise term indexing.
+
+\subsubsection{Pure Background Terms}
+Pure Background Terms may never be a part of any superposition inference. We can
+safely exclude these from our normal Term Index so long as we allow them to
+be included for simplification indices.
+
+\subsubsection{Maximal Literals}
+The superposition inference rules also require that the two Literals used are
+\emph{strictly maximal} in their respective Clauses. \Beagle\ stores these
+\emph{inference eligible} maximal Literals in a list. By only indexing these
+Literals we save a great deal of space and time. Note that we \emph{do not} need
+to bypass this optimisation for the simplification indices; as they only index
+unit clauses.
 
 %%% Local Variables: 
 %%% mode: latex
