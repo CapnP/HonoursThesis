@@ -251,13 +251,16 @@ of repeating this function for each desired Position.
 \subsection{Adding Terms to the Index}
 Now that we can generate Term Fingerprints we must use them to store Term objects
 at the correct position of our Index data structure (see Section \ref{sec:datatypes}).
-
+This is done by following the Index tree mappings for each Fingerprint Feature in
+the Fingerprint. Traversing the tree is relatively complex; as at each
+level we may need to create nodes in order to continue traversal. Listing \ref{lst:addterm}
+presents code for simultaneously traversing the tree while creating Nodes and Leaves.
 \begin{listing}[H]
 \begin{scalacode}
-/** Add a term into the index. Traverses index tree
+/** Add a Term into the given Index. Traverses Index tree
   * (adding nodes where needed) and adds Term t to a Leaf set. */
-private def add (t:Term, index: Index):Index =
-(generateFingerprint(t), index)  match {
+private def add (t:Term, fp:Fingerprint, index: Index):Index =
+(fp, index)  match {
   //Reached a leaf at the end of the Fingerprint. Add to set.
   case (Nil,   Leaf(set)) => Leaf(t::set)
   //Still traversing tree. Add new Node or Leaf if necessary
@@ -283,18 +286,32 @@ private def add (t:Term, index: Index):Index =
 \caption{Code to add a Term to the correct Leaf node of the Index data
 structure defined in Section \ref{sec:datatypes}.}
 \label{lst:addterm}
-\end{listing} 
+\end{listing}
+\verb!add! is a recursive function which moves down the Index one step for
+each time it is called. Notice that the function takes a Fingerprint as an argument. This argument
+should initially be the Term's generated Fingerprint (relative to the Index's list of Positions);
+but with each recursive call of \verb!add! we strip of one Fingerprint Feature and follow
+it's mapping in the Index. Throughout this process we create new Index Nodes as required;
+and at the end of the Fingerprint we create or add to a Leaf.
+
+We may now index an arbitrary Term object but it is desirable to be able to index
+whole Clauses with a single function call. This is done with a straightforward lifting
+over the expression syntax tree (Figure \ref{fig:expressions}) : Clauses index all of their Literals, Literals index
+their Eqn and Eqns index each of their two Terms.
 
 \subsection{Retrieving Compatible terms}
 
 Our Index framework is now capable of creating Fingerprints and storing Terms in
-our pointer structure. The next task in building our index is allowing retrieval
-of terms.
+its pointer structure. The next task in building our index is allowing retrieval
+of Terms which are compatible with a query Term; relative to some comparison
+table.
 
-To compare two Fingerprints with each other we look at them side-by-side and check
-that each Fingerprint Feature shows a Y in the Fingerprint unification table from Section \ref{sec:fingerprints}.
-Note that we do not need to explicitly cover each entry in the table, as it is possible
-to reduce it to only four cases:
+We will now provide an implementation of the Fingerprint comparison table for unification (Section \ref{sec:fingerprints}).
+To compare two Fingerprints with each other we look at them side-by-side and return
+\emph{true} or \emph{false} depending on how they match up in the table.
+The na\"{\i}ve method for performing this check is to simply check for each possible
+entry in the table manually. However, by examining the table more closely we observe
+that it can be covered with only four cases:
 \begin{enumerate}
 \item True if the two Features are equal.
 \item True if one of the Features is \textbf{B}.
@@ -325,11 +342,11 @@ table check. This side-by-side comparison could potentially be improved by emplo
 some variety of hashing function; however this sort of improvement does not
 apply to our uses for term Fingerprints. Rather than comparing two Fingerprints
 side-by-side we are only ever interested in retrieving \emph{all} compatible
-terms from a particular Fingerprint Index (see Section \ref{sec:fpindex}
+terms from our Fingerprint Index (see Section \ref{sec:fpindex}
 and Section \ref{sec:datatypes}).
 
-So, rather than individually comparing the Fingerprints of each term in the
-index, we must build a function which traverses a Fingerprint Index structure
+So, rather than individually comparing the Fingerprints of each indexed Term,
+we must build a function which traverses the Fingerprint Index tree structure
 and collects all compatible terms.
 
 \begin{listing}[H]
@@ -395,6 +412,10 @@ def subtermsWithPos : List[(Term, List[Int])] =
 So our indexer will now be capable of comprehensively indexing all subterms as required.
 However this ability has been introduced at the cost of a couple of grave errors which,
 if not detected at this stage, would have destroyed the Fingerprint Index altogether.
+
+\subsection{Current Problems with the Fingerprint Index}
+At this stage we have a Fingerprint Index which is capable of comprehensively indexing a Clause
+all the way down to individual subterms.
 
 \subsubsection{Data loss}
 In listing \ref{lst:indexdata} we presented the actual data structure for storing
