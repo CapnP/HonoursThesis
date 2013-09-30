@@ -303,6 +303,7 @@ over the expression syntax tree (Figure \ref{fig:expressions}) : Clauses index a
 their Eqn and Eqns index each of their two Terms.
 
 \subsection{Retrieving Compatible terms}
+\label{sec:retrieve}
 
 Our Index framework is now capable of creating Fingerprints and storing Terms in
 its pointer structure. The next task in building our index is allowing retrieval
@@ -487,29 +488,54 @@ the two sections most appropriate for being augmented with term indexing. We wil
 start by adding indexing to the \emph{superposition} inference rules; which is
 the primary way \beagle\ and the \HSWAC\ creates new information.
 
-
-
-\subsection{Initial Problems}
+\subsection{Attaching a Fingerprint Index}
 
 Actually making use of our Fingerprint Index class will require significant modification
 to \beagle's structure and proving sequence. In particular we will need
-to add an Index object and replace any loops over the 
+to add an Index object and replace any occurrences of searching for unification matches
+to include indexing.
 
-Superposition loop does not suit well to indexing. 
+Originally indexing was included by adding a single Fingerprint Index to the main
+class of \beagle. This index was initialised with all Clauses in the input knowledge set,
+and was given new Clauses whenever they were created. This setup caused several
+problems:
+\begin{itemize}
+\item \textbf{Redundant Clauses:} Some of \Beagle's operations (in particular Simplification, see Section \ref{sec:simprules})
+can cause Clauses to become \emph{redundant}, and no longer required for inference.
+These Clauses would remain in the Fingerprint Index; causing clutter and unnecessary
+computation.
+\item \textbf{Difficult to Split:} The Split rule (see Section \ref{sec:mloop})
+could no longer be used since the Fingerprint Index could not easily be reproduced or
+duplicated.
+\item \textbf{No `Age' Differentiation:} Recall that \beagle\ maintains
+two collections of Clauses, \verb!old! and \verb!new! (see Section \ref{sec:mloop}).
+With only one Index we currently have no way of identifying which ClauseSet an indexed
+Term has come from. As a result, superposition becomes unnecessarily cluttered;
+as it only needs to be run against Clauses from \verb!old!.
+\end{itemize}
+These issues could potentially have been resolved with more careful management of
+the Terms in our Index, but a more elegant solution exists.
 
-Originally indexing was added by 
-Adding a single Indexer caused duplication and got messy
+Rather than attach a single Fingerprint Index to the entire \beagle\ inference
+process, we instead add an Index to the ClauseSet class. 
+Clauses from \verb!new! are removed one by one and possible made redundant before
+moving to \verb!old!. \verb!old! itself however is more static; it only ever
+has clauses \emph{added} to it. By only indexing the \verb!old! set we ensure
+no redundant clauses appear in inferences; and it becomes easy to only use
+the \verb!old! index for superposition.
 
-Refer to class and main loop flow diagrams from \ref{sec:initial}
-
-\subsection{Attaching an Index to ClauseSet}
-
-Considering the issues above; the notion of having only a single
-ClauseSet was re-considered. 
-
-Refer to scalability, future index generalisation \ref{sec:config}
+Some thought is still required on how to fix the functionality of the Split rule.
+Split must be able to copy \beagle's current state to create a new parallel instance;
+so it must be able to copy a Fingerprint Index. When Split is activated it calls
+the \verb!clone! method of the two main ClauseSets. We will have this method also copy
+the associated Index. We can copy an Index either by re-adding all terms to a 
+new Fingerprint Index or by creating a deep copy of the Index pointer structure.
 
 \subsection{Indexing Superposition}
+Now that our ClauseSets are actively being Indexed we must start to make
+use of these Indices for superposition. As stated above
+superposition will only require the use of the \verb!old! Clause Index; but there
+is still significant modification required to use Index retrieved terms.
 
 Recall the two superposition inference rules in the \HSWAC\ (taken unmodified
 from \cite{baum13}):
@@ -534,6 +560,51 @@ from \cite{baum13}):
 (vii) $(s \not\approx t)\sigma$ is strictly maximal in $(s \not\approx t \lor D)\sigma$ }}
 \end{align*}
 
+When \beagle\ runs these two rules it checks all Clauses in \verb!old! against
+a single query Clause selected from \verb!new!. The query clause is tested
+for being both the \emph{from} clause ($l \approx r \lor C$) or the \emph{into}
+clause ($s[u] \approx t \lor D$). Note that \beagle\ does not split the superposition rules into
+two distinct cases; but rather generates all possible negative and positive inferences simultaneously.
+
+Our Fingerprint Index is built to locate Terms likely to \emph{unify}; so
+it is condition (i) that our Indexer is most . Condition (i) states that
+$l$ and $u$ must be unifiable by some simple most general unifier $\sigma$ (refer
+to Sections \ref{sec:terminology} and \ref{sec:calc} for detailed definitions of
+these terms). This condition implies that there are actually two distinct
+cases we must cover for indexing; one where $l$ is the query term and one where $u$ is.
+These cases correspond to the \emph{from} and \emph{into} cases mentioned
+above.
+
+\subsubsection{From Case}
+In this case we have a query Clause $l \approx r \lor C$ and wish to find all
+subterms $u$ which are likely to unify with the top level term $l$. Note that we must actually
+attempt this for all possible $l$s in the Clause, so we must first loop over
+each \emph{eligible} Literal. The eligible Literals are those which are positive and capable
+of fulfilling condition (vi) in the rules above. If an eligible Literal is unordered we
+must also try either side as $l$.
+
+Once we have found each usable $l$ we simply retrieve all terms compatible for unification
+(see Section \ref{sec:retrieve}) and use \beagle's existing superposition code
+to confirm unification and check the other inference rules conditions.
+
+\subsubsection{Into Case}
+In this case we have a query Clause $s[u] \approx t \lor D$ and wish to find all
+top level terms $l$ which are likely to unify with with a subterm $u$. As in the
+from case we must find all possible terms which we can use for $s$; satisfying
+maximality and ordering conditions. After selecting a term for $s$ we must 
+also then loop over all its subterms, as any of these are a potential choice
+for $u$.
+
+Once we have a subterm for $u$ we retrieve compatible Terms from the index.
+Unlike the from case we are not done here, $l$ may only be a top level term
+so we must actually discard any subterms. This may sound expensive in terms
+of wasted computation; but filtering in this fashion is cheap, and avoiding this
+problem would require an entirely separate Index which indexes only top-level terms.
+ 
+With the potential compatible values for $l$ now retrieved \beagle's existing code
+can be used to complete the inference. Our two directional cases are now
+covered and superposition is now using our Index to its full potential.
+
 \section{Extending the Indexer}
 \label{sec:simp}
 
@@ -549,12 +620,13 @@ We may confirm this suspicion by instrumenting the (now indexed)
 indicate (as expected) that the most significant runtime cost is now typically simplification.
 
 \subsection{Matching and Simplification in \Beagle}
+\label{sec:simprules}
 \Beagle\ has several simplification rules to aid the logical inference process.
 These rules are not technically part of the actual rule based calculus
 (hence they are not mentioned in section \ref{sec:calc}) but rather
 implement some special cases of those rules. Providing separate implementations
 of these cases can provide a significant speed-up in problems where they occur
-frequently.  
+frequently.
 
 \subsubsection{Negative Unit Simplification}
 
