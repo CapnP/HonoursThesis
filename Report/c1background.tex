@@ -91,21 +91,41 @@ Some existing resolution theorem provers include:
 \section{Term Indexing}
 \label{sec:indexing}
 
-Term indexing is a technique used to better locate logical terms which match rules
-in a prover's calculus.
+
+Term indexing is a technique used to better locate clauses and terms for which inference rules
+in a calculus will apply. In particular, indexers are used to find all terms which
+will or are likely to \emph{unify} or \emph{match}; which is a typical condition
+of any inference rule (for example all rules for the superposition calculus
+in Section \ref{sec:supcalc} require some unifier $\sigma$).
+The process of implementing Term Indexing forms the core of this paper. Our goal
+is to implement a recent technique known as Fingerprint Indexing (see Section \ref{sec:fingerprint});
+but for comparison and examples we present here some other techniques.
 
 \subsubsection{Top Symbol Hashing}
+Top symbol hashing simply compares the outermost symbol of any two terms and checks
+that they are compatible. For example, for the term $f(a,x)$ it would simply look
+at the symbol $f$ and present any other term with the top symbol $f$ (or a variable) as compatible.
 
-\subsubsection{Discriminant Trees}
+Top symbol hashing is provided as a simple example; it is very rudimentary and
+is certainly not in active use by any popular theorem provers.
 
+\subsubsection{Discrimination Trees}
+
+Discrimination Trees store terms in a 
+
+\subsubsection{Path Indexing}
+
+Path Indexing is actively used by the Vampire theorem prover 
+\cite{vampire}
 
 \section{Fingerprint Indexing}
 \label{sec:fingerprint}
 
 \emph{Fingerprint Indexing} is a recent technique developed by \citeN{shulz12}, the creator
 of the E prover. It works by computing a \emph{fingerprint} for each logic term;
-which can compared for unification or match compatibility.
-It is a \emph{non-perfect} technique in that compatible fingerprints will not
+which can compared for unification or match compatibility. 
+Like the example techniques above,
+Fingerprint Indexing is \emph{non-perfect} in that compatible fingerprints will not
 always imply that the associated terms successfully unify/match. The technique
 makes up for this by being adjustable to arbitrary levels of precision; ranging between
 what essentially amounts to Top-Symbol Hashing (See section \ref{sec:indexing})
@@ -135,6 +155,28 @@ constants and $\{x,y\}$ are variables.
 \[t|_{\epsilon} = f \quad\quad t|_{1} = a \quad\quad  t|_{2.2} = x \quad\quad  t|_{2.3.3} = \text{Nil} \quad\quad  t|_{3.2} = \text{Nil}\]
 \[\fp(t, \text{positions}) = [f, a, \textbf{A}, \textbf{B}, \textbf{N}] \]
 
+\subsection{The Fingerprint Index}
+\label{sec:fpindex}
+
+Once a term's fingerprint has been generated we use it to store the term in a tree-like
+data structure known as the \emph{Fingerprint Index}. 
+This data structure is very reminiscent of a Discrimination Tree (See section \ref{sec:indexing})
+and works similarly. To add a term to the index we (starting from the root node) follow/create
+branches labelled with the fingerprint features of the term's fingerprint. Once the fingerprint has run
+out we store the term in a leaf set. This process subtly indicates the key difference
+between the Fingerprint Index and a Discrimination Tree: since all term fingerprints
+are the same length, the Index has a fixed depth.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[page=7,width=0.9\textwidth,trim=5cm 14.3cm 4.8cm 4.5cm,clip]{resources/schulz}
+  \caption
+   {Example structure of a Fingerprint Index. Taken unmodified from \protect\cite[p7]{shulz12}.}
+   \label{fig:fpindex}
+\end{figure}
+
+\subsection{Comparing Fingerprints and Retrieving}
+
 \begin{table}[h]\begin{center}
   \caption{Fingerprint Feature compare table for Unification \protect\cite[p6]{shulz12}}
   \label{tab:unif}
@@ -161,17 +203,6 @@ constants and $\{x,y\}$ are variables.
 \textbf{N} &  \compN &  \compN &  \compN &  \compN &  \compY \\ \hline
   \end{tabular}
 \end{center}\end{table}
-
-\subsection{The Fingerprint Index}
-\label{sec:fpindex}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[page=7,width=0.9\textwidth,trim=5cm 14.3cm 4.8cm 4.5cm,clip]{resources/schulz}
-  \caption
-   {Example structure of a Fingerprint Index. Taken unmodified from \protect\cite[p7]{shulz12}.}
-   \label{fig:fpindex}
-\end{figure}
 
 \subsection{Position Variants}
 
