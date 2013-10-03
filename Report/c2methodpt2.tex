@@ -1,0 +1,373 @@
+\section{Adding Indexing to \Beagle}
+Our Fingerprint Index class is now fully capable of indexing terms for inference
+with the \HSWAC. Our task now is to add the indexer itself into \beagle's inference
+loop and make use of it wherever appropriate.
+
+Recall our analysis of \beagle's main loop from Section \ref{sec:mloop}; where we identified
+the two sections most appropriate for being augmented with term indexing. We will
+start by adding indexing to the \emph{superposition} inference rules; which is
+the primary way \beagle\ and the \HSWAC\ creates new information.
+
+\subsection{Attaching a Fingerprint Index}
+
+Actually making use of our Fingerprint Index class will require significant modification
+to \beagle's structure and proving sequence. In particular we will need
+to add an Index object and replace any occurrences of searching for unification matches
+to include indexing.
+
+Originally indexing was included by adding a single Fingerprint Index to the main
+class of \beagle. This index was initialised with all Clauses in the input knowledge set,
+and was given new Clauses whenever they were created. This setup caused several
+problems:
+\begin{itemize}
+\item \textbf{Redundant Clauses:} Some of \Beagle's operations (in particular Simplification, see Section \ref{sec:simprules})
+can cause Clauses to become \emph{redundant}, and no longer required for inference.
+These Clauses would remain in the Fingerprint Index; causing clutter and unnecessary
+computation.
+\item \textbf{Difficult to Split:} The Split rule (see Section \ref{sec:mloop})
+could no longer be used since the Fingerprint Index could not easily be reproduced or
+duplicated.
+\item \textbf{No `Age' Differentiation:} Recall that \beagle\ maintains
+two collections of Clauses, \verb!old! and \verb!new! (see Section \ref{sec:mloop}).
+With only one Index we currently have no way of identifying which ClauseSet an indexed
+Term has come from. As a result, superposition becomes unnecessarily cluttered;
+as it only needs to be run against Clauses from \verb!old!.
+\end{itemize}
+These issues could potentially have been resolved with more careful management of
+the Terms in our Index, but a more elegant solution exists.
+
+Rather than attach a single Fingerprint Index to the entire \beagle\ inference
+process, we instead add an Index to the ClauseSet class. 
+Clauses from \verb!new! are removed one by one and possible made redundant before
+moving to \verb!old!. \verb!old! itself however is more static; it only ever
+has clauses \emph{added} to it. By only indexing the \verb!old! set we ensure
+no redundant clauses appear in inferences; and it becomes easy to only use
+the \verb!old! index for superposition.
+
+Some thought is still required on how to fix the functionality of the Split rule.
+Split must be able to copy \beagle's current state to create a new parallel instance;
+so it must be able to copy a Fingerprint Index. When Split is activated it calls
+the \verb!clone! method of the two main ClauseSets. We will have this method also copy
+the associated Index. We can copy an Index either by re-adding all terms to a 
+new Fingerprint Index or by creating a deep copy of the Index pointer structure.
+
+\subsection{Indexing Superposition}
+Now that our ClauseSets are actively being Indexed we must start to make
+use of these Indices for superposition. As stated above
+superposition will only require the use of the \verb!old! Clause Index; but there
+is still significant modification required to use Index retrieved terms.
+
+Recall the two superposition inference rules in the \HSWAC\ (taken unmodified
+from \cite{baum13}):
+\begin{align*}
+\textbf{Positive Superposition} &&& \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{\text{abstr}((s[r] \approx t \lor C \lor D)\sigma)} 
+\intertext{\tcent{Where
+(i) $\sigma = $ simple mgu $(l,u)$,
+(ii) $u$ is not a variable,
+(iii) $r\sigma \not\succeq l\sigma$,
+(iv) $t\sigma \not\succeq s\sigma$,\\
+(v) $l$ and $u$ are not pure background terms,
+(vi) $(l \approx r)\sigma$ is strictly maximal in $(l \approx r \lor C)\sigma$, and
+(vii) $(s \approx t)\sigma$ is strictly maximal in $(s \approx t \lor D)\sigma$ }}
+\textbf{Negative Superposition} &&& \frac{l \approx r \lor C\quad \quad s[u] \not\approx t \lor D}{\text{abstr}((s[r] \not\approx t \lor C \lor D)\sigma)}
+\intertext{\tcent{Where 
+(i) $\sigma = $ simple mgu $(l,u)$,
+(ii) $u$ is not a variable,
+(iii) $r\sigma \not\succeq l\sigma$,
+(iv) $t\sigma \not\succeq s\sigma$,\\
+(v) $l$ and $u$ are not pure background terms,
+(vi) $(l \approx r)\sigma$ is strictly maximal in $(l \approx r \lor C)\sigma$, and
+(vii) $(s \not\approx t)\sigma$ is strictly maximal in $(s \not\approx t \lor D)\sigma$ }}
+\end{align*}
+
+When \beagle\ runs these two rules it checks all Clauses in \verb!old! against
+a single query Clause selected from \verb!new!. The query clause is tested
+for being both the \emph{from} clause ($l \approx r \lor C$) or the \emph{into}
+clause ($s[u] \approx t \lor D$). Note that \beagle\ does not split the superposition rules into
+two distinct cases; but rather generates all possible negative and positive inferences simultaneously.
+
+Our Fingerprint Index is built to locate Terms likely to \emph{unify}; so
+it is condition (i) that our Indexer is most . Condition (i) states that
+$l$ and $u$ must be unifiable by some simple most general unifier $\sigma$ (refer
+to Sections \ref{sec:terminology} and \ref{sec:calc} for detailed definitions of
+these terms). This condition implies that there are actually two distinct
+cases we must cover for indexing; one where $l$ is the query term and one where $u$ is.
+These cases correspond to the \emph{from} and \emph{into} cases mentioned
+above.
+
+\subsubsection{From Case}
+In this case we have a query Clause $l \approx r \lor C$ and wish to find all
+subterms $u$ which are likely to unify with the top level term $l$. Note that we must actually
+attempt this for all possible $l$s in the Clause, so we must first loop over
+each \emph{eligible} Literal. The eligible Literals are those which are positive and capable
+of fulfilling condition (vi) in the rules above. If an eligible Literal is unordered we
+must also try either side as $l$.
+
+Once we have found each usable $l$ we simply retrieve all terms compatible for unification
+(see Section \ref{sec:retrieve}) and use \beagle's existing superposition code
+to confirm unification and check the other inference rules conditions.
+
+\subsubsection{Into Case}
+In this case we have a query Clause $s[u] \approx t \lor D$ and wish to find all
+top level terms $l$ which are likely to unify with with a subterm $u$. As in the
+from case we must find all possible terms which we can use for $s$; satisfying
+maximality and ordering conditions. After selecting a term for $s$ we must 
+also then loop over all its subterms, as any of these are a potential choice
+for $u$.
+
+Once we have a subterm for $u$ we retrieve compatible Terms from the index.
+Unlike the from case we are not done here, $l$ may only be a top level term
+so we must actually discard any subterms. This may sound expensive in terms
+of wasted computation; but filtering in this fashion is cheap, and avoiding this
+problem would require an entirely separate Index which indexes only top-level terms.
+ 
+With the potential compatible values for $l$ now retrieved \beagle's existing code
+can be used to complete the inference. Our two directional cases are now
+covered and superposition is now using our Index to its full potential.
+
+\section{Extending the Indexer}
+\label{sec:simp}
+
+\Beagle\ is now fully capable of indexing its terms for superposition. At this stage
+we could look into how the Fingerprint Index could be improved; but it is likely
+to be far more effective to re-examine where \beagle\ now spends most of its runtime
+and investigate other inference procedures for which our Indexer could be applied to. 
+
+We again refer to the analysis of \beagle's inference procedure from Section \ref{sec:mloop}.
+In this Section we noted that there are only two subroutines of \beagle\ that require
+searching through the ClauseSets; one being superposition and the other being simplification.
+So simplification is the only other area where our Indexer may be applied to
+any significant effect, and doing so is likely to provide a significant performance
+increase.
+
+To confirm how effective Indexing simplification could be we may refer to the results when
+instrumenting \beagle\ in VisualVM. The results in Section \ref{section:instr} and \ref{section:instr2}
+indicate (as expected) that simplification often takes up a significant portion
+of \beagle's runtime.
+
+We will now attempt to apply Fingerprint Indexing to simplification; beginning
+by investigating the current implementation of \beagle's simplification rules. 
+
+\subsection{Matching and Simplification in \Beagle}
+\label{sec:simprules}
+\Beagle\ has several simplification rules to aid the logical inference process.
+These rules are not technically part of the actual rule based calculus
+(hence they are not mentioned in section \ref{sec:calc}) but rather
+implement some special cases of those rules. Providing separate implementations
+of these cases can provide a significant speed-up in problems where they occur
+frequently.
+
+\subsubsection{Negative Unit Simplification}
+
+\[ \textbf{Negative Unit Simplification} \quad\quad \frac{s\not\approx t \quad \quad s \approx t  \lor C}{C} \]
+
+Note that we do not have a concept of \emph{Positive} Unit Simplification 
+since it would be covered as a special case of the Demodulation rule.
+
+\subsubsection{Demodulation}
+The demodulation rule was first proposed for use in the superposition calculus by \citeN{demod}.
+
+\begin{align*}
+\textbf{Demodulation} &&& \frac{l \approx r \quad \quad s[u] \approx t  \lor D}{ (s[r] \approx t \lor D)\sigma}
+\intertext{\tcent{Where
+$\sigma = $ simple mgu $(l,u)$.\\
+The clause $s[u] \approx t  \lor D$ may be removed.}}
+\textbf{Negative Demodulation} &&& \frac{l \approx r \quad \quad s[u] \not\approx t  \lor D}{ (s[r] \not\approx t \lor D)\sigma}
+\intertext{\tcent{Where
+$\sigma = $ simple mgu $(l,u)$.\\
+The clause $s[u] \not\approx t  \lor D$ may be removed.}}
+\end{align*}
+Demodulation allows us to more quickly remove variables and terms which are \emph{redundant}.
+
+\subsection{Problems with Indexing Simplification}
+\label{sec:simpprob}
+Re-using current index produced little improvement. Cost of indexing
+subterms, matching against equations with $\$equal$
+
+\subsection{Generalising our Fingerprint Index}
+\label{sec:config}
+
+There is a simple solution to overcome the problems listed above. Creating multiple
+indices. No longer restricted to the conditions of the superposition index.
+
+This use of multiple indices obviously introduces a memory overhead. We
+shall argue however that this overhead is negligible for the following reasons.
+
+Here we introduce an options object to pass to our Fingerprint Index class.
+This object will allow us to create multiple term indices that behave in different
+ways.
+
+\begin{listing}[H]
+\begin{scalacode}
+/** Configuration object for a Fingerprint Index */
+class IndexConfig(
+  val positionsToSample : PositionList,
+  val indexSubterms     : Boolean,
+  val indexPureBG       : Boolean,
+  val eqnToTerm         : Boolean,
+  val comparator        : (FPFeature, FPFeature) => Boolean)
+\end{scalacode}
+\caption{Class to pass settings to an arbitrary Fingerprint Index. Note that
+this class does not require an implementation.}
+\label{lst:config}
+\end{listing}
+
+\begin{itemize}
+\item \textbf{positionsToSample}: A list of positions indicating what should be sampled
+to create term fingerprints.
+\item \textbf{indexSubterms}: Whether or not to index subterms. With this setting switched
+off terms are only indexed at the top level. This is very useful as subterm indexing
+is very slow and only required for superposition.
+\item \textbf{indexPureBG}: Whether or not to index pure background terms. Useful
+since this is not required for superposition.
+\item \textbf{eqnToTerm}: Whether or not to convert equations to terms. In Section
+\ref{sec:simpprob} we pointed out that Negative Unit Simplification
+converts equations to terms joined by $\$equal$. Thus our Fingerprint Index
+must be able to index these converted terms.
+\item \textbf{comparator}: The comparison function used to compare Fingerprint Features.
+This function must implement a comparison table such as those seen in Section 
+\ref{sec:fingerprints} or Figure \ref{tab:extunif}. Passing a different
+function here allows creation of separate indices for matching and unification.
+\end{itemize}
+
+
+\subsection{Applying new Indices to Simplification}
+
+
+\section{Tailoring to \Beagle's \HSWAC}
+\label{sec:tailored}
+
+In this section we discuss the thought process in developing and implementing
+extensions to Fingerprint Indexing in order to better tailor it to \beagle's
+rather unique logical calculus.
+
+\subsection{Extending the Unification Table with Term Layers}
+
+In the {\HSWAC} all terms have 
+a concept of being 'Foreground' or 'Background'. In Section \ref{sec:beagle} we
+discussed this concept; referring to it as the \emph{layer} of a term. It is
+worth noting at this stage that computing the layer of a term is cheap (or rather,
+zero, as it is computed on the fly during term generation and stored for later use).
+
+Recall the four original fingerprint feature symbols from Section \ref{sec:indexing}:
+\begin{itemize}
+\item $f$: arbitrary constant function symbols.
+\item \textbf{A}: Variable at the exact position.
+\item \textbf{B}: A variable could be expanded to meet the position.
+\item \textbf{N}: Position can never exist regardless of variable assignment.
+\end{itemize}
+We introduce two new fingerprint features: \textbf{A}+ and \textbf{B}+.
+These symbols will be used for the same purpose as the original \textbf{A} and \textbf{B}, but
+only for \emph{background} or \emph{abstraction} sorted variables. These variables
+can only be used for pure background terms; a fact we may use to restrict the possible
+matches for unification.
+
+The layered-ness of function symbols is also relevant to our comparison.
+$f$+ in the following table signifies a position where the entire subterm from this position downwards
+is `pure background'. Keep in mind that this definition is slightly different
+to the definition for \textbf{A}+ and \textbf{B}+; as we must consider all function
+symbols below $f$ itself.
+
+At this point it is important to note that these added fingerprint features slightly modify
+the original \textbf{A}, \textbf{B} and $f$ features. These features will now
+only represent the foreground layered positions.
+
+Table \ref{tab:extunif} displays the unification table with our new background
+feature symbols. The table has grown to be a considerable size.
+Refer to the original unification table (Table \ref{tab:unif}) for an in-depth
+explanation of how this table should be interpreted \cite{shulz12}.
+
+\begin{table}[h]\begin{center}
+  \caption{Fingerprint matches for unification; extended by considering term layers.}
+  \label{tab:extunif}
+  \begin{tabular}{| c || c | c | c | c | c || c | c | c | c |}
+  \hline
+            &  $f_1$  &  $f_2$  &  \textbf{A} &  \textbf{B} &  \textbf{N} &    $f_1$+  & $f_2$+  & \textbf{A}+ & \textbf{B}+ \\ \hline \hline
+  $f_1$     &  \compY &  \compN &  \compY     &  \compY     &  \compN     &    \compN  & \compN  & \compN      & \compN      \\ 
+  $f_2$     &  \compN &  \compY &  \compY     &  \compY     &  \compN     &    \compN  & \compN  & \compN      & \compN      \\ 
+\textbf{A}  &  \compY &  \compY &  \compY     &  \compY     &  \compN     &    \compY  & \compY  & \compY      & \compY      \\
+\textbf{B}  &  \compY &  \compY &  \compY     &  \compY     &  \compY     &    \compY  & \compY  & \compY      & \compY      \\ 
+\textbf{N}  &  \compN &  \compN &  \compN     &  \compY     &  \compY     &    \compN  & \compN  & \compN      & \compY      \\ \hline \hline
+%
+$f_1$+      &  \compN &  \compN &  \compY     &  \compY     &  \compN     &    \compY  & \compN  & \compY      & \compY      \\ 
+$f_2$+      &  \compN &  \compN &  \compY     &  \compY     &  \compN     &    \compN  & \compY  & \compY      & \compY      \\ 
+\textbf{A}+ &  \compN &  \compN &  \compY     &  \compY     &  \compN     &    \compY  & \compY  & \compY      & \compY      \\
+\textbf{B}+ &  \compN &  \compN &  \compY     &  \compY     &  \compY     &    \compY  & \compY  & \compY      & \compY      \\ \hline
+  \end{tabular}
+\end{center}\end{table}
+
+Note that as this table is for unification it is symmetric along the leading diagonal (as in
+the original unification table); so we need only discuss the lower triangle of the matrix.
+Furthermore, notice that the bottom right segment of the table is actually identical to
+the original unification table. This is expected as when we compare two
+pure background features the comparison behaves normally.
+
+We will justify the new section of the table line by line:
+\begin{itemize}
+\item Background function symbols ($f$+): Recall that this feature is only applicable
+if the entire subterm below $f$ is pure background. Therefore it does not
+match the foreground version of the same symbol. It does however match both
+\textbf{A} and \textbf{B}. This is required since these symbols still match `\emph{impure}' background variables;
+which may be expanded to either foreground or pure background terms.
+\item Abstraction variables (\textbf{A}+): Similarly to the pure background function symbol
+feature, this feature cannot match any terms which sit in the foreground. It can however
+match both \textbf{A} and \textbf{B} as they may represent either foreground or background
+expressions.
+\item Potential expansion of an abstraction variable (\textbf{B}+): Same as for \textbf{A}+
+but can also match \textbf{N}.
+\end{itemize}
+
+To go with this table we present its corresponding Scala matching code in Listing \ref{lst:extuni}.
+Unfortunately the steep increase in table size results in the amount of code required exploding.
+It also becomes impossible to use our earlier trick of Set matching (from Listing \ref{lst:unitable}); due to the need for parameterised
+Fingerprint symbols (i.e. \textbf{A}+ and \textbf{B}+ represented as FPA(true) and FPB(true) ).
+\begin{listing}[H]
+\begin{scalacode}
+ /** Check two Fingerprint features for compatibility based
+   * on the *extended* unification table (See table in report).*/
+  def compareFeaturesForUnification
+      (a:FPFeature, b:FPFeature) : Boolean = 
+  (a,b) match {
+    case (FPF(f1), FPF(f2))    => (f1.op == f2.op) && 
+                                  (if (f1.isFG || f2.isFG) 
+                                      (!f1.isPureBG && !f2.isPureBG)
+                                   else true)
+    case (FPF(f), FPB(true)) => f.isPureBG
+    case (FPB(true), FPF(f)) => f.isPureBG
+    case (_, FPB(_))         => true
+    case (FPB(_), _)         => true
+    case (FPF(f), FPA(true)) => f.isPureBG
+    case (FPA(true), FPF(f)) => f.isPureBG
+    case (FPN, FPA(_))       => false
+    case (FPA(_), FPN)       => false
+    case (_, FPA(_))         => true
+    case (FPA(_), _)         => true
+    case (FPN, FPN)          => true
+    case _                   => false
+  }
+\end{scalacode}
+\caption{Scala code to extract fingerprint features for extended layer matching.}
+\label{lst:extuni}
+\end{listing}
+
+\subsection{Extended Matching Table}
+
+\subsection{Other Tailored Optimisations}
+
+The inference rules in the \HSWAC\ carry with them \emph{far} more restrictions
+than the standard superposition calculus. There are several ways which we can
+use these restrictions to further optimise term indexing.
+
+\subsubsection{Pure Background Terms}
+Pure Background Terms may never be a part of any superposition inference. We can
+safely exclude these from our normal Term Index so long as we allow them to
+be included for simplification indices.
+
+\subsubsection{Maximal Literals}
+The superposition inference rules also require that the two Literals used are
+\emph{strictly maximal} in their respective Clauses. \Beagle\ stores these
+\emph{inference eligible} maximal Literals in a list. By only indexing these
+Literals we save a great deal of space and time. Note that we \emph{do not} need
+to bypass this optimisation for the simplification indices; as they only index
+unit clauses.
+
