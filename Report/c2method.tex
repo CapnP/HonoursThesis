@@ -610,14 +610,23 @@ covered and superposition is now using our Index to its full potential.
 
 \Beagle\ is now fully capable of indexing its terms for superposition. At this stage
 we could look into how the Fingerprint Index could be improved; but it is likely
-to be far more effective to re-examine where \beagle now spends most of its runtime
-and look into other areas which may be improved. 
+to be far more effective to re-examine where \beagle\ now spends most of its runtime
+and investigate other inference procedures for which our Indexer could be applied to. 
 
-Refer to main section, simplification other loop.
+We again refer to the analysis of \beagle's inference procedure from Section \ref{sec:mloop}.
+In this Section we noted that there are only two subroutines of \beagle\ that require
+searching through the ClauseSets; one being superposition and the other being simplification.
+So simplification is the only other area where our Indexer may be applied to
+any significant effect, and doing so is likely to provide a significant performance
+increase.
 
-We may confirm this suspicion by instrumenting the (now indexed)
-\beagle\ in VisualVM. The results in Section \ref{section:instr} and \ref{section:instr2}
-indicate (as expected) that the most significant runtime cost is now typically simplification.
+To confirm how effective Indexing simplification could be we may refer to the results when
+instrumenting \beagle\ in VisualVM. The results in Section \ref{section:instr} and \ref{section:instr2}
+indicate (as expected) that simplification often takes up a significant portion
+of \beagle's runtime.
+
+We will now attempt to apply Fingerprint Indexing to simplification; beginning
+by investigating the current implementation of \beagle's simplification rules. 
 
 \subsection{Matching and Simplification in \Beagle}
 \label{sec:simprules}
@@ -636,6 +645,8 @@ Note that we do not have a concept of \emph{Positive} Unit Simplification
 since it would be covered as a special case of the Demodulation rule.
 
 \subsubsection{Demodulation}
+The demodulation rule was first proposed for use in the superposition calculus by \citeN{demod}.
+
 \begin{align*}
 \textbf{Demodulation} &&& \frac{l \approx r \quad \quad s[u] \approx t  \lor D}{ (s[r] \approx t \lor D)\sigma}
 \intertext{\tcent{Where
