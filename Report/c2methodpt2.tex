@@ -125,7 +125,7 @@ With the potential compatible values for $l$ now retrieved \beagle's existing co
 can be used to complete the inference. Our two directional cases are now
 covered and superposition is now using our Index to its full potential.
 
-\section{Extending the Indexer}
+\section{Extending the Fingerprint Index for Simplification}
 \label{sec:simp}
 
 \Beagle\ is now fully capable of indexing its terms for superposition. At this stage
@@ -307,27 +307,59 @@ function here allows creation of separate Indices for matching and unification.
 \end{itemize}
 
 With this options object in place we may easily create three separate
-Fingerprint Indices:
+Fingerprint Indices; one for Superposition, one for Negative Unit Simplification and
+one for Demodulation. The Simplification Indices will only ever have unit Clauses
+added to them meaning that we have far less to search through when trying to perform
+simplification. The configuration for our Indices is as follows:
 \begin{itemize}
 \item \textbf{Superposition Index:} This Index has not changed from the original
 implemenation. It has subterm indexing on, Equation conversion off and uses
 unification for its comparison function (see Listing \ref{lst:unitable}).
+Superposition requires this Index to add any Clauses added to \verb!old!
+(see Section \ref{sec:mloop}).
 \item \textbf{Negative Unit Index:} Used for indexing only the negative
 unit Clauses. It has subterm indexing off, Equation conversion on and uses
-matching for its comparison function.
+matching for its comparison function. Negative Unit Simplification requires
+that this Index contains any negative unit Clauses in both \verb!new! and \verb!old!
+(see Listing \ref{lst:simpl}).
 \item \textbf{Positive Unit Index:} Used for indexing only the positive
 unit Clauses. It has subterm indexing off, Equation conversion off and uses
-matching for its comparison function.
+matching for its comparison function. Demodulation requires
+that this Index contains any positive, ordered unit Clauses in both \verb!new! and \verb!old!
+(see Listing \ref{lst:simpl}).
 \end{itemize}
 
-This use of multiple indices obviously introduces a memory overhead. We
-shall argue however that this overhead is negligible for the following reasons
+This use of multiple indices introduces a memory overhead. As we have mentioned
+before however this overhead is negligible since we are generally only concerned
+with speed.
 
 \subsection{Applying new Indices to Simplification}
 
+Making use of these tailored Indices for simplification is now fairly trivial;
+as \beagle's existing implementation does most of the work. After replacing
+loops over unit Clauses with loops over compatible matches from the relevant Index, the
+only task remaining is to ensure that the relevant unit Clauses are Indexed.
+
+We will have the unit Clause Indices add Clauses as they are created and added
+to \verb!new!. As Clauses are pulled from \verb!new! to be added into \verb!old!
+this method would seem to always contain the unit Clauses from both sets.
+However, notice in Listing \ref{lst:main} that Clauses are simplified after being
+selected out of \verb!new!. This means that if simplification generates a unit
+Clause it will not be added into the Indices. So we must index Clauses as they
+added to \verb!new! \emph{and} as they are added to \verb!old!.
+
+Unfortunately this leads to many redundant Clauses in our Indices. If a unit Clause
+is selected from \verb!new! there is a possibility it will simplify to the empty
+Clause and it will no longer be needed for inference. Otherwise it will be added
+into \verb!old! and appear in the relevant index twice. These redundant and 
+duplicate clauses could be resolved by adding the ability to \emph{remove} from
+an Index; but they are unlikely to cause more than a few unnecessary inferences and
+a minor slowdown. 
 
 \section{Tailoring to \Beagle's \HSWAC}
 \label{sec:tailored}
+
+Our Index 
 
 In this section we discuss the thought process in developing and implementing
 extensions to Fingerprint Indexing in order to better tailor it to \beagle's
@@ -451,18 +483,18 @@ than the standard superposition calculus. There are several ways which we can
 use these restrictions to further optimise term indexing.
 
 \subsubsection{Pure Background Terms}
-Pure Background Terms may never be a part of any superposition inference. We can
-safely exclude these from our normal Term Index so long as we allow them to
-be included for simplification indices.
-
-INTRODUCE IndexPureBG to configuration
+Pure Background Terms may never be a part of any superposition inference.
+This includes not only top-level Terms but also any pure background subterms we encounter.
+We can safely exclude any of these Terms from our superposition Term Index so long as we allow them to
+be included for simplification indices. To do this we will add another flag
+to the Fingerprint Index configuration object (see Listing \ref{lst:config}),
+\verb!IndexPureBG!, which controls the indexing of pure background Terms.
 
 \subsubsection{Maximal Literals}
 The superposition inference rules also require that the two Literals used are
 \emph{strictly maximal} in their respective Clauses. \Beagle\ stores these
 \emph{inference eligible} maximal Literals in a list. By only indexing these
-Literals we save a great deal of space and time. Note that we \emph{do not} need
-to bypass this optimisation for the simplification indices; as they only index
-unit clauses.
-
-INTRODUCE IndexIneligible to configuration
+Literals we save a great deal of space and time. Pure background Literals
+are also considered ineligible. This suits our needs for superposition but means
+that we must index ineligible Literals for simplification. As with the pure background Terms
+optimisation we implement a new configuration flag \verb!IndexIneligible!.
