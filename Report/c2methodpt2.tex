@@ -148,23 +148,65 @@ of \beagle's runtime.
 We will now attempt to apply Fingerprint Indexing to simplification; beginning
 by investigating the current implementation of \beagle's simplification rules. 
 
-\subsection{Matching and Simplification in \Beagle}
+\subsection{\Beagle's Simplification Process}
 \label{sec:simprules}
 \Beagle\ has several simplification rules to aid the logical inference process.
 These rules are not technically part of the actual rule based calculus
-(hence they are not mentioned in section \ref{sec:calc}) but rather
+(hence they are not mentioned in Section \ref{sec:calc}) but rather
 implement some special cases of those rules. Providing separate implementations
 of these cases can provide a significant speed-up in problems where they occur
 frequently.
 
-\subsubsection{Negative Unit Simplification}
+\Beagle's Clause simplification process (seen in Listing \ref{lst:simpl}) does
+three things. First, it \emph{demodulates} the Clause (Section \ref{sec:demod}).
+Second, it performs \emph{Negative Unit Simplfication} on the newly demodulated
+Clause (Section \ref{sec:negunit}). Finally, it checks if the resulting Clause 
+is \emph{subsumed} by an existing one (see Section \label{sec:terminology}).
 
-\[ \textbf{Negative Unit Simplification} \quad\quad \frac{s\not\approx t \quad \quad s \approx t  \lor C}{C} \]
+\begin{listing}[H]
+\begin{lstlisting}
+Simplify(select,new,old):
+  posUnits := Filter (old U new) for positive, ordered unit Clauses 
+  negUnits := Filter (old U new) for negative unit Clauses 
+  simpl := Demodulate(select, posUnits)
+  simpl := NegativeUnitSimplification(simpl, negUnits)
+  if a Clause in (old U new) subsumes simpl
+    return Empty Clause
+  else
+    return simpl 
+\end{lstlisting}
+\caption{Pseudocode for \beagle's Clause simplification procedure.}
+\label{lst:simpl}
+\end{listing}
+
+
+
+\subsubsection{Negative Unit Simplification}
+\label{sec:negunit}
+
+Here we outline the process of Negative Unit Simplification, mentioned in
+Listing \ref{lst:simpl} above. It is used to remove Literals from Clauses
+which we know trivially cannot be true. Stated more precisely as an inference
+rule we have:
+
+\begin{align*}
+\textbf{Negative Unit Simplification} &&& \frac{l\not\approx r \quad \quad s \approx t  \lor C}{C}
+\intertext{\tcent{Where there exists some \emph{matcher} $\sigma$ such that $(l \approx r)\sigma = s \approx t$\\ (i.e. $l \approx r$ \emph{subsumes} $s \approx t$).
+The clause $s \approx t  \lor C$ may be removed.}}
+\end{align*}\vspace{-1.3cm}
+
+This essentially says that if we know $l$ is not equal to $r$, then any Literal
+stating otherwise may be removed. If we only looked for Literals exactly equal
+to $l \approx r$ however the rule would barely ever be applied and not be very useful.
+Thus we have Negative Unit Simplification consider \emph{instances} of $l \approx r$.
+If a substitution for the variables in $l \approx r$
 
 Note that we do not have a concept of \emph{Positive} Unit Simplification 
 since it would be covered as a special case of the Demodulation rule.
 
 \subsubsection{Demodulation}
+\label{sec:demod}
+
 The demodulation rule was first proposed for use in the superposition calculus by \citeN{demod}.
 
 \begin{align*}
@@ -181,6 +223,10 @@ Demodulation allows us to more quickly remove variables and terms which are \emp
 
 \subsection{Problems with Indexing Simplification}
 \label{sec:simpprob}
+
+Attempting to directly apply our existing Fingerprint Index to Negative Unit Simplification and
+Demodulation proved difficult and produced a number of significant problems.
+
 Re-using current index produced little improvement. Cost of indexing
 subterms, matching against equations with $\$equal$
 

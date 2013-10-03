@@ -387,8 +387,8 @@ object (see Section \ref{sec:config}).
 recursively stripping off a Fingerprint Feature and traversing the Index tree.
 The difference here is that we must `branch off', making a recursive call for
 each feature which is compatible (according to \verb!compare!). The \verb!for-yield!
-loop takes care of this, returning a list of TermSets to be collected together
-\verb!foldLeft! and the union operation. As in Listing \ref{lst:addterm}, we cover
+loop takes care of this, returning a list of TermSets which are collected together
+by folding the List over the union operation. As in Listing \ref{lst:addterm}, we cover
 unexpected input cases with meaningful error messages.
 
 
