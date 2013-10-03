@@ -201,7 +201,8 @@ and background parts. This is where the process of \emph{weak abstraction} comes
 In logics with equality there is a general process known as \emph{abstraction},
 where a subterm within a clause may be replaced by a fresh variable.
 \[\textbf{Abstraction}\quad\quad \frac{C[t]}{t\not\approx X \lor C[X]}\]
-This rule can be used to introduce new abstraction variables to take the place
+%In more intuitive English terms, this process says \emph{"If $t$ is equal to $X$ then we may replace it for $X$"}.
+In a hierarchical calculus abstraction can be used to introduce new abstraction variables to take the place
 of any background subterms. \citeN{bach94} extended this form of derivation to what they called \emph{full-abstraction},
 where abstraction is performed exhaustively until no literal contains both foreground
 and background operators.

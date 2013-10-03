@@ -359,13 +359,14 @@ a minor slowdown.
 \section{Tailoring to \Beagle's \HSWAC}
 \label{sec:tailored}
 
-Our Index 
+\Beagle's most time consuming search procedures now all make use of one or more
+Fingerprint Indices. With this fully implemented we may turn our attention
+toward improving lookup in the Index itself.
+In this section we discuss the development of some original improvements for Fingerprint Indexing,
+designed to specifically tailor it to \beagle's
+rather unique \HSWAC.
 
-In this section we discuss the thought process in developing and implementing
-extensions to Fingerprint Indexing in order to better tailor it to \beagle's
-rather unique logical calculus.
-
-\subsection{Extending the Unification Table with Term Layers}
+\subsection{The Extended Hierarchical Unification Table}
 
 In the {\HSWAC} all terms have 
 a concept of being 'Foreground' or 'Background'. In Section \ref{sec:beagle} we
