@@ -253,7 +253,7 @@ logical reasoning. A calculus was developed by \citeN{bach94} to take advantage
 of this technique. Note that Waldmann continued on to co-write the paper outlining
 {\HSWA} \cite{baum13}.
 
-The hierarchic reasoning system also involves an ordering on terms.
+%The hierarchic reasoning system also involves an ordering on terms.
 
 \subsection{Weak Abstraction}
 In order to keep the \emph{foreground} and \emph{background} reasoning
@@ -331,22 +331,21 @@ Note the use of a slightly different unification operator, for \emph{simple} mgu
 This operator only produces unifiers where abstraction variables are mapped
 to pure background terms.
 
-\begin{align*}
-\textbf{Define} &&& \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{\text{abstr}((s[r] \approx t \lor C \lor D)\sigma)} 
-\intertext{\tcent{Where
-(i) $\sigma = $ simple mgu $(l,u)$,
-(ii) $u$ is not a variable,
-(iii) $r\sigma \not\succeq l\sigma$,
-(iv) $t\sigma \not\succeq s\sigma$,\\
-(v) $l$ and $u$ are not pure background terms,
-(vi) $(l \approx r)\sigma$ is strictly maximal in $(l \approx r \lor C)\sigma$, and
-(vii) $(s \approx t)\sigma$ is strictly maximal in $(s \approx t \lor D)\sigma$ }}
-\end{align*}
-Define and Close
+Beyond these standard rules the full \HSWAC also includes a special
+rule known as Define; which is required for the calculus to be sufficiently
+complete. This inference rule does not require searching for unifiers or matchers
+and is therefore not relevant to term indexing. Refer to \cite{baum13} for its
+definition and usage.
 
-%\subsection{\Beagle's Shortcomings}
-%\label{sec:shortcomings}
-
+\subsection{\Beagle's Shortcomings}
+\label{sec:shortcomings}
+Notice that in the above rules for superposition there are two clauses used
+to perform the inference. This means that to use it we must search for two clauses
+which meet all the required conditions. This is obviously a time consuming process;
+and in the current implementation of \beagle\ this search is performed by comparing
+each possible pair of clauses. The main condition of these rules is that the terms
+$l$ and $u$ are unifiable. The goal of this project is to use Fingerprint Indexing to improve
+this search by retrieving likely matches for this rule and any others like it.
 
 
 \section{Tools Used}
