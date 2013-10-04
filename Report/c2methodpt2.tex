@@ -369,12 +369,16 @@ rather unique \HSWAC.
 \subsection{The Extended Hierarchical Unification Table}
 
 In the {\HSWAC} all terms have 
-a concept of being 'Foreground' or 'Background'. In Section \ref{sec:beagle} we
-discussed this concept; referring to it as the \emph{layer} of a term. It is
-worth noting at this stage that computing the layer of a term is cheap (or rather,
+a concept of being 'Foreground' or 'Background' (see Section \ref{sec:beagle});
+this is what makes the calculus hierarchical. 
+Here we will attempt to use this distinction to our advantage in Fingerprint Indexing
+by only retrieving Terms which exist in the same hierarchy position. It is
+worth noting at this stage that computing where a term exists in the hierarchy is cheap (or rather,
 zero, as it is computed on the fly during term generation and stored for later use).
 
-Recall the four original fingerprint feature symbols from Section \ref{sec:indexing}:
+Recall the four original fingerprint feature symbols from Section \ref{sec:indexing}.
+These features are computed by sampling a Term object at some position; and be compared
+with a table to check if two Terms may unify or match.
 \begin{itemize}
 \item $f$: arbitrary constant function symbols.
 \item \textbf{A}: Variable at the exact position.
@@ -383,27 +387,33 @@ Recall the four original fingerprint feature symbols from Section \ref{sec:index
 \end{itemize}
 We introduce two new fingerprint features: \textbf{A}+ and \textbf{B}+.
 These symbols will be used for the same purpose as the original \textbf{A} and \textbf{B}, but
-only for \emph{background} or \emph{abstraction} sorted variables. These variables
+only for \emph{pure background} or \emph{abstraction} variables. These variables
 can only be used for pure background terms; a fact we may use to restrict the possible
 matches for unification.
 
-The layered-ness of function symbols is also relevant to our comparison.
-$f$+ in the following table signifies a position where the entire subterm from this position downwards
-is `pure background'. Keep in mind that this definition is slightly different
-to the definition for \textbf{A}+ and \textbf{B}+; as we must consider all function
-symbols below $f$ itself.
+We also wish to ensure that function symbols match in terms of being foreground or
+background. Since we require function symbols to be equal (see the unification and
+matching tables, Table \ref{tab:unif} and \ref{tab:match}) we would expect this
+to occur automatically; but this is not necessarily the case. A background function symbol
+may have foreground terms as arguments; in which case it will not unify with a
+pure background term. Thus we introduce another new Fingerprint Feature for background function
+symbols, $f$+. This symbol signifies a position where the entire subterm downwards from $f$
+is pure background. Keep in mind that this definition is slightly different
+to the definition for \textbf{A}+ and \textbf{B}+ where we only consider the variable
+at the precise position.
 
-At this point it is important to note that these added fingerprint features slightly modify
-the original \textbf{A}, \textbf{B} and $f$ features. These features will now
-only represent the foreground layered positions.
+Note that by introducing these symbols we have slightly modified the definition
+of the original \textbf{A}, \textbf{B} and $f$ features. These features will now
+only represent terms not covered by the + symbols, that is, positions with foreground or impure
+background terms.
 
 Table \ref{tab:extunif} displays the unification table with our new background
-feature symbols. The table has grown to be a considerable size.
+feature symbols. By introducing four new symbols we have grown the table to be a considerable size.
 Refer to the original unification table (Table \ref{tab:unif}) for an in-depth
 explanation of how this table should be interpreted \cite{shulz12}.
 
-\begin{table}[h]\begin{center}
-  \caption{Fingerprint matches for unification; extended by considering term layers.}
+\begin{table}[H]\begin{center}
+  \caption{Fingerprint comparison table for unification; extended by considering the term hierarchy.}
   \label{tab:extunif}
   \begin{tabular}{| c || c | c | c | c | c || c | c | c | c |}
   \hline
@@ -427,25 +437,32 @@ Furthermore, notice that the bottom right segment of the table is actually ident
 the original unification table. This is expected as when we compare two
 pure background features the comparison behaves normally.
 
-We will justify the new section of the table line by line:
+So we need only justify the lower-left quadrant of the table.
+We will justify this new section line by line:
 \begin{itemize}
-\item Background function symbols ($f$+): Recall that this feature is only applicable
+\item \textbf{Pure Background Function Symbols} ($f$+): Recall that this feature is only applicable
 if the entire subterm below $f$ is pure background. Therefore it does not
 match the foreground version of the same symbol. It does however match both
-\textbf{A} and \textbf{B}. This is required since these symbols still match `\emph{impure}' background variables;
+\textbf{A} and \textbf{B}. This is required since these symbols still match \emph{impure} background variables;
 which may be expanded to either foreground or pure background terms.
-\item Abstraction variables (\textbf{A}+): Similarly to the pure background function symbol
+\item \textbf{Abstraction Variables} (\textbf{A}+): Similarly to the pure background function symbol
 feature, this feature cannot match any terms which sit in the foreground. It can however
 match both \textbf{A} and \textbf{B} as they may represent either foreground or background
 expressions.
-\item Potential expansion of an abstraction variable (\textbf{B}+): Same as for \textbf{A}+
-but can also match \textbf{N}.
+\item \textbf{Potential Expansion of an Abstraction Variable} (\textbf{B}+): Same as for \textbf{A}+
+but can also match \textbf{N} (as we may choose not to generate the position).
 \end{itemize}
 
-To go with this table we present its corresponding Scala matching code in Listing \ref{lst:extuni}.
+To go with this table we present its corresponding Scala code in Listing \ref{lst:extuni}.
+To accommodate our new Fingerprint Features we will convert our original \verb!FPA! and \verb!FPB!
+(see Section \ref{sec:datatypes}) objects to take a boolean argument.
+We then represent \textbf{A}+ and \textbf{B}+ as \verb!FPA(true)! and \verb!FPB(true)! respectively.
 Unfortunately the steep increase in table size results in the amount of code required exploding.
-It also becomes impossible to use our earlier trick of Set matching (from Listing \ref{lst:unitable}); due to the need for parameterised
-Fingerprint symbols (i.e. \textbf{A}+ and \textbf{B}+ represented as FPA(true) and FPB(true) ).
+This is primarily due to that fact that we can no longer reduce the table to four
+simple cases as in Section \ref{sec:retrieve}. In that Listing we also
+used \verb!Set! objects so that we did not need to provide a separate check for each
+direction. We can no longer use that trick since our Fingerprint Features are now
+parameterised instances rather than static objects.
 \begin{listing}[H]
 \begin{scalacode}
  /** Check two Fingerprint features for compatibility based
@@ -471,11 +488,11 @@ Fingerprint symbols (i.e. \textbf{A}+ and \textbf{B}+ represented as FPA(true) a
     case _                   => false
   }
 \end{scalacode}
-\caption{Scala code to extract fingerprint features for extended layer matching.}
+\caption{Scala code implementing the Extended Hierarchical Unification Table.}
 \label{lst:extuni}
 \end{listing}
 
-\subsection{Extended Matching Table}
+%\subsection{Extended Matching Table}
 
 \subsection{Other Tailored Optimisations}
 

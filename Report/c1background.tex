@@ -52,12 +52,12 @@ does not exist in the term we return Nil. Consider the following example:
 
 \subsubsection{Unification}
 
-\subsection{Popular Problems in First Order Logic}
+%\subsection{Popular Problems in First Order Logic}
 
 \subsection{The Superposition Calculus}
 \label{sec:supcalc}
 
-Based on resolution, exists to allow ... \cite{supcalc} \cite{smartmatch}
+\cite{supcalc} \cite{smartmatch}
 
 \begin{align*}
 \textbf{Positive Superposition} &&& \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{(s[r] \approx t \lor C \lor D)\sigma}
@@ -69,7 +69,7 @@ Based on resolution, exists to allow ... \cite{supcalc} \cite{smartmatch}
 \textbf{Equality Factoring}     &&& \frac{l \approx r \lor s \approx t \lor C}{(l \approx t \lor r \not \approx t \lor C)\sigma}
 \intertext{\tcent{Where $\sigma = $ mgu $(s,l)$}}
 \end{align*}
-These rules
+
 
 \section{Automated Reasoning and Theorem Proving}
 \label{sec:proving}
@@ -113,12 +113,23 @@ is certainly not in active use by any popular theorem provers.
 
 \subsubsection{Discrimination Trees}
 
-Discrimination Trees store terms in a 
+Discrimination Trees are a \emph{perfect} indexing technique in that anything
+returned by the indexer is guaranteed to be unifiable in some way. This advantage
+is offset by taking a considerable amount of to retrieve terms.
+
+The technique works by storing terms in a tree at a position determined by the structure
+of each term. Each branch in the tree has a label which is either a function symbol
+(e.g. $f$, $g$) or *, which may represent any variable. To place a term in the tree
+we traverse the term from left to right and follow or create branches according to
+which symbol we observe. This process is simple. but retrieving from the index is a
+complex process requiring a backtracking algorithm.
+
+Discrimination Trees have another distinct disadvantage in that their tree data
+structure can grow arbitrarily large depending on the size and variety of observed terms.
 
 \subsubsection{Path Indexing}
 
-Path Indexing is actively used by the Vampire theorem prover 
-\cite{vampire}
+Path Indexing is currently in active use in the Vampire theorem prover \cite{vampire}.
 
 \section{Fingerprint Indexing}
 \label{sec:fingerprint}
@@ -126,7 +137,7 @@ Path Indexing is actively used by the Vampire theorem prover
 \emph{Fingerprint Indexing} is a recent technique developed by \citeN{shulz12}, the creator
 of the E prover. It works by computing a \emph{fingerprint} for each logic term;
 which can compared for unification or match compatibility. 
-Like the example techniques above,
+Unlike some of the example techniques above,
 Fingerprint Indexing is \emph{non-perfect} in that compatible fingerprints will not
 always imply that the associated terms successfully unify/match. The technique
 makes up for this by being adjustable to arbitrary levels of precision; ranging between
@@ -195,6 +206,7 @@ are the same length, the Index has a fixed depth.
 
 \begin{table}[h]\begin{center}
   \caption{Fingerprint Feature compare table for Matching \protect\cite[p6]{shulz12}}
+  \label{tab:match}
   \begin{tabular}{| c || c | c | c | c | c |}
   \hline
            &  $f_1$      &  $f_2$      &  \textbf{A} &  \textbf{B} &  \textbf{N} \\ \hline \hline
@@ -209,6 +221,10 @@ are the same length, the Index has a fixed depth.
 \subsection{Position Variants}
 
 \subsection{Why Fingerprint Indexing?}
+
+In Section \ref{sec:indexing} we described several other techniques for indexing
+terms, and many more than these few exist. It is then a natural question to ask:
+why has Fingerprint Indexing been chosen as the focus of this paper?
 
 Primarily due to how configurable it is. Also interesting to observe success
 of a new technique rather than implementing something old.
@@ -254,9 +270,13 @@ where abstraction is performed exhaustively until no literal contains both foreg
 and background operators.
 
 In their recent paper however, \citeN{baum13} discovered that the process 
-of full abstraction can destroy completeness. They then go on to propose a new
-variety of abstraction where only \emph{maximal background subterms which are
-neither domain elements nor variables} are abstracted. Abstracted terms are replaced
+of full abstraction can destroy completeness; and they then go on to propose a new
+variety of abstraction which they refer to as \emph{weak} abstraction. 
+In weak abstraction only \emph{maximal background subterms which are
+neither domain elements nor variables} are abstracted. Domain elements refer
+to constant values in the background reasoning system, like 1 or 2 in the case of
+integer arithmetic. A maximal background subterm
+is a background subterm not contained in any other background subterm. Abstracted terms are replaced
 with abstraction variables in the case of pure background terms, or ordinary variables
 in the case of impure background terms. See the paper itself for weak abstraction
 examples and details of how this process affects completeness.
@@ -311,10 +331,21 @@ Note the use of a slightly different unification operator, for \emph{simple} mgu
 This operator only produces unifiers where abstraction variables are mapped
 to pure background terms.
 
+\begin{align*}
+\textbf{Define} &&& \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{\text{abstr}((s[r] \approx t \lor C \lor D)\sigma)} 
+\intertext{\tcent{Where
+(i) $\sigma = $ simple mgu $(l,u)$,
+(ii) $u$ is not a variable,
+(iii) $r\sigma \not\succeq l\sigma$,
+(iv) $t\sigma \not\succeq s\sigma$,\\
+(v) $l$ and $u$ are not pure background terms,
+(vi) $(l \approx r)\sigma$ is strictly maximal in $(l \approx r \lor C)\sigma$, and
+(vii) $(s \approx t)\sigma$ is strictly maximal in $(s \approx t \lor D)\sigma$ }}
+\end{align*}
 Define and Close
 
-\subsection{\Beagle's Shortcomings}
-\label{sec:shortcomings}
+%\subsection{\Beagle's Shortcomings}
+%\label{sec:shortcomings}
 
 
 

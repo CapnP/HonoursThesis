@@ -5,7 +5,7 @@
 \chapter{Conclusion}
 \label{cha:conclusion}
 
-\section{Why this is a Very Clever Thesis}
+\section{\Beagle's }
 \label{sec:why}
 
 \section{Future Improvements}
@@ -16,13 +16,13 @@ indexing in general; which were either not relevant to the current work or
 cut due to time constraints.
 
 \subsection{Extended Data Structures}
-The focus of this thesis has been with high-level logical improvements.
-Add some low-level speed at the cost of memory.
+The focus of this thesis has been with high-level logical improvements. Here
+we present some thoughts on how 'low-level' speed could be saved at the cost of memory.
 
 Drop the tree structure. Have an entry for each possible fingerprint and add terms
 to each bin they are compatible with during indexing. Moves runtime from
-retrieval (called VERY often) to indexing (called barley ever) but creates memory
-EXPLOSION
+retrieval (called VERY often) to indexing (called barley ever, comparatively) but requires a
+tremendous amount of memory
 
 \subsection{More Fingerprint Indices}
 
@@ -32,6 +32,9 @@ EXPLOSION
 \subsubsection{Retrieval Caching}
 \subsubsection{Dynamic Fingerprinting}
 Negligible due to length/FP balance. Can make static ones arbitrarily good.
+
+Tailoring to a problem is good though, consider example where many Ns are generated
+and cannot be reached due to a maximum function arity.
 
 \subsection{Comparing Indexing Techniques}
 
