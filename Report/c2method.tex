@@ -5,7 +5,23 @@
 \chapter{Implementing Fingerprint Indexing}
 \label{cha:method}
 
-Re-iterate goals
+The \HSWAC\ is a significant achievement for the field of automated reasoning.
+The theorem prover \beagle\ was designed as a proof of concept; and in its
+current form it is certainly capable of demonstrating the
+usefulness of the calculus. However, when compared side-by-side with current
+state of the art provers like E or Vampire (see Section \ref{sec:proving}) it falls short
+of the mark.
+
+The purpose of this project is to make \beagle\ more viable for real-world problems
+by implementing recent advancements in automated reasoning; particularly in the
+field of term indexing (see Section \ref{sec:indexing}). This chapter covers in
+detail how Fingerprint Indexing, a recent technique by \citeN{shulz12} described
+in Section \ref{sec:fingerprint}, was added to \beagle. This includes analysing
+the current structure of the \beagle\ codebase to determine where indexing could
+be applied, building the index itself and finally putting the index to active use
+in simplifying inference rules. The end of this chapter also details a few
+original improvements to Fingerprint Indexing; designed to tailor it to the nuances
+of the \HSWAC.
 
 \section{Structure of \Beagle}
 \label{sec:initial}
