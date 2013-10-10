@@ -15,9 +15,9 @@ of the mark.
 The purpose of this project is to make \beagle\ more viable for real-world problems
 by implementing recent advancements in automated reasoning; particularly in the
 field of term indexing (see Section \ref{sec:indexing}). This chapter covers in
-detail how Fingerprint Indexing, a recent technique by \citeN{shulz12} described
+detail how Fingerprint Indexing, a recent technique by \citeN{shulz12} which we described
 in Section \ref{sec:fingerprint}, was added to \beagle. This includes analysing
-the current structure of the \beagle\ codebase to determine where indexing could
+the current structure of the \beagle\ codebase to determine where indexing can
 be applied, building the index itself and finally putting the index to active use
 in simplifying inference rules. The end of this chapter also details a few
 original improvements to Fingerprint Indexing; designed to tailor it to the nuances
@@ -29,13 +29,14 @@ of the \HSWAC.
 Making any extension to the \beagle\ project (or any sizeable project
 for that matter) will obviously require a solid
 understanding of the existing codebase. This section provides an overview
-of any existing Scala classes and their structure which is relevant to the implementation of the Fingerprint Index.
+of any existing Scala classes which are relevant to the implementation of the Fingerprint Index;
+including their structure and any useful existing functionality. 
 
 \subsection{Syntax and Data Structures}
 
-The first aspect of \beagle\ we must examine is its existing data structures;
-since our term indexer must be able to understand the structure of \beagle's internal
-logical objects.
+Our term indexer must be able to understand the structure of \beagle's internal
+logical objects. Thus the first aspect of \beagle\ we must examine is its existing data structures;
+in particular how it expresses first order logic terms.
 
 Figure \ref{fig:expressions} shows how first-order logic terms are stored. Terms
 are contained within an Eqn (for Equation) object, which may be ordered ($\to$)
@@ -47,7 +48,7 @@ and thus their ordering is not relevant; save for retrieving specific Clauses / 
 
 This structure is fairly typical and quite directly translates the definitions
 from Section \ref{sec:fol}. The structure could potentially be shortened by
-removing the Eqn object and having Literals directly contain the left and right Terms;
+removing the Equation object and having Literals directly contain the left and right Terms;
 but this would be inconsistent with most first-order logic literature and could cause confusion.
 
 \begin{figure}[H]
@@ -92,7 +93,7 @@ Covered in detail in Section \ref{sec:simp}.
 \item \textbf{The Split rule:} In some cases the Literals of a Clause may be partitioned
 in two; with each partition consistent with our current knowledge. The Split rule allows
 us to create a whole new instance of \beagle's main loop, to be run in parallel,
-so that we may consider both options. These `\emph{branches}' may be closed if they return
+so that we may consider both options. These `branches' may be closed if they return
 unsatisfiable.
 \item \textbf{The Instantiate rule:} Applies to Clauses with background variables in `\emph{finite domains}'.
 If there are finitely many terms which a variable may represent it is sometimes useful
@@ -101,7 +102,9 @@ to remove that variable and replace it with one Clause per possible instantiatio
 
 In Listing \ref{lst:main} we present a simplified pseudocode version of the main inference loop.
 \verb!input ClauseSet! here represents our database of knowledge along with
-the \emph{negation} of what we are trying to prove.
+the \emph{negation} of what we are trying to prove. We input the negation since
+we are ultimately looking for a contradiction (i.e. finding that the set is unsatisfiable);
+which would then indicate that our original input is always true.
 \begin{listing}[H]
 \begin{lstlisting}
 new := input ClauseSet
@@ -145,8 +148,8 @@ The first step in adding fingerprint indexing to \beagle\ is creating the indexe
 itself; an object which will manage the index and provide functions for adding
 to it and retrieving from it.
 
-This Section details the creation of the FingerprintIndex Scala class. It contains
-all the data types and functions we will need for indexing; including building
+This Section details the creation of the FingerprintIndex Scala class; containing
+all the data types and functions we will need for indexing. This includes building
 and comparing term fingerprints, addition and retrieval from a complex index structure
 and any auxiliary functions to assist with these computations.
 
@@ -156,12 +159,12 @@ and any auxiliary functions to assist with these computations.
 Here we define in detail any data structures which will be a part of our index.
 These data structures must be capable of expressing any concepts from
 the abstract definition of fingerprint indexing, outlined in Section \ref{sec:fingerprint}
-and the original paper\cite{shulz12}.
+and the original paper \cite{shulz12}.
 
 \subsubsection{Positions}
 
 We implement positions in the simple na\"{\i}ve manner, as a list of
-Integers (where Nil is used to index the top-level term). This
+Integers (where Nil, the empty list,  is used to index the top-level term). This
 directly reflects our position notation given in Section \ref{sec:terminology}.
 
 \subsubsection{Fingerprint Features}
@@ -170,7 +173,7 @@ Fingerprint features are the four possible symbols we get when sampling a term
 at an arbitrary position. The meaning of these features is given in Section \ref{sec:fingerprints},
 so here we provide only the Scala definition. We essentially only require an
 enumerated type for Fingerprint Features, except for the fact that we must be able
-to specify a function symbol. Thus we implement this type as four separate classes
+to specify a function symbol. Thus we implement this type as four separate case classes
 implementing an abstract \verb!FPFeature! class; with one of these classes taking
 a function name as a parameter.
 
@@ -191,7 +194,7 @@ case class  FPF(val f : String) extends FPFeature
 
 With Positions and Fingerprint Features defined it is now very simple
 to define the Fingerprint for a Term. We take this as simply a list
-of Fingerpint Features, to be acquired by sampling at various positions. 
+of Fingerpint Features, to be acquired by sampling at various Positions. 
 
 \subsubsection{Fingerprint Index}
 
@@ -202,9 +205,9 @@ retrieved.
 The na\"{\i}ve method for implementing the Index would be to simply use a HashMap
 from Fingerprints to their corresponding Term. This method would however cause
 several problems which would make the correct and efficient retrieval of terms impossible.
-A term's Fingerprint does not only match itself but also matches any compatible
-Fingerprints with respect to some comparison table (see Section \ref{sec:fingerprints}).
-So our Index object must store Terms in a way that allows compatible sets to be
+Fingerprints do not have to be identical in order to match for unification, they will match any
+Fingerprints which are compatible with respect to some comparison table (see Section \ref{sec:fingerprints}).
+To accommodate this our Index object must store Terms in a way that allows all compatible sets to be
 collected together. In Listing \ref{lst:indexdata} we present an algebraic data
 type for an Index, structured as a tree of HashMaps. Each Index is either a
 collection of Terms (a Leaf) or a mapping from FPFeatures to more Index objects (a Node).
@@ -230,12 +233,15 @@ so the Index itself will generally only add a fairly lightweight structure of po
 \label{sec:fpbuild}
 With our required data structures in place we may now begin implementing our
 Fingerprint Index proper. There are two main components in this implementation:
-adding to, and removing from the index. A logical first choice is addition; the
-first step of which is creating functions to sample terms at positions in order to
-create term fingerprints.
+adding to the Index and removing from it. A logical first choice is addition; as we
+cannot possibly test retrieval until addition is completed. The
+first step in implementing addition is creating a function to generate Term Fingerprints; by sampling them
+at a fixed set of positions.
 
+A Term's Fingerprint is a list of Fingerprint Features; which we described in Section \ref{sec:fingerprints}
+and concretely implemented in Section \ref{sec:datatypes}.
 Listing \ref{lst:posextract} provides a function to extract a single Fingerprint Feature from
-a Term at the given position.
+a Term at a given Position; which is the only non-trivial task in Fingerprint generation.
 \begin{listing}[H]
 \begin{scalacode}
 /** Extract the FPFeature at Position pos of the given Term object. */
@@ -306,24 +312,24 @@ structure defined in Section \ref{sec:datatypes}.}
 \end{listing}
 \verb!add! is a recursive function which moves down the Index one step for
 each time it is called. Notice that the function takes a Fingerprint as an argument. This argument
-should initially be the Term's generated Fingerprint (relative to the Index's list of Positions);
-but with each recursive call of \verb!add! we strip of one Fingerprint Feature and follow
-it's mapping in the Index. Throughout this process we create new Index Nodes as required;
-and at the end of the Fingerprint we create or add to a Leaf.
+should initially be the Fingerprint of the input Term (relative to the Index's list of Positions);
+but with each recursive call of \verb!add! we strip off one Fingerprint Feature and follow
+its mapping in the Index. Throughout this process we create new Index Nodes as required;
+and at the end of the Fingerprint we create (or add to) a Leaf.
 In accordance with programming best practices the final two cases in the Listing
 throw meaningful error messages in the case of unexpected input.
 
-We may now index an arbitrary Term object but it is desirable to be able to index
+We may now index an arbitrary Term object; but it is desirable to be able to index
 whole Clauses with a single function call. This is done with a straightforward lifting
 over the expression syntax tree (Figure \ref{fig:expressions}) : Clauses index all of their Literals, Literals index
-their Eqn and Eqns index each of their two Terms.
+their Equation and Equations index each of their two Terms.
 
 \subsection{Retrieving Compatible terms}
 \label{sec:retrieve}
 
 Our Index framework is now capable of creating Fingerprints and storing Terms in
 its pointer structure. The next task in building our index is allowing retrieval
-of Terms which are compatible with a query Term; relative to some comparison
+of any Terms which are compatible with a query Term; relative to some comparison
 table.
 
 We will now provide an implementation of the Fingerprint comparison table for unification (Section \ref{sec:fingerprints}).
@@ -339,7 +345,9 @@ that it can be covered with only four cases:
 \item False otherwise 
 \end{enumerate}
 We may implement these four cases in Scala by using the \verb!match! construct
-to compare \verb!Set! objects.
+to compare \verb!Set! objects. Using an unordered \verb!Set! object here allows
+us to take advantage of the unification table being symmetric by checking both
+directions at once. 
 \begin{listing}[H]
 \begin{scalacode}
  /** Check two Fingerprint features for compatibility based
@@ -414,8 +422,8 @@ At this stage we have a complete implementation of abstract fingerprint indexing
 as described in Shulz's paper \cite{shulz12}. However, this index is not
 quite at the point where it is usable in \beagle\ 
 Recall the main superposition rules for \beagle's resolution calculus (Section \ref{sec:calc} and \cite{baum13}).
-Notice in particular the condition that $s$ may match against a \emph{subterm}
-of $l$ (this condition also exists in the original superposition calculus, Section \ref{sec:supcalc}).
+Notice in particular the condition that $l$ may match against a \emph{subterm}
+of $s$ (this condition also exists in the original superposition calculus, Section \ref{sec:supcalc}).
 This does not match our current implementation which is only capable of indexing
 whole, top-level terms.
 
@@ -441,8 +449,9 @@ def subtermsWithPos : List[(Term, List[Int])] =
 \label{lst:subterms}
 \end{listing}
 With this extension in place we can index subterms by extending our addition function
-(Listing \ref{lst:addterm}) to also add all subterms.
-So our indexer will now be capable of comprehensively indexing all subterms as required.
+(Listing \ref{lst:addterm}) to also add all subterms. This process is straightforward,
+we simply create a new function which loops over subterms and adds each one.
+This will make the indexer capable of comprehensively indexing all subterms as required.
 Our Index however is still unfit for live use in optimising \beagle's inference rules.
 This is due to a subtle issue which prevents correct retrieval of all
 the information needed by the inference calculus.
@@ -452,30 +461,31 @@ the information needed by the inference calculus.
 At this stage we have a Fingerprint Index which is capable of comprehensively indexing a Clause
 all the way down to individual subterms. However, as previously mentioned,
 there is a subtle issue remaining. We shall refer to this issue as \emph{Term Alienation}.
-The issue was caught during the process of \emph{Unit Testing} (see Section {sec:unittest}) and relates
+The issue was caught during the process of \emph{Unit Testing} (see Section \ref{sec:unittest}) and relates
 to retrieving the Clause structure associated with any Terms retrieved as compatible.
 
 \subsubsection{Term Alienation}
-In listing \ref{lst:indexdata} we presented the actual data structure for storing
+In Listing \ref{lst:indexdata} we presented the actual data structure for storing
 indexed Terms. It presented the leaves of this index as simply a set of Term objects.
 At this stage we notice that this representation is actually insufficient. \Beagle's
 inference rules require knowledge of the Clauses which we are operating on, so
 storing only the bottom level Term does not give us enough information to perform any
 inferences. This is especially true considering that the stored Term may even
-be a subterm of what we are actually wish to use for inference.
+be a subterm of what we actually wish to use for inference.
 
 A first attempt to solve this issue involved giving every object in the expression
 tree (Figure \ref{fig:expressions}) a pointer to its `\emph{parent}' expression.
-Ensuring that these pointers were correct at all times however proved to be
-difficult. Furthermore the pointers were difficult to use in practice; since there
-are several steps involved in going from a subterm all the way up to a Clause.
+However, ensuring that these pointers were correct at all times proved to be
+difficult. Furthermore, the pointers were difficult to use in practice since there
+are several steps involved in going from a subterm all the way up to a Clause; and
+each object must be collected along the way.
 
 \subsubsection{Term Tracing}
 
 Term Alienation can be better solved by introducing \emph{Term Traces}. A Term Trace
 is an object which will be stored alongside any Term in our Index; containing any
 required information regarding where the Term originally came from. This includes
-pointers to each object higher up in the expression syntax tree (the associated Eqn, Literal
+pointers to each object higher up in the expression syntax tree (the associated Equation, Literal
 and Clause) and the (possibly nil) subterm Position. Term Traces allow us to quickly
 and easily retrieve any information required for inferences.
  

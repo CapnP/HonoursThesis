@@ -34,15 +34,17 @@ Term has come from. As a result, superposition becomes unnecessarily cluttered;
 as it only needs to be run against Clauses from \verb!old!.
 \end{itemize}
 These issues could potentially have been resolved with more careful management of
-the Terms in our Index, but a more elegant solution exists.
+the Terms in our Index, but a more elegant and simple solution exists.
 
-Rather than attach a single Fingerprint Index to the entire \beagle\ inference
-process, we instead add an Index to the ClauseSet class. 
-Clauses from \verb!new! are removed one by one and possible made redundant before
+
+Clauses from \verb!new! are removed one by one and possibly made redundant before
 moving to \verb!old!. \verb!old! itself however is more static; it only ever
-has clauses \emph{added} to it. By only indexing the \verb!old! set we ensure
+has clauses \emph{added} to it. 
+Considering this we will add an Index to the ClauseSet class, rather than attach a single Fingerprint Index to the entire \beagle\ inference
+process. This makes it possible to individually index each ClauseSet.
+By only indexing the \verb!old! set we ensure
 no redundant clauses appear in inferences; and it becomes easy to only use
-the \verb!old! index for superposition.
+Clauses from \verb!old! for superposition.
 
 Some thought is still required on how to fix the functionality of the Split rule.
 Split must be able to copy \beagle's current state to create a new parallel instance;
@@ -54,8 +56,10 @@ new Fingerprint Index or by creating a deep copy of the Index pointer structure.
 \subsection{Indexing Superposition}
 Now that our ClauseSets are actively being Indexed we must start to make
 use of these Indices for superposition. As stated above
-superposition will only require the use of the \verb!old! Clause Index; but there
-is still significant modification required to use Index retrieved terms.
+superposition will only require the use of the \verb!old! Clause Index.
+We are now capable of performing this retrieval; but we must still 
+significantly modify \beagle's existing superposition code before we may make use
+of the retrieved terms.
 
 Recall the two superposition inference rules in the \HSWAC\ (taken unmodified
 from \cite{baum13}):
@@ -87,7 +91,7 @@ clause ($s[u] \approx t \lor D$). Note that \beagle\ does not split the superpos
 two distinct cases; but rather generates all possible negative and positive inferences simultaneously.
 
 Our Fingerprint Index is built to locate Terms likely to \emph{unify}; so
-it is condition (i) that our Indexer is most . Condition (i) states that
+it is condition (i) that our Indexer is most concerned with. Condition (i) states that
 $l$ and $u$ must be unifiable by some simple most general unifier $\sigma$ (refer
 to Sections \ref{sec:terminology} and \ref{sec:calc} for detailed definitions of
 these terms). This condition implies that there are actually two distinct
@@ -101,23 +105,27 @@ subterms $u$ which are likely to unify with the top level term $l$. Note that we
 attempt this for all possible $l$s in the Clause, so we must first loop over
 each \emph{eligible} Literal. The eligible Literals are those which are positive and capable
 of fulfilling condition (vi) in the rules above. If an eligible Literal is unordered we
-must also try either side as $l$.
+must also swapping the roles of $l$ and $r$. Note that Clauses maintain a list of their
+eligible Literals; and we do not need to search for them.
 
-Once we have found each usable $l$ we simply retrieve all terms compatible for unification
-(see Section \ref{sec:retrieve}) and use \beagle's existing superposition code
-to confirm unification and check the other inference rules conditions.
+Once we have found each usable $l$ we use our Term Index to retrieve all terms compatible for unification
+(see Section \ref{sec:retrieve}). Since Fingerprint Indexing is \emph{non-perfect} (See Section \ref{sec:fingerprint})
+we must make use of \beagle's existing superposition code
+to confirm unification; and check the other inference rule conditions. Once we
+are sure that the superposition rule applies we may have the existing code
+generate the resulting Clause.
 
 \subsubsection{Into Case}
 In this case we have a query Clause $s[u] \approx t \lor D$ and wish to find all
 top level terms $l$ which are likely to unify with with a subterm $u$. As in the
-from case we must find all possible terms which we can use for $s$; satisfying
+from case we must find all possible terms which we can use for $s$ while satisfying
 maximality and ordering conditions. After selecting a term for $s$ we must 
 also then loop over all its subterms, as any of these are a potential choice
 for $u$.
 
-Once we have a subterm for $u$ we retrieve compatible Terms from the index.
-Unlike the from case we are not done here, $l$ may only be a top level term
-so we must actually discard any subterms. This may sound expensive in terms
+So for each subterm $u$ of $s$ we retrieve compatible Terms from the index; but
+unlike the from case we are not done here. $l$ is only permitted to be a top level term
+so we must actually discard any subterms retrieved from the Index. This may sound expensive in terms
 of wasted computation; but filtering in this fashion is cheap, and avoiding this
 problem would require an entirely separate Index which indexes only top-level terms.
  
@@ -198,7 +206,7 @@ The clause $s \approx t  \lor C$ may be removed.}}
 This essentially says that if we know $l$ is not equal to $r$, then any Literal
 stating otherwise may be removed. If we only looked for Literals exactly equal
 to $l \approx r$ however the rule would barely ever be applied and not be very useful.
-Thus we have Negative Unit Simplification consider \emph{instances} of $l \approx r$.
+Thus we have Negative Unit Simplification consider any \emph{instances} of $l \approx r$.
 A Literal formed by substituting the variables in $l \approx r$ also contradicts
 $l \not\approx r$; this is the $l \approx r$ \emph{subsumes} $s \approx t$ condition.
 Checking for these subsumed literals is potentially expensive; and it is what
@@ -228,7 +236,7 @@ $\sigma$ is a matcher from $l$ to $u$. (i.e. $l$ \emph{subsumes} $u$)\\
 The clause $s[u] \not\approx t  \lor D$ may be removed.}}
 \end{align*}
 
-At the simplest level, Demodulation allows us to replace all occurrences of $l$ by $r$ if
+At the simplest level, Demodulation allows us to replace all occurrences of $l$ by $r$; provided that
 we have some unit Clause $l \to r$. The rules above are more general however,
 and allow the replacement of any subterm $u$ which is \emph{subsumed} by $l$.
 As in Negative Unit Simplification, finding terms which pass this subsumption check is most time consuming.
@@ -243,7 +251,7 @@ Demodulation proved difficult and produced a number of significant problems:
 \begin{itemize}
 \item \textbf{Term Matching:} The above simplification rules all try to find Terms which
 \emph{match} rather than those that \emph{unify}. Our Index so far has only
-been built to support unification as that is what is used by superposition.
+been built to support unification; as that is what is used by superposition.
 \item \textbf{Cluttered Index:} In both Negative Unit Simplification and Demodulation we are simplifying
 a single Clause against a list of unit Clauses. These top-level unit Clauses are
 all we wish to retrieve from the Index, but our current implementation would retrieve
@@ -303,7 +311,7 @@ which stores Equations converted in this manner.
 \item \textbf{comparator}: The comparison function used to compare Fingerprint Features.
 This function must implement a comparison table such as those seen in Section 
 \ref{sec:fingerprints} or Table \ref{tab:extunif}. Passing a different
-function here allows creation of separate Indices for matching and unification.
+function here allows the creation of separate Indices for matching and unification.
 \end{itemize}
 
 With this options object in place we may easily create three separate
@@ -329,8 +337,8 @@ that this Index contains any positive, ordered unit Clauses in both \verb!new! a
 (see Listing \ref{lst:simpl}).
 \end{itemize}
 
-This use of multiple indices introduces a memory overhead. As we have mentioned
-before however this overhead is negligible since we are generally only concerned
+This use of multiple indices introduces a memory overhead. However, as we have mentioned
+before, this overhead is negligible since we are generally only concerned
 with speed.
 
 \subsection{Applying new Indices to Simplification}
@@ -353,8 +361,8 @@ is selected from \verb!new! there is a possibility it will simplify to the empty
 Clause and it will no longer be needed for inference. Otherwise it will be added
 into \verb!old! and appear in the relevant index twice. These redundant and 
 duplicate clauses could be resolved by adding the ability to \emph{remove} from
-an Index; but they are unlikely to cause more than a few unnecessary inferences and
-a minor slowdown. 
+an Index. This would take significant effort however; and the extra Clauses are
+unlikely to cause any problems apart from a few unnecessary inferences and a negligible slowdown. 
 
 \section{Tailoring to \Beagle's \HSWAC}
 \label{sec:tailored}
@@ -377,7 +385,7 @@ worth noting at this stage that computing where a term exists in the hierarchy i
 zero, as it is computed on the fly during term generation and stored for later use).
 
 Recall the four original fingerprint feature symbols from Section \ref{sec:indexing}.
-These features are computed by sampling a Term object at some position; and be compared
+These features are computed by sampling a Term object at some position; and can be compared
 with a table to check if two Terms may unify or match.
 \begin{itemize}
 \item $f$: arbitrary constant function symbols.
@@ -443,7 +451,7 @@ We will justify this new section line by line:
 \item \textbf{Pure Background Function Symbols} ($f$+): Recall that this feature is only applicable
 if the entire subterm below $f$ is pure background. Therefore it does not
 match the foreground version of the same symbol. It does however match both
-\textbf{A} and \textbf{B}. This is required since these symbols still match \emph{impure} background variables;
+\textbf{A} and \textbf{B}. This is required since these symbols still match \emph{impure} or \emph{ordinary} background variables;
 which may be expanded to either foreground or pure background terms.
 \item \textbf{Abstraction Variables} (\textbf{A}+): Similarly to the pure background function symbol
 feature, this feature cannot match any terms which sit in the foreground. It can however
