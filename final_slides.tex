@@ -53,6 +53,11 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
 \begin{frame}
   \tableofcontents
 \end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Project Overview}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Motivation}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Background}
@@ -132,11 +137,11 @@ NPDT & 6082.246 & 5434.760 & 1184.750 & 64.910 & 83.110 & 33.200 & 79.910 \\\hli
 %  \includegraphics[page=7,scale=0.7,trim=4cm 13.5cm 5cm 4.5cm,clip]{schulz_fp-index_ext}
 %\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Current Progress}
+\section{Implementation}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Base Fingerprint Indexing}
+\subsection{Implementing Fingerprint Indexing}
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
   \frametitle{Base Fingerprint Indexing}
@@ -163,9 +168,9 @@ NPDT & 6082.246 & 5434.760 & 1184.750 & 64.910 & 83.110 & 33.200 & 79.910 \\\hli
   \end{itemize}
 \end{frame}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Future Research Questions}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Indexing Applications}
+%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Tailoring to Beagle}
@@ -201,16 +206,68 @@ NPDT & 6082.246 & 5434.760 & 1184.750 & 64.910 & 83.110 & 33.200 & 79.910 \\\hli
   \end{itemize}
 \end{frame}
 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Evaluation Metrics}
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+  \begin{itemize}
+  \frametitle{Metrics for Analysing Indexing Performance}
+  \item<1-> Speed - Not necessarily relevant
+  \item<2-> False Positives - Relevant, but can be misleading depending on
+  number of positions being sampled.
+  \item<3-> Time Spent \emph{per Inference} - Booyah
+  \end{itemize}
+\end{frame}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Beagle Comparisons}
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
   \begin{itemize}
-  \frametitle{Comparing Beagle With Other FOL Provers}
-  \item<1-> Once Beagle's indexing has been implemented and extended with extra features
-  it will be interesting to compare it's results against existing provers.
+  \frametitle{Comparing Varieties of Beagle}
+  \item<1-> Un-indexed beagle.
+  \item<2-> Minimal Indexing.
+  \item<3-> Full Indexing.
+  \item<4-> Indexing with Optimisations.
   \end{itemize}
 \end{frame}
+
+\begin{frame}
+  \begin{itemize}
+  \frametitle{Comparing Varieties of Beagle}
+  \item<1-> Results table
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Sample Position Comparisons}
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+  \begin{itemize}
+  \frametitle{Fingerprint Sampling Varieties}
+  \item<1-> Reasoning. Cite shulz and FP/Speed balance
+  \item<2-> Different position samples
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \begin{itemize}
+  \frametitle{Fingerprint Sampling Varieties}
+  \item<1-> Results table
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 
 \end{NoHyper}
