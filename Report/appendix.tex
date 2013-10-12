@@ -7,22 +7,194 @@
 \chapter{Result Tables for TPTP Selection}
 \label{app:app1}
 
-\section{Unmodified \Beagle}
+\vspace{-1cm}
 
-\section{Including Superposition Indexing}
+This appendix includes verbose statistics for test runs at various stages of the
+project. The tests are all taken from the TPTP Problem Library \cite{tptp} and run on an Intel i5 5600k processor with 4GB of system memory.
 
-\section{Including Simplification Indexing}
+\subsection{Metrics}
+
+\begin{itemize}
+\item\textbf{Inference Counts}
+\begin{itemize}
+\item \textbf{Sup}, The number of Superposition inferences. 
+\item \textbf{Demod}, the number of Demodulation inferences.
+\item \textbf{NegUnit}, the number of Negative Unit Simplifications.
+\end{itemize}
+\item\textbf{Indexing Results}
+\begin{itemize}
+\item \textbf{TotalFound}, the number of terms retrieved from the index.
+\item \textbf{SupFP}, the number of 'false positives' for superposition indexing.
+\item \textbf{SimpFP}, the number of 'false positives' for simplification indexing.
+\end{itemize}
+\item\textbf{Time Spent (seconds)}
+\begin{itemize}
+\item \textbf{Indexing}, \textbf{Retrieving}, \textbf{Sup}, \textbf{Demod}, \textbf{NegUnit}, \textbf{Total}.
+\end{itemize}
+\end{itemize}
+
+\subsection{Problem list}
+{\footnotesize
+\begin{itemize}
+\item Arithmetic Problems (ARI)\\
+\begin{tabular} {c c c c c}
+ARI601=1.p, &  ARI602=1.p, &  ARI603=1.p, &  ARI604=1.p, &  ARI605=1.p,\\
+ARI606=1.p, &  ARI607=1.p, &  ARI608=1.p, &  ARI609=1.p, &  ARI610=1.p.
+\end{tabular}
+\item Data Problems (DAT)\\
+\begin{tabular} {c c c c c}
+DAT031=1.p, &  DAT032=1.p, &  DAT033=1.p, &  DAT034=1.p, &  DAT035=1.p,\\
+DAT036=1.p, &  DAT037=1.p, &  DAT038=1.p, &  DAT039=1.p, &  DAT040=1.p,\\
+DAT041=1.p, &  DAT042=1.p, &  DAT043=1.p, &  DAT044=1.p, &  DAT045=1.p,\\
+DAT046=1.p, &  DAT047=1.p, &  DAT048=1.p, &  DAT049=1.p, &  DAT050=1.p.
+\end{tabular}
+\item Puzzle Problems (PUZ)\\
+\begin{tabular} {c c c c c}
+PUZ037-1.p, &  PUZ038-1.p, &  PUZ043-1.p, &  PUZ044-1.p, &  PUZ045-1.p,\\
+PUZ047+1.p, &  PUZ054-1.p, &  PUZ060+1.p, &  PUZ061+1.p, &  PUZ062-2.p.
+\end{tabular}
+\item Group Theory Problems (GRP)\\
+\begin{tabular} {c c c c c}
+GRP001-1.p, &  GRP001-2.p, &  GRP001+6.p, &  GRP003-2.p, &  GRP004-2.p,\\
+GRP009-1.p, &  GRP012-1.p, &  GRP012-2.p, &  GRP012+5.p, &  GRP026-1.p.
+\end{tabular}
+\end{itemize}}
 
 \pagebreak
 
-\section{Including Background/Foreground Checks} 
+\section{Unmodified \Beagle}
+
+\begin{table}[H]\scriptsize
+  \caption{Verbatim results for unmodified \beagle.}
+\begin{adjustwidth}{-0.4in}{-0.5in}% adjust the L and R margins by 1 inch
+\begin{tabular}{| l || r | r | r || r | r | r || r | r | r | r | r | r |}  \cline{2-13}
+\multicolumn{1}{ c }{} & \multicolumn{3}{ |c|| }{\textbf{Inference Counts}} & \multicolumn{3}{ c|| }{\textbf{Indexing Results}} & \multicolumn{6}{ c| }{\textbf{Time Spent (seconds)}} \\ \cline{1-13}
+Filename&Sup&Demod&NegUnit&TotalFound&SupFP&SimpFP&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-13}
+ARI601=1.p&5&1&0&0&0&0&0&0&0.04&0.01&0&0.16\\
+ARI602=1.p&5&1&1&0&0&0&0&0&0.03&0.01&0&0.14\\
+ARI603=1.p&2&0&0&0&0&0&0&0&0.02&0.01&0&0.1\\
+ARI604=1.p&10&2&0&0&0&0&0&0&0.05&0.01&0&0.19\\
+ARI605=1.p&10&2&0&0&0&0&0&0&0.04&0.01&0&0.2\\
+ARI606=1.p&48&5&1&0&0&0&0&0&0.17&0.03&0.01&0.48\\
+ARI607=1.p&46&4&0&0&0&0&0&0&0.19&0.02&0.01&0.41\\
+ARI608=1.p&30&3&1&0&0&0&0&0&0.15&0.03&0&0.41\\
+ARI609=1.p&26&4&0&0&0&0&0&0&0.13&0.02&0&0.35\\
+ARI610=1.p&225&60&5&0&0&0&0&0&0.52&0.09&0.02&1.68\\
+DAT031=1.p&42&0&1&0&0&0&0&0&0.22&0.01&0.01&0.38\\
+DAT032=1.p&750&185&25&0&0&0&0&0&1.29&0.11&0.03&2.03\\
+DAT033=1.p&475&113&22&0&0&0&0&0&1.04&0.1&0.03&1.64\\
+DAT034=1.p&1584&94&4&0&0&0&0&0&2.16&0.09&0.05&2.89\\
+DAT035=1.p&2017&99&3&0&0&0&0&0&2.34&0.09&0.06&3.22\\
+DAT036=1.p&1485&111&3&0&0&0&0&0&2.1&0.1&0.04&2.84\\
+DAT037=1.p&220&24&2&0&0&0&0&0&0.87&0.05&0.01&1.15\\
+DAT038=1.p&132216&1272&104&0&0&0&0&0&294.86&0.96&14.05&3835.55\\
+DAT039=1.p&63897&1411&73&0&0&0&0&0&190.71&0.68&4.84&671.25\\
+DAT040=1.p&73775&1613&81&0&0&0&0&0&130.77&0.69&5.94&926.53\\
+DAT041=1.p&104&5&0&0&0&0&0&0&0.52&0.03&0.01&0.75\\
+DAT042=1.p&1795&59&5&0&0&0&0&0&2.17&0.07&0.04&2.94\\\cline{2-13}
+DAT043=1.p&  \multicolumn{12}{ l| }{Failed to solve after 8 hours of computation.}\\\cline{2-13}
+DAT044=1.p&123&11&2&0&0&0&0&0&0.52&0.05&0.01&0.92\\
+DAT045=1.p&123&11&2&0&0&0&0&0&0.53&0.05&0.01&0.93\\
+DAT046=1.p&5595&113&5&0&0&0&0&0&4.38&0.1&0.17&8.77\\
+DAT047=1.p&3445&113&6&0&0&0&0&0&3.01&0.09&0.11&4.66\\\cline{2-13}
+DAT048=1.p&  \multicolumn{12}{ l| }{Failed to solve after 8 hours of computation.}\\\cline{2-13}
+DAT049=1.p&2430&951&35&0&0&0&0&0&2.44&0.22&0.07&4.21\\
+DAT050=1.p&111277&22295&1414&0&0&0&0&0&48.62&3.24&6.24&99.44\\
+PUZ037-1.p&1148&0&1&0&0&0&0&0&2.8&0.88&0.01&4.17\\
+PUZ038-1.p&2579&0&1&0&0&0&0&0&22.6&0.07&0.04&23.44\\
+PUZ043-1.p&49&0&0&0&0&0&0&0&0.28&0.01&0&0.47\\
+PUZ044-1.p&3&0&0&0&0&0&0&0&0.06&0.01&0&0.21\\
+PUZ045-1.p&4&0&0&0&0&0&0&0&0.06&0.01&0&0.22\\
+PUZ047+1.p&69&0&1&0&0&0&0&0&0.47&0.03&0&0.69\\
+PUZ054-1.p&326&0&0&0&0&0&0&0&0.86&0.16&0.01&1.3\\
+PUZ060+1.p&25&1&0&0&0&0&0&0&0.14&0.02&0&0.28\\
+PUZ061+1.p&25&1&0&0&0&0&0&0&0.12&0.01&0&0.26\\
+PUZ062-2.p&104&6&4&0&0&0&0&0&0.8&0.11&0.01&1.14\\
+GRP001-1.p&397&31&1&0&0&0&0&0&1&0.11&0.01&1.41\\
+GRP001-2.p&104&8&1&0&0&0&0&0&0.37&0.06&0.01&0.57\\
+GRP001+6.p&523&2&1&0&0&0&0&0&0.97&0.08&0.01&1.32\\
+GRP003-2.p&617&6&0&0&0&0&0&0&1.24&0.09&0.01&1.61\\
+GRP004-2.p&585&6&0&0&0&0&0&0&1.21&0.09&0.01&1.58\\
+GRP009-1.p&563&31&1&0&0&0&0&0&1.18&0.11&0.01&1.61\\
+GRP012-1.p&450&47&1&0&0&0&0&0&1.02&0.1&0.01&1.42\\
+GRP012-2.p&408&38&1&0&0&0&0&0&1.02&0.1&0.01&1.42\\
+GRP012+5.p&1053&2&1&0&0&0&0&0&1.69&0.11&0.01&2.11\\
+GRP026-1.p&3424&356&17&0&0&0&0&0&2.66&0.31&0.07&3.76\\\hline \hline
+\textbf{Totals}&414216&29097&1826&0&0&0&0&0&730.44&9.44&31.99&5623.21\\ \hline %TODO FIX TOTALS
+\end{tabular}\end{adjustwidth}\end{table}
+
+%\section{Including Superposition Indexing}
+%\caption{Verbatim results for indexing only superposition (no indexed simplification or tailored enhancements).}
+
+
+\section{\Beagle\ with Superposition and Simplification Indexing}
+\begin{table}[H]\scriptsize
+  \caption{Verbatim results for indexing both superposition and simplification; without any tailored enhancements.}
+\begin{adjustwidth}{-1.1in}{-0.5in}% adjust the L and R margins by 1 inch
+\begin{tabular}{| l || r | r | r || r | r | r || r | r | r | r | r | r |}  \cline{2-13}
+\multicolumn{1}{ c }{} & \multicolumn{3}{ |c|| }{\textbf{Inference Counts}} & \multicolumn{3}{ c|| }{\textbf{Indexing Results}} & \multicolumn{6}{ c| }{\textbf{Time Spent (seconds)}} \\ \cline{1-13}
+Filename&Sup&Demod&NegUnit&TotalFound&SupFP&SimpFP&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-13}
+ARI601=1.p&5&1&0&32&0&8&0.02&0.01&0.05&0.1&0.03&0.37\\
+ARI602=1.p&5&1&1&30&0&2&0.02&0.01&0.04&0.02&0&0.21\\
+ARI603=1.p&2&0&0&37&0&1&0.02&0.01&0.05&0.02&0.01&0.18\\
+ARI604=1.p&10&2&0&56&0&11&0.03&0.02&0.08&0.02&0.01&0.28\\
+ARI605=1.p&10&2&0&56&0&11&0.02&0.02&0.08&0.03&0&0.31\\
+ARI606=1.p&66&13&1&800&22&366&0.26&0.09&0.26&0.09&0.01&1.22\\
+ARI607=1.p&46&4&0&441&16&104&0.04&0.05&0.21&0.04&0.01&0.51\\
+ARI608=1.p&26&2&1&247&10&62&0.06&0.04&0.15&0.04&0.01&0.55\\
+ARI609=1.p&38&10&0&563&20&232&0.09&0.07&0.21&0.07&0.01&0.62\\
+ARI610=1.p&159&61&2&1941&56&830&0.38&0.19&0.47&0.17&0.04&2.26\\
+DAT031=1.p&25&0&0&910&0&12&0.03&0.06&0.16&0.02&0&0.36\\
+DAT032=1.p&681&152&17&21775&0&2389&0.3&0.3&1.21&0.15&0.02&2.37\\
+DAT033=1.p&231&54&11&6320&0&709&0.18&0.23&0.77&0.1&0.02&1.47\\
+DAT034=1.p&640&76&2&26626&2&660&0.18&0.28&1.59&0.1&0.02&2.44\\
+DAT035=1.p&540&55&1&21512&0&524&0.21&0.3&1.39&0.11&0.02&2.32\\
+DAT036=1.p&607&93&0&25701&3&786&0.23&0.31&1.48&0.14&0.02&2.5\\
+DAT037=1.p&252&20&0&7091&0&289&0.08&0.22&0.86&0.07&0.01&1.24\\
+DAT038=1.p&11848&1018&10&792240&359&24176&0.62&2.88&24.04&0.55&0.19&28.8\\
+DAT039=1.p&11278&1187&15&793730&367&22310&0.65&2.74&21.29&0.57&0.2&25.89\\
+DAT040=1.p&11765&1411&16&818519&372&18893&0.62&2.78&22.51&0.63&0.2&27.18\\
+DAT041=1.p&126&4&0&4924&2&62&0.08&0.19&0.68&0.05&0.01&1.02\\
+DAT042=1.p&2805&128&0&133095&4&972&0.29&0.56&3.68&0.14&0.05&4.94\\
+DAT043=1.p&12865&2089&38&926672&535&30692&0.64&3.22&26.08&0.88&0.24&31.92\\
+DAT044=1.p&130&13&0&3659&0&176&0.17&0.17&0.49&0.07&0.01&1.07\\
+DAT045=1.p&130&13&0&3659&0&176&0.14&0.18&0.53&0.07&0.01&1.06\\
+DAT046=1.p&1175&175&0&47379&6&1378&0.14&0.34&2.15&0.14&0.03&2.98\\
+DAT047=1.p&800&159&2&41208&16&1857&0.29&0.33&1.96&0.14&0.02&2.94\\
+DAT048=1.p&16462&2358&36&1130110&426&59753&0.87&4.1&35.77&0.83&0.31&44.13\\
+DAT049=1.p&2036&648&19&83494&0&4705&0.62&0.45&1.92&0.29&0.05&4.26\\
+DAT050=1.p&65908&30736&2252&3442432&1520&443585&11.9&9.99&31.54&6.37&1.33&72.49\\
+PUZ037-1.p&2356&0&1&45518135&1235&38221956&2.93&1.59&12.71&25.54&0.01&39.31\\
+PUZ038-1.p&2656&0&0&6028228&1331&46860&2.25&1.85&33.3&0.27&0.02&34.83\\
+PUZ043-1.p&49&0&0&839&0&0&0.04&0.05&0.24&0.03&0&0.46\\
+PUZ044-1.p&3&0&0&121&0&0&0.03&0.02&0.08&0.02&0&0.22\\
+PUZ045-1.p&4&0&0&179&0&0&0.03&0.03&0.1&0.02&0&0.25\\
+PUZ047+1.p&75&0&0&9228&90&760&0.09&0.22&0.52&0.09&0.01&0.87\\
+PUZ054-1.p&326&0&0&281126&2646&96959&0.26&0.44&1.06&0.31&0.01&1.79\\
+PUZ060+1.p&25&1&0&158&0&14&0.03&0.03&0.12&0.02&0&0.26\\
+PUZ061+1.p&25&1&0&169&0&14&0.03&0.03&0.12&0.02&0&0.26\\
+PUZ062-2.p&111&5&1&44231&16&9650&0.19&0.25&0.63&0.25&0.01&1.3\\
+GRP001-1.p&1148&52&1&76200&333&30960&0.23&0.33&1.75&0.22&0.03&2.62\\
+GRP001-2.p&1862&133&1&229391&579&207626&0.3&0.39&3.62&0.43&0.02&4.45\\
+GRP001+6.p&3840&0&1&530613&1889&236365&0.57&0.75&5.83&0.55&0.02&7.39\\
+GRP003-2.p&539&6&0&43823&304&12254&0.15&0.31&1.25&0.19&0.01&1.85\\
+GRP004-2.p&499&6&0&41390&288&11499&0.15&0.3&1.19&0.17&0.01&1.71\\
+GRP009-1.p&1116&83&1&87199&162&40001&0.2&0.32&1.67&0.25&0.02&2.46\\
+GRP012-1.p&1269&103&1&121649&252&61759&0.29&0.35&1.75&0.28&0.02&2.74\\
+GRP012-2.p&1333&103&1&126868&258&62819&0.3&0.36&1.87&0.28&0.02&2.86\\
+GRP012+5.p&1441&1&0&145772&690&56694&0.24&0.33&2.16&0.24&0.01&2.93\\
+GRP026-1.p&3533&435&20&264190&1716&66227&0.91&0.64&2.5&0.46&0.07&4.91\\ \hline \hline
+\textbf{Totals}&162881&41414&2452&61884768&15525&39778148&28.4&38.73&254.17&41.66&3.18&381.36\\ \hline
+\end{tabular}\end{adjustwidth}\end{table}
+
+\section{Including Optimisations Tailored to the \HSWAC} 
 
 \begin{table}[H]\scriptsize
   \caption{Verbatim results for complete Fingerprint Indexing implementation.}
 \begin{adjustwidth}{-0.4in}{-0.5in}% adjust the L and R margins by 1 inch
-\begin{tabular}{| l | r | r | r | r | r | r | r | r | r | r | r | r |}  \cline{2-13}
-\multicolumn{1}{ c }{} & \multicolumn{3}{ |c| }{\textbf{Inference Counts}} & \multicolumn{3}{ |c| }{\textbf{Indexing Results}} & \multicolumn{6}{ |c| }{\textbf{Time Spent (seconds)}} \\ \cline{1-13}
-Filename&Sup&Demod&NegUnit&TotalFound&SupFP&SimpFP&Indexing&Retrieval&Sup&Demod&NegUnit&Total\\  \cline{1-13}
+\begin{tabular}{| l || r | r | r || r | r | r || r | r | r | r | r | r |}  \cline{2-13}
+\multicolumn{1}{ c }{} & \multicolumn{3}{ |c|| }{\textbf{Inference Counts}} & \multicolumn{3}{ c|| }{\textbf{Indexing Results}} & \multicolumn{6}{ c| }{\textbf{Time Spent (seconds)}} \\ \cline{1-13}
+Filename&Sup&Demod&NegUnit&TotalFound&SupFP&SimpFP&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-13}
 ARI601=1.p&5&1&0&18&0&8&0.02&0.01&0.07&0.02&0&0.3\\
 ARI602=1.p&5&1&1&18&0&2&0.03&0.01&0.07&0.03&0.01&0.32\\
 ARI603=1.p&2&0&0&9&0&1&0.03&0.01&0.05&0.02&0.01&0.23\\
@@ -72,7 +244,7 @@ GRP009-1.p&1116&83&1&87199&162&40001&0.13&0.2&1.19&0.19&0.02&1.85\\
 GRP012-1.p&1269&103&1&121649&252&61759&0.24&0.21&1.28&0.21&0.02&2.08\\
 GRP012-2.p&1333&103&1&126868&258&62819&0.24&0.22&1.32&0.22&0.02&2.13\\
 GRP012+5.p&1441&1&0&145772&690&56694&0.2&0.2&1.53&0.19&0.01&2.17\\
-GRP026-1.p&3533&435&20&264190&1716&66227&0.64&0.4&1.75&0.35&0.04&3.56\\ \hline
+GRP026-1.p&3533&435&20&264190&1716&66227&0.64&0.4&1.75&0.35&0.04&3.56\\ \hline \hline
 \textbf{Totals}&162997&41435&2454&58535681&15401&39779224&22.91&20.29&180.54&32.6&2.51&281.38 \\ \hline
 \end{tabular}\end{adjustwidth}\end{table}
 

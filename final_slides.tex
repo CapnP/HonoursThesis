@@ -35,6 +35,8 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
 
 \newcommand{\bcen}{\begin{center}}
 \newcommand{\ecen}{\end{center}}
+\newcommand{\HSWAC}{Hierarchic Superposition with Weak Abstraction Calculus}
+\newcommand{\HSWA}{Hierarchic Superposition with Weak Abstraction}
 
 \begin{document}
 
@@ -66,6 +68,7 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{The Beagle Theorem Prover}
 %%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{frame}
   \frametitle{The Beagle Theorem Prover}
   \begin{itemize}
@@ -73,8 +76,20 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
   \item<2-> Makes use of modular 'Background Theories' to make efficient use of known facts.
   \item<3-> This requires the carefully constructed `Hierarchic Superposition with Weak Abstraction
   Calculus' in order to ensure consistency and completeness.
-  \item<4-> Has been extended with term indexing to efficiently locate clauses which
-  match the calculus resolution rules.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Superposition Calculus}
+  \begin{itemize}
+  \item<1-> Normal Superposition rule
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{\HSWAC}
+  \begin{itemize}
+  \item<1-> Extension of Superposition Calculus to accommodate hierarchic reasoning.
   \end{itemize}
 \end{frame}
 
@@ -92,7 +107,8 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
   \item<2-> 'Generalises': $\sigma s = t$
   \end{itemize}
   \item<3-> Top-Symbol Hashing.
-  \item<3-> Discriminant Trees.
+  \item<3-> Discrimination Trees.
+  \item<3-> Path Indexing.
   \end{itemize}
 \end{frame}
 
@@ -147,30 +163,36 @@ NPDT & 6082.246 & 5434.760 & 1184.750 & 64.910 & 83.110 & 33.200 & 79.910 \\\hli
   \frametitle{Base Fingerprint Indexing}
                   %Left Bot Right Top
   \begin{itemize}
-  \item<1-> Beagle has been extended with a baseline implementation of Fingerprint
-  Indexing.
-  \item<2-> Required significant modification to current implementation
-  (code refactoring and additional pointer structures).
-  \item<3-> Operates on Beagle's most costly inference rule, superposition:\\
-                                         %Left Bot Right Top
-  %\includegraphics[page=11,scale=0.5,trim=6cm 22.7cm 5cm 5.4cm,clip]{report}
-  %\includegraphics[page=10,scale=0.5,trim=6cm 7.9cm 5cm 20.2cm,clip]{report}\\
-  \hspace{2cm}\includegraphics[page=11,scale=1,trim=9.5cm 22.7cm 5cm 5.4cm,clip]{report}
-
+  \item<1-> Analysis of program indicated two key areas of improvement:
+  \item<2-> Inferences via the Superposition rules.
+  \item<2-> Simplifying Clauses.
   \end{itemize}
 \end{frame}
-\begin{frame}
-  \frametitle{Current Indexing Results}
-  \begin{itemize}
-  \item<1-> Still some issues causing excessive generation.
-  \item<2-> Speed results promising.
 
+\begin{frame}
+  \frametitle{Creating the Fingerprint Index}
+  \begin{itemize}
+  \item<1-> Addition of terms.
+  \item<2-> Retrieval of terms.
   \end{itemize}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Indexing Applications}
 %%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+  \frametitle{Indexing Superposition}
+  \begin{itemize}
+  \item<1-> Refer to rule. Requires...
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Indexing Simplification}
+  \begin{itemize}
+  \item<1-> Refer to rule. Requires...
+  \end{itemize}
+\end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Tailoring to Beagle}
@@ -243,6 +265,13 @@ NPDT & 6082.246 & 5434.760 & 1184.750 & 64.910 & 83.110 & 33.200 & 79.910 \\\hli
   \begin{itemize}
   \frametitle{Comparing Varieties of Beagle}
   \item<1-> Results table
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \begin{itemize}
+  \frametitle{Most Extreme Example Problems}
+  \item<1-> Describe crazy DAT results.
   \end{itemize}
 \end{frame}
 
