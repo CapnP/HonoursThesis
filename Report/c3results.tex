@@ -43,6 +43,29 @@ length is key.
 \section{Indexing Subsumption}
 \label{sec:indexresults}
 
+\begin{table}[H]\begin{center}
+  \caption{Totalled inference counts and indexing statistics for various versions of \beagle.}
+\begin{tabular}{| l || r | r | r || r | r | r |}  \cline{2-7}
+\multicolumn{1}{ c }{} & \multicolumn{3}{ |c|| }{\textbf{Inference Counts}} & \multicolumn{3}{ c| }{\textbf{Indexing Results}} \\ \cline{1-7}
+Version&Sup&Demod&NegUnit&TotalFound&SupFP&SimpFP\\  \cline{1-7}
+\textbf{Unmodified \footnotemark[1]}&414216&29097&1826&0&0&0\\
+\textbf{Standard}&162881&41414&2452&61884768&15525&39778148\\
+\textbf{Enhanced}&162997&41435&2454&58535681&15401&39779224\\ \hline
+\end{tabular}\end{center}\end{table}
+
+\begin{table}[H]\begin{center}
+  \caption{Totalled timing results for various versions of \beagle.}
+\begin{tabular}{| l || r | r | r | r | r | r |}  \cline{2-7}
+\multicolumn{1}{ c }{} & \multicolumn{6}{| c| }{\textbf{Time Spent (seconds)}} \\ \cline{1-7}
+Version&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-7}
+\textbf{Unmodified \footnotemark[1]}&0&0&730.44&9.44&31.99&5623.21\\
+\textbf{Standard}&28.4&38.73&254.17&41.66&3.18&381.36\\
+\textbf{Enhanced}&22.91&20.29&180.54&32.6&2.51&281.38\\ \hline
+\end{tabular}\end{center}\end{table}
+
+\footnotetext[1]{This version failed to solve two problems within 8 hours (28800 seconds).
+These results are not included in the totals. See verbose table of results (Section \ref{sec:unres})}
+
 \subsection{Metric Results}
 \label{section:instr2}
 
@@ -62,6 +85,29 @@ Refer to email from Stephan. compare false positive results
 \section{Comparing Various Fingerprint Sampling Positions}
 
 
+\begin{table}[H]\begin{center}
+  \caption{Totalled inference counts and indexing statistics for various Fingerprint sampling sets.}
+\begin{tabular}{| l || r | r | r || r | r | r |}  \cline{2-7}
+\multicolumn{1}{ c }{} & \multicolumn{3}{ |c|| }{\textbf{Inference Counts}} & \multicolumn{3}{ c| }{\textbf{Indexing Results}} \\ \cline{1-7}
+Sample Set&Sup&Demod&NegUnit&TotalFound&SupFP&SimpFP\\  \cline{1-7}
+\textbf{FP3W}&164574&42402&2473&59433145&72051&40037948\\ 
+\textbf{FP4M}&150154&35709&1964&58989318&29469&40073471\\
+\textbf{FP6M}&146861&35326&1960&58119897&17641&39916687\\ 
+\textbf{FP7}&161411&41005&2441&58530669&23903&39818531\\
+\textbf{FP8X2}&161741&40876&2439&58336597&11754&39823989\\ \hline 
+\end{tabular}\end{center}\end{table}
+
+\begin{table}[H]\begin{center}
+  \caption{Totalled timing results for various Fingerprint sampling sets.}
+\begin{tabular}{| l || r | r | r | r | r | r |}  \cline{2-7}
+\multicolumn{1}{ c }{} & \multicolumn{6}{| c| }{\textbf{Time Spent (seconds)}} \\ \cline{1-7}
+Sample Set&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-7}
+\textbf{FP3W}&12.48&14.86&177.82&28.98&1.79&265.65\\ 
+\textbf{FP4M}&14.37&15.02&173.32&31.53&1.83&261.84\\
+\textbf{FP6M}&18.74&17.58&168.79&30.56&2.12&259.02\\ 
+\textbf{FP7}&22.26&19.82&180.13&35.23&2.38&282.22\\
+\textbf{FP8X2}&51.73&34.23&195.18&42.75&4.07&331.01\\ \hline 
+\end{tabular}\end{center}\end{table}
 
 %%% Local Variables: 
 %%% mode: latex

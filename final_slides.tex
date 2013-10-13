@@ -1,4 +1,4 @@
-\documentclass[10pt]{beamer}
+\documentclass[10pt,xcolor={dvipsnames}]{beamer}
 % Class options include: notes, notesonly, handout, trans,
 %                        hidesubsections, shadesubsections,
 %                        inrow, blue, red, grey, brown
@@ -6,12 +6,15 @@
 % Theme for beamer presentation.
 %\usepackage{beamerthemelined} 
 %\usepackage{times}
+%\usepackage[usenames,dvipsnames]{xcolor}
 \usepackage{anysize}
 \usepackage{fancyhdr}
 \usepackage{graphicx}
 \usepackage{pdfpages}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{caption}
+\usepackage{multirow}
 \usepackage{hyperref}
  \hypersetup{
  colorlinks=true,
@@ -37,6 +40,14 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
 \newcommand{\ecen}{\end{center}}
 \newcommand{\HSWAC}{Hierarchic Superposition with Weak Abstraction Calculus}
 \newcommand{\HSWA}{Hierarchic Superposition with Weak Abstraction}
+\newcommand{\compY}{\textcolor{Green}{\textbf{Y}}}
+\newcommand{\compN}{\textcolor{Red}{\textbf{N}}}
+\newcommand{\tcent}[1] {\vspace{-0.7cm}\begin{center}
+#1
+\end{center}\vspace{-0.1cm}}
+\newcommand{\cent}[1] {\begin{center}
+#1
+\end{center}}
 
 \begin{document}
 
@@ -61,14 +72,6 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
 
 \subsection{Motivation}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Background}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{The Beagle Theorem Prover}
-%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 \begin{frame}
   \frametitle{The Beagle Theorem Prover}
   \begin{itemize}
@@ -80,17 +83,65 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
 \end{frame}
 
 \begin{frame}
-  \frametitle{Superposition Calculus}
+  \frametitle{Extensions to Beagle}
   \begin{itemize}
-  \item<1-> Normal Superposition rule
+  \item<1-> Beagle has some major shortcomings which prevent it being more than
+  a proof of concept.
   \end{itemize}
 \end{frame}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Background}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{First Order Logic Terminology}
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{frame}
-  \frametitle{\HSWAC}
+  \frametitle{Terminology Used in this Presentation}
   \begin{itemize}
-  \item<1-> Extension of Superposition Calculus to accommodate hierarchic reasoning.
+  \item<1-> First Order Logic
+  \item<2-> Positions
+  \item<3-> Substitutions:
+    \begin{itemize}
+    \item<3-> $s$ is '\emph{unifiable}' with $t$ : $\sigma s = \sigma t$
+    \item<3-> $s$ '\emph{subsumes}' $t$ : $\sigma s = t$
+    \end{itemize}
   \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{The Beagle Theorem Prover}
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+  \frametitle{The Superposition Calculus}
+  \begin{itemize}
+  \item<1-> Normal Superposition rule
+  \end{itemize}
+  \begin{align*}
+&\textbf{Positive Superposition}\ \ \ \ \  \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{(s[r] \approx t \lor C \lor D)\sigma}\\
+\text{Where } &(i) \text{ $\sigma = $ simple mgu $(l,u)$,}\\
+\text{and } &(ii) \text{ $u$ is not a variable.}
+\end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The \HSWAC}
+  \begin{itemize}
+  \item<1-> Extension of the Superposition Calculus to accommodate hierarchic reasoning.
+  \end{itemize}
+  \begin{align*}
+&\textbf{Positive Superposition}\ \ \ \ \  \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{\text{abstr}((s[r] \approx t \lor C \lor D)\sigma)}\\
+\text{Where } &(i) \text{ $\sigma = $ simple mgu $(l,u)$,}\\
+&(ii) \text{ $u$ is not a variable,}\\
+&(iii) \text{ $r\sigma \not\succeq l\sigma$,}\\
+&(iv) \text{ $t\sigma \not\succeq s\sigma$,}\\
+&(v) \text{ $l$ and $u$ are not pure background terms,}\\
+&(vi) \text{ $(l \approx r)\sigma$ is strictly maximal in $(l \approx r \lor C)\sigma$,}\\
+\text{and } &(vii) \text{ $(s \approx t)\sigma$ is strictly maximal in $(s \approx t \lor D)\sigma$.}
+\end{align*}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -101,11 +152,6 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
   \begin{itemize}
   \item<1-> Term indexers aim to collect all FOL terms which potentially match a `query' term.
   \item<1-> Three important relations:
-  \begin{itemize}
-  \item<2-> 'Unifiable': $\sigma s = \sigma t$
-  \item<2-> 'Instance Of': $s = \sigma t$
-  \item<2-> 'Generalises': $\sigma s = t$
-  \end{itemize}
   \item<3-> Top-Symbol Hashing.
   \item<3-> Discrimination Trees.
   \item<3-> Path Indexing.
@@ -120,38 +166,55 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
                   %Left Bot Right Top
   \begin{itemize}
   \item<1-> Maintain a collection of \emph{fingerprints} for terms.
-  \item<2-> A term fingerprint is an array over $F \cup \{\mathbf{A, B, N}\}$.
-  \item<3-> \includegraphics[page=6,scale=0.7,trim=5.5cm 20.5cm 5cm 4cm,clip]{schulz_fp-index_ext}
+  \item<2-> A term fingerprint is an array over $F \cup \{\mathbf{A, B, N}\}$,\\ the \emph{Fingerprint Features.}
+  \item<3->[] 
+  {\small \begin{table}\caption{Fingerprint Feature comparison tables for \emph{unification}
+  (left) and \emph{subsumption} (right)}\begin{tabular}{| c || c | c | c | c | c |}
+  \hline
+           &  $f_1$      &  $f_2$      &  \textbf{A} &  \textbf{B} &  \textbf{N} \\ \hline \hline
+  $f_1$    &  \compY &  \compN &  \compY &  \compY &  \compN \\ 
+  $f_2$    &  \compN &  \compY &  \compY &  \compY &  \compN \\ 
+\textbf{A} &  \compY &  \compY &  \compY &  \compY &  \compN \\
+\textbf{B} &  \compY &  \compY &  \compY &  \compY &  \compY \\ 
+\textbf{N} &  \compN &  \compN &  \compN &  \compY &  \compY \\ \hline
+  \end{tabular}\ \ \ \ \ \ \begin{tabular}{| c || c | c | c | c | c |}
+  \hline
+           &  $f_1$      &  $f_2$      &  \textbf{A} &  \textbf{B} &  \textbf{N} \\ \hline \hline
+  $f_1$    &  \compY &  \compN &  \compN &  \compN &  \compN \\ 
+  $f_2$    &  \compN &  \compY &  \compN &  \compN &  \compN \\ 
+\textbf{A} &  \compY &  \compY &  \compY &  \compN &  \compN \\
+\textbf{B} &  \compY &  \compY &  \compY &  \compY &  \compY \\ 
+\textbf{N} &  \compN &  \compN &  \compN &  \compN &  \compY \\ \hline
+  \end{tabular}\end{table}}\vspace{0.5cm}
   \item<4-> {\footnotesize Schulz, Stephan: Fingerprint Indexing for Paramodulation and Rewriting. In:
   Lecture Notes in Computer Science volume 7364 pp. 447--483 (2012).}
 
   \end{itemize}
 \end{frame}
 
-  \begin{frame}
-  \frametitle{Fingerprint Indexing -- Potential Performance}
-  \begin{center}{\tiny
-  \begin{tabular}{| l | r | r | r | r | r | r | r |} \hline
-  Index & Run time & Sat time & PM time & PMI time & MGU time & BR time & BRI time \\ \hline
-NoIdx & 16062.392 & 14078.300 &  8980.320 & 0.000 & 2545.080  & 2280.250 & 0.000\\
-FP1 & 7006.758 & 6145.870 & 1816.100 & 25.710 & 450.760 & 379.570 & 40.150\\
-FP6M & 6000.177 & 5385.810 & 1181.710 & 38.240 & 99.110 & 39.010 & 55.660\\
-NPDT & 6082.246 & 5434.760 & 1184.750 & 64.910 & 83.110 & 33.200 & 79.910 \\\hline
-  \end{tabular}}\vspace{0.5cm}
-                  %Left Bot Right Top
-  \includegraphics[page=13,scale=0.5,trim=6cm 8cm 7cm 12cm,clip]{schulz_fp-index_ext}
-  \hspace{1cm}
-                  %Left Bot Right Top
-  \includegraphics[page=14,scale=0.5,trim=6cm 16.2cm 7cm 4cm,clip]{schulz_fp-index_ext}
-  \end{center}
-\end{frame}
-
-%\begin{frame}
-%  \frametitle{Fingerprint Indexing -- Example Fingerprint Index}
-   %Structure of fingerprint indexes
-                  %Left Bot Right Top
-%  \includegraphics[page=7,scale=0.7,trim=4cm 13.5cm 5cm 4.5cm,clip]{schulz_fp-index_ext}
+%  \begin{frame}
+%  \frametitle{Fingerprint Indexing -- Potential Performance}
+%  \begin{center}{\tiny
+%  \begin{tabular}{| l | r | r | r | r | r | r | r |} \hline
+%  Index & Run time & Sat time & PM time & PMI time & MGU time & BR time & BRI time \\ \hline
+%NoIdx & 16062.392 & 14078.300 &  8980.320 & 0.000 & 2545.080  & 2280.250 & 0.000\\
+%FP1 & 7006.758 & 6145.870 & 1816.100 & 25.710 & 450.760 & 379.570 & 40.150\\
+%FP6M & 6000.177 & 5385.810 & 1181.710 & 38.240 & 99.110 & 39.010 & 55.660\\
+%NPDT & 6082.246 & 5434.760 & 1184.750 & 64.910 & 83.110 & 33.200 & 79.910 \\\hline
+%  \end{tabular}}\vspace{0.5cm}
+%                  %Left Bot Right Top
+%  \includegraphics[page=13,scale=0.5,trim=6cm 8cm 7cm 12cm,clip]{schulz_fp-index_ext}
+%  \hspace{1cm}
+%                  %Left Bot Right Top
+%  \includegraphics[page=14,scale=0.5,trim=6cm 16.2cm 7cm 4cm,clip]{schulz_fp-index_ext}
+%  \end{center}
 %\end{frame}
+
+\begin{frame}
+  \frametitle{Fingerprint Indexing -- Example Fingerprint Index}
+                  %Left Bot Right Top
+  \includegraphics[page=7,scale=0.7,trim=4cm 13.5cm 5cm 4.5cm,clip]{schulz_fp-index_ext}
+\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Implementation}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -191,6 +254,19 @@ NPDT & 6082.246 & 5434.760 & 1184.750 & 64.910 & 83.110 & 33.200 & 79.910 \\\hli
   \frametitle{Indexing Simplification}
   \begin{itemize}
   \item<1-> Refer to rule. Requires...
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Indexing Negative Unit Simplification}
+  \begin{itemize}
+  \item<1->[] 
+\begin{align*}
+&\textbf{Negative Unit Simplification}\ \ \ \ \ \frac{l\not\approx r \quad \quad s \approx t  \lor C}{C}\\
+\text{Where } &(i)\ \  \exists \sigma\ \  s.t.\ \  (l \approx r)\sigma \equiv s \approx t.\\
+&\text{The clause $s \approx t  \lor C$ may be removed.}
+\end{align*}
+  \item<2-> This requires an index capable of matching converted Equation objects.
   \end{itemize}
 \end{frame}
 
@@ -262,16 +338,34 @@ NPDT & 6082.246 & 5434.760 & 1184.750 & 64.910 & 83.110 & 33.200 & 79.910 \\\hli
 \end{frame}
 
 \begin{frame}
-  \begin{itemize}
   \frametitle{Comparing Varieties of Beagle}
-  \item<1-> Results table
-  \end{itemize}
+  \begin{table}[H]\scriptsize
+  \caption{Totalled inference counts and indexing statistics for various versions of beagle.}
+\begin{tabular}{| l || r | r | r || r | r | r |}  \cline{2-7}
+\multicolumn{1}{ c }{} & \multicolumn{3}{ |c|| }{\textbf{Inference Counts}} & \multicolumn{3}{ c| }{\textbf{Indexing Results}} \\ \cline{1-7}
+Version&Sup&Demod&NegUnit&TotalFound&SupFP&SimpFP\\  \cline{1-7}
+\textbf{Unmodified \footnotemark[1]}&414216&29097&1826&0&0&0\\
+\textbf{Standard}&162881&41414&2452&61884768&15525&39778148\\
+\textbf{Enhanced}&162997&41435&2454&58535681&15401&39779224\\ \hline
+\end{tabular}\end{table}
+\begin{table}[H]\scriptsize
+  \caption{Totalled timing results for various versions of beagle.}
+\begin{tabular}{| l || r | r | r | r | r | r |}  \cline{2-7}
+\multicolumn{1}{ c }{} & \multicolumn{6}{| c| }{\textbf{Time Spent (seconds)}} \\ \cline{1-7}
+Version&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-7}
+\textbf{Unmodified \footnotemark[1]}&0&0&730.44&9.44&31.99&5623.21\\
+\textbf{Standard}&28.4&38.73&254.17&41.66&3.18&381.36\\
+\textbf{Enhanced}&22.91&20.29&180.54&32.6&2.51&281.38\\ \hline
+\end{tabular}\end{table}
+
+\footnotetext[1]{{\footnotesize This version failed to solve two out of the fifty problems within 8 hours.}}
 \end{frame}
 
 \begin{frame}
   \begin{itemize}
-  \frametitle{Most Extreme Example Problems}
-  \item<1-> Describe crazy DAT results.
+  \frametitle{Results Analysis}
+  \item<1-> Times per inference
+  \item<2-> Extreme examples
   \end{itemize}
 \end{frame}
 
@@ -287,10 +381,30 @@ NPDT & 6082.246 & 5434.760 & 1184.750 & 64.910 & 83.110 & 33.200 & 79.910 \\\hli
 \end{frame}
 
 \begin{frame}
-  \begin{itemize}
   \frametitle{Fingerprint Sampling Varieties}
-  \item<1-> Results table
-  \end{itemize}
+\begin{table}[H]\scriptsize
+  \caption{Totalled inference counts and indexing statistics for various Fingerprint sampling sets.}
+\begin{tabular}{| l || r | r | r || r | r | r |}  \cline{2-7}
+\multicolumn{1}{ c }{} & \multicolumn{3}{ |c|| }{\textbf{Inference Counts}} & \multicolumn{3}{ c| }{\textbf{Indexing Results}} \\ \cline{1-7}
+Sample Set&Sup&Demod&NegUnit&TotalFound&SupFP&SimpFP\\  \cline{1-7}
+\textbf{FP3W}&164574&42402&2473&59433145&72051&40037948\\ 
+\textbf{FP4M}&150154&35709&1964&58989318&29469&40073471\\
+\textbf{FP6M}&146861&35326&1960&58119897&17641&39916687\\ 
+\textbf{FP7}&161411&41005&2441&58530669&23903&39818531\\
+\textbf{FP8X2}&161741&40876&2439&58336597&11754&39823989\\ \hline 
+\end{tabular}\end{table}
+
+\begin{table}[H]\scriptsize
+  \caption{Totalled timing results for various Fingerprint sampling sets.}
+\begin{tabular}{| l || r | r | r | r | r | r |}  \cline{2-7}
+\multicolumn{1}{ c }{} & \multicolumn{6}{| c| }{\textbf{Time Spent (seconds)}} \\ \cline{1-7}
+Sample Set&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-7}
+\textbf{FP3W}&12.48&14.86&177.82&28.98&1.79&265.65\\ 
+\textbf{FP4M}&14.37&15.02&173.32&31.53&1.83&261.84\\
+\textbf{FP6M}&18.74&17.58&168.79&30.56&2.12&259.02\\ 
+\textbf{FP7}&22.26&19.82&180.13&35.23&2.38&282.22\\
+\textbf{FP8X2}&51.73&34.23&195.18&42.75&4.07&331.01\\ \hline 
+\end{tabular}\end{table}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
