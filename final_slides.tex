@@ -14,6 +14,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{caption}
+\usepackage{listings}
 \usepackage{multirow}
 \usepackage{hyperref}
  \hypersetup{
@@ -75,10 +76,14 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
 \begin{frame}
   \frametitle{The Beagle Theorem Prover}
   \begin{itemize}
-  \item<1-> Beagle is a First-Order-Logic resolution theorem prover with equality.
-  \item<2-> Makes use of modular 'Background Theories' to make efficient use of known facts.
-  \item<3-> This requires the carefully constructed `Hierarchic Superposition with Weak Abstraction
-  Calculus' in order to ensure consistency and completeness.
+  \item<1-> Beagle is a First-Order-Logic resolution theorem prover with equality,
+            built to show off the capabilities of the \HSWAC.
+  \item<2-> This calculus is capable of \emph{hierarchic reasoning} by incorporating a
+  \emph{background prover}.
+  \item<2-> Background provers act as a black box which can instantly prove
+  known facts. For example integer arithmetic.
+  \item<3-> The calculus is carefully constructed with a process known as
+  \emph{weak abstraction} in order to ensure consistency and completeness.
   \end{itemize}
 \end{frame}
 
@@ -87,6 +92,9 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
   \begin{itemize}
   \item<1-> Beagle has some major shortcomings which prevent it being more than
   a proof of concept.
+  \item<1-> In particular, it lacks an efficient manner of locating terms for inference
+  \item<2-> Enter 'Term Indexing', a method for efficiently managing and collecting
+  these terms.
   \end{itemize}
 \end{frame}
 
@@ -151,10 +159,9 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
   \frametitle{Term Indexing Techniques}
   \begin{itemize}
   \item<1-> Term indexers aim to collect all FOL terms which potentially match a `query' term.
-  \item<1-> Three important relations:
-  \item<3-> Top-Symbol Hashing.
-  \item<3-> Discrimination Trees.
-  \item<3-> Path Indexing.
+  \item<2-> Top-Symbol Hashing.
+  \item<2-> Discrimination Trees.
+  \item<2-> Path Indexing.
   \end{itemize}
 \end{frame}
 
@@ -215,6 +222,16 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
                   %Left Bot Right Top
   \includegraphics[page=7,scale=0.7,trim=4cm 13.5cm 5cm 4.5cm,clip]{schulz_fp-index_ext}
 \end{frame}
+
+\begin{frame}
+  \frametitle{Why Fingerprint Indexing?}
+  \begin{itemize}
+  \item<1-> New and not thoroughly tested technique.
+  \item<2-> Currently showing very promising results.
+  \item<3-> Highly customisable and configurable.
+  \end{itemize}
+\end{frame}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Implementation}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -223,26 +240,32 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
 \subsection{Implementing Fingerprint Indexing}
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
-  \frametitle{Base Fingerprint Indexing}
-                  %Left Bot Right Top
-  \begin{itemize}
-  \item<1-> Analysis of program indicated two key areas of improvement:
-  \item<2-> Inferences via the Superposition rules.
-  \item<2-> Simplifying Clauses.
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
   \frametitle{Creating the Fingerprint Index}
   \begin{itemize}
   \item<1-> Addition of terms.
-  \item<2-> Retrieval of terms.
+  \item<2-> Requires an Fingerprint generation along with implementation and traversal of the Index tree structure.
+  \item<3-> Retrieval of terms.
+  \item<4-> Requires implementation of the comparison tables and a more complex
+  Index traversal algorithm.
   \end{itemize}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Indexing Applications}
 %%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+  \frametitle{Beagle's Main Procedure}
+  \begin{itemize}
+  \item<1-> 
+Maintain two Clause Sets, \emph{new} and \emph{old}.\\
+Remove Clauses from \emph{new} one at a time, simplify them and then
+attempt inference rules.
+  \item<2-> Two key areas of improvement ($O(n)$ operations):
+  \item<2-> Inferences via the Superposition rules.
+  \item<2-> Simplifying Clauses.
+  \end{itemize}
+\end{frame}
+
 \begin{frame}
   \frametitle{Indexing Superposition}
   \begin{itemize}
@@ -253,7 +276,14 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
 \begin{frame}
   \frametitle{Indexing Simplification}
   \begin{itemize}
-  \item<1-> Refer to rule. Requires...
+  \item<1-> Simplification rules exist to implement special cases of the rules
+  in the \HSWAC.
+  \item<1-> These special cases allow redundant Clauses to be removed; preventing
+  clutter in the inference process.
+  \item<2-> The two main simplification rules used by Beagle are \emph{Negative Unit Simplification}
+  and \emph{Demodulation}
+  \item<3-> These rules require checking for \emph{subsumption}, which requires 
+  implementing a new comparison table for Fingerprint Indexing.
   \end{itemize}
 \end{frame}
 
@@ -263,10 +293,26 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
   \item<1->[] 
 \begin{align*}
 &\textbf{Negative Unit Simplification}\ \ \ \ \ \frac{l\not\approx r \quad \quad s \approx t  \lor C}{C}\\
-\text{Where } &(i)\ \  \exists \sigma\ \  s.t.\ \  (l \approx r)\sigma \equiv s \approx t.\\
+&\text{Where } (i)\ \  \exists \sigma\ \  s.t.\ \  (l \approx r)\sigma \equiv s \approx t.\\
 &\text{The clause $s \approx t  \lor C$ may be removed.}
 \end{align*}
-  \item<2-> This requires an index capable of matching converted Equation objects.
+  \item<2-> Searching for valid subsuming Literals is extremely time consuming.
+  \item<2-> Requires an index capable of matching Equations rather than Terms.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Indexing Demodulation}
+  \begin{itemize}
+  \item<1->[] 
+\begin{align*}
+&\textbf{Demodulation}\ \ \ \ \ \frac{l \to r \quad \quad s[u] \approx t  \lor D}{ s[r\sigma] \approx t \lor D}\\
+&\text{Where } l\sigma = u\\
+&\text{The clause $s[u] \approx t  \lor D$ may be removed.}
+\end{align*}
+  \item<2-> Like in Negative Unit Simplification, the most costly operation is searching
+  for subsuming $l$ Terms.
+  \item<2-> We must perform this search for every possible subterm $u$ of $s$.
   \end{itemize}
 \end{frame}
 
@@ -277,33 +323,28 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
   \frametitle{Fingerprint Indexing for the Hierarchic Superposition with Weak Abstraction Calculus}
                   %Left Bot Right Top
   \begin{itemize}
-  \item<1-> As mentioned, current implementation is somewhat `na\"{i}ve'.
-  \item<2-> Fingerprint indexing could be greatly improved by tailoring it specifically
-  to Beagle's FOL calculus.
-  \item<2-> Main improvement is to consider Beagle's \emph{foreground} and \emph{background}
-  terms.
-  \item<3-> Furthermore indexing may be applied to more
-  of HSWA's inference rules; in particular simplification.
-  \item<4-> These extensions will not require so much modification; as the fingerprint
-  indexing framework is already built.
+  \item<1-> The \HSWAC\ imposes many restrictions on what can be used for inference.
+  \item<2-> We may take advantage of some of these conditions to increase the effectiveness of Fingerprint Indexing.
+  \item<2->\begin{table}[H]\scriptsize
+  \caption{Fingerprint comparison table for unification; extended by considering the term hierarchy.}
+  \label{tab:extunif}
+  \begin{tabular}{| c || c | c | c | c | c || c | c | c | c |}
+  \hline
+            &  $f_1$  &  $f_2$  &  \textbf{A} &  \textbf{B} &  \textbf{N} &    $f_1$+  & $f_2$+  & \textbf{A}+ & \textbf{B}+ \\ \hline \hline
+  $f_1$     &  \compY &  \compN &  \compY     &  \compY     &  \compN     &    \compN  & \compN  & \compN      & \compN      \\ 
+  $f_2$     &  \compN &  \compY &  \compY     &  \compY     &  \compN     &    \compN  & \compN  & \compN      & \compN      \\ 
+\textbf{A}  &  \compY &  \compY &  \compY     &  \compY     &  \compN     &    \compY  & \compY  & \compY      & \compY      \\
+\textbf{B}  &  \compY &  \compY &  \compY     &  \compY     &  \compY     &    \compY  & \compY  & \compY      & \compY      \\ 
+\textbf{N}  &  \compN &  \compN &  \compN     &  \compY     &  \compY     &    \compN  & \compN  & \compN      & \compY      \\ \hline \hline
+%
+$f_1$+      &  \compN &  \compN &  \compY     &  \compY     &  \compN     &    \compY  & \compN  & \compY      & \compY      \\ 
+$f_2$+      &  \compN &  \compN &  \compY     &  \compY     &  \compN     &    \compN  & \compY  & \compY      & \compY      \\ 
+\textbf{A}+ &  \compN &  \compN &  \compY     &  \compY     &  \compN     &    \compY  & \compY  & \compY      & \compY      \\
+\textbf{B}+ &  \compN &  \compN &  \compY     &  \compY     &  \compY     &    \compY  & \compY  & \compY      & \compY      \\ \hline
+  \end{tabular}\end{table}
   \end{itemize}
-\end{frame}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Other Improvements}
-%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-  \frametitle{Other Potential Indexing Improvements}
-  \begin{itemize}
-  \item<1-> An additional goal of the project is to consider how Fingerprint Indexing
-  could be improved upon more generally.
-  \item<2-> The main area to consider here is the sampling positions. Sampling many
-  positions reduces the returned sets, but increases indexing overhead.
-  \item<3-> Large problems better suit indexing; but it is difficult to know ahead of
-  time what a `large' problem is.
-  \end{itemize}
 \end{frame}
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -327,15 +368,6 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Beagle Comparisons}
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-  \begin{itemize}
-  \frametitle{Comparing Varieties of Beagle}
-  \item<1-> Un-indexed beagle.
-  \item<2-> Minimal Indexing.
-  \item<3-> Full Indexing.
-  \item<4-> Indexing with Optimisations.
-  \end{itemize}
-\end{frame}
 
 \begin{frame}
   \frametitle{Comparing Varieties of Beagle}
@@ -410,7 +442,6 @@ Sample Set&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-7}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 
 \end{NoHyper}
