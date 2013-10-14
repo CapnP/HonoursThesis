@@ -12,6 +12,7 @@
 \usepackage{graphicx}
 \usepackage{pdfpages}
 \usepackage{amsmath}
+\usepackage{tikz}
 \usepackage{amssymb}
 \usepackage{caption}
 \usepackage{listings}
@@ -87,16 +88,27 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
   \end{itemize}
 \end{frame}
 
+{
+\usebackgroundtemplate{\tikz\node[opacity=0.3] {\includegraphics[width=\paperwidth]{robobeagle}};}
 \begin{frame}
-  \frametitle{Extensions to Beagle}
+  \frametitle{Extending Beagle}
   \begin{itemize}
   \item<1-> Beagle has some major shortcomings which prevent it being more than
   a proof of concept.
-  \item<1-> In particular, it lacks an efficient manner of locating terms for inference
+  \item<1-> In particular, it lacks an efficient manner of locating terms for inference.
   \item<2-> Enter 'Term Indexing', a method for efficiently managing and collecting
   these terms.
+  \item<3-> Research Questions:
+    \begin{itemize}
+    \item<3-> How can Term Indexing (in particular Fingerprint Indexing) be implemented
+    and applied to Beagle?
+    \item<3-> How can Fingerprint Indexing be improved; generally and with respect to
+    Beagle's specific calculus?
+    \item<3-> What sort of improvement will this implementation yield in the prover?
+    \end{itemize}
   \end{itemize}
 \end{frame}
+}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Background}
@@ -504,6 +516,7 @@ Sample Set&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-7}
 \textbf{FP7}&19.98&18.74&170.83&12.37&2.37&249.22\\
 \textbf{FP8X2}&45.56&32.59&181.43&21.45&4.06&294.8\\ \hline 
 \end{tabular}\end{table}
+Note that for more relevant comparisons these results exclude PUZ037-1.p.
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -512,8 +525,8 @@ Sample Set&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-7}
 
 \begin{frame}
   \begin{itemize}
-  \frametitle{Fingerprint Sampling Varieties}
-  \item<1-> The \HSWAC\ is a
+  \frametitle{The Benefits of Indexing Beagle}
+  \item<1-> The \HSWAC\ is a 
   \item<2-> 
   \end{itemize}
 \end{frame}
