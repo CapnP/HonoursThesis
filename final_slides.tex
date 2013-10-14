@@ -12,7 +12,6 @@
 \usepackage{graphicx}
 \usepackage{pdfpages}
 \usepackage{amsmath}
-\usepackage{tikz}
 \usepackage{amssymb}
 \usepackage{caption}
 \usepackage{listings}
@@ -121,9 +120,9 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
 \begin{frame}
   \frametitle{Terminology Used in this Presentation}
   \begin{itemize}
-  \item<1-> First Order Logic
-  \item<2-> Positions
-  \item<3-> Substitutions:
+  \item<1-> Position: List of integers indicating a precise subterm. $s[u]$ refers
+  to a term $s$ with a subterm $u$.
+  \item<2-> Substitutions:
     \begin{itemize}
     \item<3-> $s$ is '\emph{unifiable}' with $t$ : $\sigma s = \sigma t$
     \item<3-> $s$ '\emph{subsumes}' $t$ : $\sigma s = t$
@@ -142,7 +141,7 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
   \end{itemize}
   \begin{align*}
 &\textbf{Positive Superposition}\ \ \ \ \  \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{(s[r] \approx t \lor C \lor D)\sigma}\\
-\text{Where } &(i) \text{ $\sigma = $ simple mgu $(l,u)$,}\\
+\text{Where } &(i) \text{ $\sigma = $ mgu $(l,u)$,}\\
 \text{and } &(ii) \text{ $u$ is not a variable.}
 \end{align*}
 \end{frame}
@@ -254,11 +253,10 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
 \begin{frame}
   \frametitle{Creating the Fingerprint Index}
   \begin{itemize}
-  \item<1-> Addition of terms.
-  \item<2-> Requires an Fingerprint generation along with implementation and traversal of the Index tree structure.
-  \item<3-> Retrieval of terms.
-  \item<4-> Requires implementation of the comparison tables and a more complex
-  Index traversal algorithm.
+  \item<1-> Two main tasks: Add terms to the index and retrieve them.
+  \item<2-> Addition requires Fingerprint generation along with implementation and traversal of the Index tree structure.
+  \item<3-> Retrieval requires implementation of the comparison tables and a more complex
+  Index traversal algorithm. We must collect all compatible leaves and union them together.
   \end{itemize}
 \end{frame}
 
@@ -271,11 +269,12 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
   \item<1-> 
 Maintain two Clause Sets, \emph{new} and \emph{old}.\\
 Remove Clauses from \emph{new} one at a time, simplify them and then
-attempt inference rules.
-  \item<2-> Two key areas of improvement ($O(n)$ operations):
+attempt inference rules. Results are added to \emph{new}, simplified Clause
+is added to \emph{old}.
+  \item<2-> Two key areas of improvement:
   \begin{itemize}
-  \item<2-> Inferences via the Superposition rules.
-  \item<2-> Simplifying Clauses.
+  \item<2-> Inferences via the Superposition rules. $O(|old|)$
+  \item<2-> Simplifying Clauses. $O(|old| + |new|)$
   \end{itemize}
   \end{itemize}
 \end{frame}
@@ -486,8 +485,18 @@ DAT048=1.p&17.65& 35.77& \textbf{N/A}\\\hline
 \begin{frame}
   \begin{itemize}
   \frametitle{Fingerprint Sampling Varieties}
-  \item<1-> Reasoning. Cite shulz and FP/Speed balance
-  \item<2-> Different position samples
+  \item<1-> We have yet to consider the impact of varying the configuration for 
+  Fingerprint Indexing; in particular the varying the list of positions which we are sampling.
+  \item<2-> It is important to strike a balance between accuracy and a simple index structure.
+  \item<3-> We present some results for some of the most successful position sets from
+  Shulz's paper.
+  \begin{itemize}
+  \item FP3W: $\epsilon$, 1, 2
+  \item FP4M: $\epsilon$, 1, 2, 1.1
+  \item FP6M: $\epsilon$, 1, 2, 3, 1.1, 1.2
+  \item FP7:  $\epsilon$, 1, 2, 1.1, 1.2, 2.1, 2.2
+  \item FP8X2:$\epsilon$, 1, 2, 3, 4, 1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, 1.1.1, 2.1.1
+  \end{itemize}
   \end{itemize}
 \end{frame}
 
@@ -526,8 +535,16 @@ Note that for more relevant comparisons these results exclude PUZ037-1.p.
 \begin{frame}
   \begin{itemize}
   \frametitle{The Benefits of Indexing Beagle}
-  \item<1-> The \HSWAC\ is a 
-  \item<2-> 
+  \item<1-> The \HSWAC\ is a great leap forward for hierarchic reasoning; and the benefits
+  that it offers are worth exploring thoroughly.
+  \item<2-> By adding Fingerprint Indexing to Beagle, this project
+  has made this task far more approachable by greatly increasing the number of
+  logic problems which can be solved within a reasonable timeframe.
+  \item<3-> We have also shown that tailoring indexing to the specific needs of
+  a calculus is worthwhile; improving results by 50\% in some cases.
+  \item<4-> In Shulz's paper Fingerprint Indexing appeared to be a very promising technique.
+  This project has verified it's viability in the term indexing field and has made
+  Beagle viable as far more than a proof of concept.
   \end{itemize}
 \end{frame}
 

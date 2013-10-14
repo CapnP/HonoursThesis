@@ -113,16 +113,18 @@ is certainly not in active use by any popular theorem provers.
 
 \subsubsection{Discrimination Trees}
 
-Discrimination Trees are a \emph{perfect} indexing technique in that anything
-returned by the indexer is guaranteed to be unifiable in some way \cite{mccune}. This advantage
-is offset by taking a considerable amount of to retrieve terms.
-
-The technique works by storing terms in a tree at a position determined by the structure
+Discrimination Trees work by storing terms in a tree at a position determined by the structure
 of each term. Each branch in the tree has a label which is either a function symbol
 (e.g. $f$, $g$) or *, which may represent any variable. To place a term in the tree
 we traverse the term from left to right and follow or create branches according to
 which symbol we observe. This process is simple. but retrieving from the index is a
 complex process requiring a backtracking algorithm.
+
+This technique can be extended by keeping track of variable names; as opposed to
+replacing them all with a *. This extension makes Discrimination Trees a \emph{perfect} indexing technique in that anything
+returned by the indexer is guaranteed to be unifiable\cite{mccune}. In practice
+this extension can result in an unnecessarily large index which takes
+a considerable amount of to retrieve terms.
 
 Discrimination Trees have another distinct disadvantage in that their tree data
 structure can grow arbitrarily large depending on the size and variety of observed terms.
