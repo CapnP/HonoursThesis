@@ -390,30 +390,29 @@ Version&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-7}
 \textbf{Enhanced}&18.74&17.58&168.79&30.56&2.12&259.02\\ \hline
 \end{tabular}\end{table}
 
+
 \footnotetext[1]{{\footnotesize This version failed to solve two out of the fifty problems within 8 hours.}}
 \end{frame}
 
 \begin{frame}
   \begin{itemize}
+  \frametitle{Results Analysis}
+  \item<1->[]
   \frametitle{Time Spent Per Inference}
  \begin{table}[H]\scriptsize
   \caption{Superposition time for the 6 most extreme problem examples.}
 \begin{tabular}{| l || r | r | r |}  \hline
-Version&Superposition&Demodulation&Negative Unit Simplification\\  \hline
-Superposition&17.53& 31.54& 48.62\\
-Demodulation&13.2& 22.51& 130.77\\
-Negative Unit Simplification&14.49& 21.29& 190.71\\
-\textbf{Unmodified}&12.53& 24.04& 294.86\\
-\textbf{Standard}&18.67& 26.08& \textbf{N/A} \\
-\textbf{Enhanced}&17.65& 35.77& \textbf{N/A}\\\hline
-\end{tabular}\end{table}
-  \item<2-> When taking number of inferences into account for DAT038=1.p we observe
-  1.2 milliseconds per superposition for the full implementation versus 2.2 milliseconds
-  per superposition for unindexed beagle.
-  \item<3-> For the entire totals table we observe 1.1 msps for enhanced, 1.6 msps
-  for standard and 1.7 msps for none.
+Version&Superposition&Demodulation&NegUnit Simplification\\  \hline
+\textbf{Unmodified}&1.7ms & 0.3ms & 17.5ms  \\
+\textbf{Standard}  &1.5ms & 1.0ms & 1.3ms  \\
+\textbf{Enhanced}  &1.1ms & 0.8ms & 1.0ms  \\\hline
+\end{tabular}\end{table}  
+\item<2-> Most typical application of Demodulation is a Literal like $X \to f(a)$.
+$X$ will match anything, making fingerprint indexing a waste of time.
+\item<3-> When excluding PUZ037-1.p we have 0.29, 0.39 and 0.31 milliseconds per Demodulation.
   \end{itemize}
 \end{frame}
+
 
 
 \begin{frame}
@@ -447,8 +446,6 @@ DAT048=1.p&17.65& 35.77& \textbf{N/A}\\\hline
   \item<2-> When taking number of inferences into account for DAT038=1.p we observe
   1.2 milliseconds per superposition for the full implementation versus 2.2 milliseconds
   per superposition for unindexed beagle.
-  \item<3-> For the entire totals table we observe 1.1 msps for enhanced, 1.6 msps
-  for standard and 1.7 msps for none.
   \end{itemize}
 \end{frame}
 
@@ -470,11 +467,11 @@ DAT048=1.p&17.65& 35.77& \textbf{N/A}\\\hline
 \begin{tabular}{| l || r | r | r || r | r | r |}  \cline{2-7}
 \multicolumn{1}{ c }{} & \multicolumn{3}{ |c|| }{\textbf{Inference Counts}} & \multicolumn{3}{ c| }{\textbf{Indexing Results}} \\ \cline{1-7}
 Sample Set&Sup&Demod&NegUnit&TotalFound&SupFP&SimpFP\\  \cline{1-7}
-\textbf{FP3W}&164574&42402&2473&59433145&72051&40037948\\ 
-\textbf{FP4M}&150154&35709&1964&58989318&29469&40073471\\
-\textbf{FP6M}&146861&35326&1960&58119897&17641&39916687\\ 
-\textbf{FP7}&161411&41005&2441&58530669&23903&39818531\\
-\textbf{FP8X2}&161741&40876&2439&58336597&11754&39823989\\ \hline 
+\textbf{FP3W}&162218&42402&2472&13913606&69429&1815992\\
+\textbf{FP4M}&147798&35709&1963&13469779&26847&1851515\\
+\textbf{FP6M}&144505&35326&1959&12601762&16406&1694731\\
+\textbf{FP7}&159055&41005&2440&13011130&21281&1596575\\
+\textbf{FP8X2}&159385&40876&2438&12819184&11229&1602033\\ \hline 
 \end{tabular}\end{table}
 
 \begin{table}[H]\scriptsize
@@ -482,17 +479,25 @@ Sample Set&Sup&Demod&NegUnit&TotalFound&SupFP&SimpFP\\  \cline{1-7}
 \begin{tabular}{| l || r | r | r | r | r | r |}  \cline{2-7}
 \multicolumn{1}{ c }{} & \multicolumn{6}{| c| }{\textbf{Time Spent (seconds)}} \\ \cline{1-7}
 Sample Set&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-7}
-\textbf{FP3W}&12.48&14.86&177.82&28.98&1.79&265.65\\ 
-\textbf{FP4M}&14.37&15.02&173.32&31.53&1.83&261.84\\
-\textbf{FP6M}&18.74&17.58&168.79&30.56&2.12&259.02\\ 
-\textbf{FP7}&22.26&19.82&180.13&35.23&2.38&282.22\\
-\textbf{FP8X2}&51.73&34.23&195.18&42.75&4.07&331.01\\ \hline 
+\textbf{FP3W}&11.52&14.02&170.37&9.26&1.78&237.75\\
+\textbf{FP4M}&13.09&14.12&164.95&9.51&1.82&230.68\\
+\textbf{FP6M}&16.82&16.5&159.93&10.78&2.11&229.59\\
+\textbf{FP7}&19.98&18.74&170.83&12.37&2.37&249.22\\
+\textbf{FP8X2}&45.56&32.59&181.43&21.45&4.06&294.8\\ \hline 
 \end{tabular}\end{table}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+  \begin{itemize}
+  \frametitle{Fingerprint Sampling Varieties}
+  \item<1-> The \HSWAC is a
+  \item<2-> 
+  \end{itemize}
+\end{frame}
 
 
 \end{NoHyper}
