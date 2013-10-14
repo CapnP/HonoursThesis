@@ -394,10 +394,37 @@ Version&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-7}
 \end{frame}
 
 \begin{frame}
+  \frametitle{Runtimes under 5 seconds}
+                  %Left Bot Right Top
+  \includegraphics[scale=0.56,trim=2.7cm 5cm 0cm 3cm,clip]{suptime}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Runtimes under 5 seconds}
+                  %Left Bot Right Top
+  \includegraphics[scale=0.56,trim=2.7cm 5cm 0cm 3cm,clip]{suptimetrends}
+\end{frame}
+
+
+\begin{frame}
   \begin{itemize}
   \frametitle{Results Analysis}
   \item<1-> Times per inference
-  \item<2-> Extreme examples
+  \item<2->
+ \begin{table}[H]\scriptsize
+  \caption{Superposition time for the 6 most extreme problem examples.}
+\begin{tabular}{| l || r | r | r |}  \hline
+Problem&Enhanced&Standard&Unmodified\\  \hline
+DAT050=1.p&17.53& 31.54& 48.62\\
+DAT039=1.p&13.2& 22.51& 130.77\\
+DAT040=1.p&14.49& 21.29& 190.71\\
+DAT038=1.p&12.53& 24.04& 294.86\\
+DAT043=1.p&18.67& 26.08& \textbf{N/A} \\
+DAT048=1.p&17.65& 35.77& \textbf{N/A}\\\hline
+\end{tabular}\end{table}
+  \item<3-> When taking number of inferences into account for DAT038=1.p we observe
+  1.2 milliseconds per superposition for the full implementation versus 2.2 milliseconds
+  per superposition for unindexed beagle.
   \end{itemize}
 \end{frame}
 
