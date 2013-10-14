@@ -325,7 +325,7 @@ attempt inference rules.
   \begin{itemize}
   \item<1-> The \HSWAC\ imposes many restrictions on what can be used for inference.
   \item<2-> We may take advantage of some of these conditions to increase the effectiveness of Fingerprint Indexing.
-  \item<2->\begin{table}[H]\scriptsize
+  \item<2->[]\begin{table}[H]\scriptsize
   \caption{Fingerprint comparison table for unification; extended by considering the term hierarchy.}
   \label{tab:extunif}
   \begin{tabular}{| c || c | c | c | c | c || c | c | c | c |}
@@ -378,7 +378,7 @@ $f_2$+      &  \compN &  \compN &  \compY     &  \compY     &  \compN     &    \
 Version&Sup&Demod&NegUnit&TotalFound&SupFP&SimpFP\\  \cline{1-7}
 \textbf{Unmodified \footnotemark[1]}&414216&29097&1826&0&0&0\\
 \textbf{Standard}&162881&41414&2452&61884768&15525&39778148\\
-\textbf{Enhanced}&162997&41435&2454&58535681&15401&39779224\\ \hline
+\textbf{Enhanced}&146861&35326&1960&58119897&17641&39916687\\  \hline
 \end{tabular}\end{table}
 \begin{table}[H]\scriptsize
   \caption{Totalled timing results for various versions of beagle.}
@@ -387,30 +387,52 @@ Version&Sup&Demod&NegUnit&TotalFound&SupFP&SimpFP\\  \cline{1-7}
 Version&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-7}
 \textbf{Unmodified \footnotemark[1]}&0&0&730.44&9.44&31.99&5623.21\\
 \textbf{Standard}&28.4&38.73&254.17&41.66&3.18&381.36\\
-\textbf{Enhanced}&22.91&20.29&180.54&32.6&2.51&281.38\\ \hline
+\textbf{Enhanced}&18.74&17.58&168.79&30.56&2.12&259.02\\ \hline
 \end{tabular}\end{table}
 
 \footnotetext[1]{{\footnotesize This version failed to solve two out of the fifty problems within 8 hours.}}
 \end{frame}
 
 \begin{frame}
+  \begin{itemize}
+  \frametitle{Time Spent Per Inference}
+ \begin{table}[H]\scriptsize
+  \caption{Superposition time for the 6 most extreme problem examples.}
+\begin{tabular}{| l || r | r | r |}  \hline
+Version&Superposition&Demodulation&Negative Unit Simplification\\  \hline
+Superposition&17.53& 31.54& 48.62\\
+Demodulation&13.2& 22.51& 130.77\\
+Negative Unit Simplification&14.49& 21.29& 190.71\\
+\textbf{Unmodified}&12.53& 24.04& 294.86\\
+\textbf{Standard}&18.67& 26.08& \textbf{N/A} \\
+\textbf{Enhanced}&17.65& 35.77& \textbf{N/A}\\\hline
+\end{tabular}\end{table}
+  \item<2-> When taking number of inferences into account for DAT038=1.p we observe
+  1.2 milliseconds per superposition for the full implementation versus 2.2 milliseconds
+  per superposition for unindexed beagle.
+  \item<3-> For the entire totals table we observe 1.1 msps for enhanced, 1.6 msps
+  for standard and 1.7 msps for none.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
   \frametitle{Runtimes under 5 seconds}
                   %Left Bot Right Top
-  \includegraphics[scale=0.56,trim=2.7cm 5cm 0cm 3cm,clip]{suptime}
+  \includegraphics[scale=0.56,trim=3.7cm 5cm 0cm 3cm,clip]{suptime}
 \end{frame}
 
 \begin{frame}
   \frametitle{Runtimes under 5 seconds}
                   %Left Bot Right Top
-  \includegraphics[scale=0.56,trim=2.7cm 5cm 0cm 3cm,clip]{suptimetrends}
+  \includegraphics[scale=0.56,trim=2.45cm 5cm 0cm 3cm,clip]{suptimetrends}
 \end{frame}
 
 
 \begin{frame}
   \begin{itemize}
   \frametitle{Results Analysis}
-  \item<1-> Times per inference
-  \item<2->
+  \item<1->[]
  \begin{table}[H]\scriptsize
   \caption{Superposition time for the 6 most extreme problem examples.}
 \begin{tabular}{| l || r | r | r |}  \hline
@@ -422,9 +444,11 @@ DAT038=1.p&12.53& 24.04& 294.86\\
 DAT043=1.p&18.67& 26.08& \textbf{N/A} \\
 DAT048=1.p&17.65& 35.77& \textbf{N/A}\\\hline
 \end{tabular}\end{table}
-  \item<3-> When taking number of inferences into account for DAT038=1.p we observe
+  \item<2-> When taking number of inferences into account for DAT038=1.p we observe
   1.2 milliseconds per superposition for the full implementation versus 2.2 milliseconds
   per superposition for unindexed beagle.
+  \item<3-> For the entire totals table we observe 1.1 msps for enhanced, 1.6 msps
+  for standard and 1.7 msps for none.
   \end{itemize}
 \end{frame}
 
