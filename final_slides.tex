@@ -261,15 +261,30 @@ Maintain two Clause Sets, \emph{new} and \emph{old}.\\
 Remove Clauses from \emph{new} one at a time, simplify them and then
 attempt inference rules.
   \item<2-> Two key areas of improvement ($O(n)$ operations):
+  \begin{itemize}
   \item<2-> Inferences via the Superposition rules.
   \item<2-> Simplifying Clauses.
+  \end{itemize}
   \end{itemize}
 \end{frame}
 
 \begin{frame}
   \frametitle{Indexing Superposition}
   \begin{itemize}
-  \item<1-> Refer to rule. Requires...
+  \item<1->[]
+  \begin{align*}
+&\textbf{Positive Superposition}\ \ \ \ \  \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{\text{abstr}((s[r] \approx t \lor C \lor D)\sigma)}\\
+\text{Where } &(i) \text{ $\sigma = $ simple mgu $(l,u)$,}\\
+&(ii) \text{ $u$ is not a variable,}\\
+&(iii) \text{ $r\sigma \not\succeq l\sigma$,}\\
+&(iv) \text{ $t\sigma \not\succeq s\sigma$,}\\
+&(v) \text{ $l$ and $u$ are not pure background terms,}\\
+&(vi) \text{ $(l \approx r)\sigma$ is strictly maximal in $(l \approx r \lor C)\sigma$,}\\
+\text{and } &(vii) \text{ $(s \approx t)\sigma$ is strictly maximal in $(s \approx t \lor D)\sigma$.}
+\end{align*}
+  \item<1-> Requires that we index all subterms. Furthermore we must implement two
+  separate cases for \emph{from} and \emph{into}.
+
   \end{itemize}
 \end{frame}
 
@@ -282,7 +297,9 @@ attempt inference rules.
   clutter in the inference process.
   \item<2-> The two main simplification rules used by Beagle are \emph{Negative Unit Simplification}
   and \emph{Demodulation}
-  \item<3-> These rules require checking for \emph{subsumption}, which requires 
+  \item<3-> These rules operate only on \emph{unit Clauses}, so using our current
+  index clogged with subterms is inefficient.
+  \item<3-> The rules also require checking for \emph{subsumption}, which requires 
   implementing a new comparison table for Fingerprint Indexing.
   \end{itemize}
 \end{frame}
@@ -310,9 +327,10 @@ attempt inference rules.
 &\text{Where } l\sigma = u\\
 &\text{The clause $s[u] \approx t  \lor D$ may be removed.}
 \end{align*}
-  \item<2-> Like in Negative Unit Simplification, the most costly operation is searching
+  \item<2-> For a simple example, with a Literal $X \to f(a)$ we may replace all occurrences of $X$ with $f(a)$.
+  \item<3-> Like in Negative Unit Simplification, the most costly operation is searching
   for subsuming $l$ Terms.
-  \item<2-> We must perform this search for every possible subterm $u$ of $s$.
+  \item<3-> We must perform this search for every possible subterm $u$ of $s$.
   \end{itemize}
 \end{frame}
 
@@ -325,7 +343,7 @@ attempt inference rules.
   \begin{itemize}
   \item<1-> The \HSWAC\ imposes many restrictions on what can be used for inference.
   \item<2-> We may take advantage of some of these conditions to increase the effectiveness of Fingerprint Indexing.
-  \item<2->[]\begin{table}[H]\scriptsize
+  \item<3->[]\begin{table}[H]\scriptsize
   \caption{Fingerprint comparison table for unification; extended by considering the term hierarchy.}
   \label{tab:extunif}
   \begin{tabular}{| c || c | c | c | c | c || c | c | c | c |}
@@ -357,10 +375,11 @@ $f_2$+      &  \compN &  \compN &  \compY     &  \compY     &  \compN     &    \
 \begin{frame}
   \begin{itemize}
   \frametitle{Metrics for Analysing Indexing Performance}
-  \item<1-> Speed - Not necessarily relevant
+  \item<1-> Total run time - Need to be careful to consider all factors.
   \item<2-> False Positives - Relevant, but can be misleading depending on
   number of positions being sampled.
-  \item<3-> Time Spent \emph{per Inference} - Booyah
+  \item<3-> Run time \emph{per Inference} - Most accurate measure of performance.
+  Must still take care when interpreting.
   \end{itemize}
 \end{frame}
 
@@ -494,7 +513,7 @@ Sample Set&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-7}
 \begin{frame}
   \begin{itemize}
   \frametitle{Fingerprint Sampling Varieties}
-  \item<1-> The \HSWAC is a
+  \item<1-> The \HSWAC\ is a
   \item<2-> 
   \end{itemize}
 \end{frame}
