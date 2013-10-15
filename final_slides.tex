@@ -124,8 +124,8 @@ Supervisor: Peter Baumgartner}      % Enter your institute name between curly br
   to a term $s$ with a subterm $u$.
   \item<2-> Substitutions:
     \begin{itemize}
-    \item<3-> $s$ is '\emph{unifiable}' with $t$ : $\sigma s = \sigma t$
-    \item<3-> $s$ '\emph{subsumes}' $t$ : $\sigma s = t$
+    \item<2-> $s$ is '\emph{unifiable}' with $t$ : $\sigma s = \sigma t$
+    \item<2-> $s$ '\emph{subsumes}' $t$ : $\sigma s = t$
     \end{itemize}
   \end{itemize}
 \end{frame}
@@ -310,7 +310,9 @@ is added to \emph{old}.
   and \emph{Demodulation}
   \item<3-> These rules operate only on \emph{unit Clauses}, so using our current
   index clogged with subterms is inefficient.
-  \item<3-> The rules also require checking for \emph{subsumption}, which requires 
+  \item<3-> Thus we will create new indexes which behave differently depending on a
+  configuration object.
+  \item<4-> The rules also require checking for \emph{subsumption}, which requires 
   implementing a new comparison table for Fingerprint Indexing.
   \end{itemize}
 \end{frame}
@@ -386,10 +388,15 @@ $f_2$+      &  \compN &  \compN &  \compY     &  \compY     &  \compN     &    \
 \begin{frame}
   \begin{itemize}
   \frametitle{Metrics for Analysing Indexing Performance}
-  \item<1-> Total run time - Need to be careful to consider all factors.
-  \item<2-> False Positives - Relevant, but can be misleading depending on
+  \item<1-> We may measure the performance of Fingerprint Indexing by comparing
+  run statistics of a subset of problems from the TPTP (Thousands of Problems for Theorem Provers)
+  library.
+  \item<1-> A subset of 50 problems was created; spanning a range of problem categories
+  and difficulties.
+  \item<2-> Total run time - Need to be careful to consider all factors.
+  \item<3-> False Positives - Relevant, but can be misleading depending on
   number of positions being sampled.
-  \item<3-> Run time \emph{per Inference} - Most accurate measure of performance.
+  \item<4-> Run time \emph{per Inference} - Most accurate measure of performance.
   Must still take care when interpreting.
   \end{itemize}
 \end{frame}
