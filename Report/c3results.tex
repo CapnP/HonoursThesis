@@ -31,9 +31,13 @@ Instead we shall introduce timing calls throughout the program
 Also includes number of inferences and false positive counts.
 
 \subsection{Problem Selection}
-Not going to run everything against all of TPTP. Will take out a subset
-of TPTP (25--50 problems) run them against this set.
-Show the set and justify inclusions/exclusions
+We will wish to compare many different versions of \beagle, making a full run of TPTP
+exceedingly impractical given the available time and resources (\citeN{shulz12}
+made use of the University of Miami \emph{Peagsus Cluster} to run his tests). Thus
+we must select a subset of problems which we may perform our tests against.
+In creating this test we must be \emph{fair} in the sense of not selecting
+problems which favour indexing; but we also are not interested in problems where
+indexing is not used.
 
 \subsection{Speed}
 
