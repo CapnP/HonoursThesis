@@ -23,6 +23,12 @@ Refer to results for instrumentation; showing what may be improved with indexing
 
 \section{Indexing Metrics}
 \label{sec:metrics}
+In order to instrument the final version of \beagle\ with term indexing
+we will no longer use VisualVM. 
+
+Instead we shall introduce timing calls throughout the program 
+
+Also includes number of inferences and false positive counts.
 
 \subsection{Problem Selection}
 Not going to run everything against all of TPTP. Will take out a subset
@@ -105,7 +111,18 @@ Looking only at the final total runtime for the three programs it would appear a
 though using indexing has resulted in an improvement of over 95\% from 5623 seconds
 to 259. Unfortunately however this improvement cannot be entirely attributed to
 our implementation of Fingerprint Indexing; and as mentioned in Section \ref{sec:metrics}
-we must be careful to consider all factors.
+we must be careful to consider all factors. In particular, notice that the unmodified
+version performs 414216 superposition inferences, nearly three times that of our
+final enhanced implementation. This sort of discrepancy is not entirely unexpected,
+and is essentially a fluke introduced by changing the order inferences are performed.
+With this in mind the 95\% improvement is no longer relevant; and we must look into measures of
+performance.
+
+Notice however that the standard version of beagle only performs about 10\% more
+superposition inferences than the enhanced version; making them much more comparable
+on total time. Between these two versions we observe a total run time improvement
+of 122 seconds, or about 2.5 seconds per problem.
+
 
 \subsubsection{False Positives}
 Only minor improvement in FP when going to enhanced. Mainly improves ARI do
