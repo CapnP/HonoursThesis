@@ -181,18 +181,47 @@ and GRP problems. Our additional tailored improvements from Section \ref{sec:oth
 are still relevant for these problems and produce the significant improvement
 seen in total terms retrieved.
 
-
-
 \subsubsection{Time Per Inference}
+
+Now we come to what is perhaps the most relevant and telling measure of performance;
+\emph{time spent per inference}. This measure is not affected by any random factors
+introduced by changing the order of inference and gives us a true indication of how
+much we have improved each inference rule. Table \ref{tab:peri} presents the results
+for this performance measure; derived from the totals above.
 
  \begin{table}[H]\begin{center}
   \caption{Total time spent per inference for various versions of \beagle.}
+  \label{tab:peri}
 \begin{tabular}{| l || r | r | r |}  \hline
 Version&Superposition&Demodulation&NegUnit Simplification\\  \hline
 \textbf{Unmodified}&1.7ms & 0.3ms & 17.5ms  \\
 \textbf{Standard}  &1.5ms & 1.0ms & 1.3ms  \\
 \textbf{Enhanced}  &1.1ms & 0.8ms & 1.0ms  \\\hline
 \end{tabular}\end{center}\end{table}  
+
+First of all we notice that the standard version of Fingerprint Indexing has
+improved superposition by 2 milliseconds per inference, a 12\% improvement,
+and our enhanced version has improved it by 6 milliseconds, a 35\% improvement.
+While this is a far call from the 95\% improvement which total run time initially
+implied it still presents a fantastic final result. Negative Unit Simplification
+produces a phenomenal 94\% improvement, down to 1 millisecond per simplification from 17.5.
+Unfortunately demodulation does not produce the positive results we see in the other
+inference rules and in fact our indexed versions perform far worse than the original
+version of \beagle.
+
+To explain this unfortunate result we refer again to the verbatim results in
+Appendix \ref{app:app1}. In particular observe the results for problem PUZ037-1.p.
+In the results for both the standard indexing and enhanced indexing versions of \beagle\ 
+this problem takes up about 60\% of the total time spent on demodulation. Despite
+this, not a single demodulation inference is performed; resulting in over \emph{38 million}
+false positives for indexing simplification (which constitutes over 95\% of the
+total simplification false positives for both versions). This puzzle seems to present
+a `worst case scenario' for demodulation indexing and produces results far beyond the norm.
+Thus it is reasonable to exclude it as an outlier and consider demodulation results
+without this problem included.
+
+When excluding PUZ037-1.p we observe 0.29, 0.39 and 0.31 milliseconds per demodulation
+for the unmodified, standard and enhanced versions respectively.
 
 
 \subsection{Results for Small Problems}

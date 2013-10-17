@@ -499,9 +499,15 @@ concern since memory is cheap; and we are generally only concerned with speed.
 \label{sec:unittest}
 
 As with any component of a large software project; it is vital to ensure that the
-Fingerprint Index functions on its own. Otherwise if (after adding the Index to
-\beagle) there are issues we will have no way of knowing what component is
+Fingerprint Index functions on its own. Otherwise if  we encounter any issues
+(after adding the Index to \beagle) we will have no way of knowing what component is
 causing the problem.
+
+Thus (in accordance with software development best practices)
+we must develop some unit tests which will test each individual component
+of our Fingerprint Index class. This is very easily done via the ScalaTest
+library; which integrates with the Eclipse development environment (discussed
+in Section \ref{sec:eclipse}) \cite{scalatest}\cite{eclipse}.
 
 %TODO: list tests and reasoning.
 
