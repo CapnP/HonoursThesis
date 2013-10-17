@@ -144,6 +144,43 @@ In fact we observe over 10\% \emph{more} superposition false positives in the en
 version (and about 0.5\% more simplification false positives). This seems to contradict
 our raw timing results; but the contradiction may be resolved by considering all factors involved.
 
+An indexing false positive obviously results in some unnecessary computation as we
+have attempted unification and failed. However, even after unification succeeds we may
+still fail to perform superposition due to other restrictions of the inference rule.
+In particular there are four Literal and Term ordering restrictions which must
+be checked \emph{after} verifying unification, as they require the substitution
+used (see Section \ref{sec:calc}). This means that even when a term
+is not counted as a false positive for unification it may still cause the same
+amount of unnecessary computation.
+
+Thus we must consider the TotalFound column, which counts the total number of terms
+retrieved from the index; regardless of whether or not they result in unification or an inference.
+In this column we observe a superb improvement in the enhanced version
+of \beagle, with it retrieving almost four million fewer terms than the standard index.
+This difference is direct evidence of tailored enhancements reducing the amount of index traversal necessary;
+and unlike the false positive count we can be sure that each term not retrieved
+is saving us some amount of computation. This explains how we can have 2116 more
+false positives and still see a significant increase in performance; but we still
+have not seen how these extra false positives could have occurred.
+
+The difference is small enough that we can again consider it a fluke arising from
+the variation in inference order. This is very unsatisfying however since our
+improved unification table from Section \ref{sec:extunif} should result specifically
+in fewer false positives; not just fewer terms retrieved from the index. 
+Recall that the extended table works by considering the placement of terms
+in the hierarchy (whether they are foreground or background). Thus the improvement will only
+be relevant when there are a reasonable percentage of background terms; such as in
+arithmetic problems.
+When examining only the set of ten ARI problems 
+(see the verbatim result tables in Appendix \ref{app:app1}) we observe
+that the enhanced version is superior by all measures of performance.
+In fact we observe a total of \emph{zero}
+superposition false positives versus 124 for the standard version. This result shows the true worth of our
+improved unification table, as it is not necessarily relevant in the case of DAT, PUZ
+and GRP problems. Our additional tailored improvements from Section \ref{sec:otherimp}
+are still relevant for these problems and produce the significant improvement
+seen in total terms retrieved.
+
 
 
 \subsubsection{Time Per Inference}
