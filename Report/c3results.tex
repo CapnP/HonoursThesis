@@ -122,7 +122,8 @@ and will be discussed below in Sections \ref{sec:small} and \ref{sec:large}.
 Looking only at the final total runtime for the three programs it would appear as
 though using indexing has resulted in an improvement of over 95\% from 5623 seconds
 to 259. In addition to this, the unmodified version also failed to solve two
-DAT problems entirely when given 8 hours (28800 seconds) to solve each one.
+DAT problems entirely when given 8 hours (28800 seconds) to solve each one; and accounting
+for these problems results in at least a 99.6\% improvement!
 Unfortunately however this improvement cannot be entirely attributed to
 our implementation of Fingerprint Indexing; and as mentioned in Section \ref{sec:metrics}
 we must be careful to consider all factors. In particular, notice that the unmodified
@@ -249,18 +250,88 @@ if restructuring \beagle\ to improve demodulation could be worthwhile.
 \subsection{Results for Small Problems}
 \label{sec:small}
 
+Here we shall present some results for the smaller problems in our TPTP selection.
+A significant portion of the problems in TPTP are fairly small scale; and this
+is reflected in our results where 42 out of the 50 problems take less than
+10 seconds to solve in our final indexed version. It is interesting to take a
+closer look at these small scale problems because they are where we should expect to see
+indexing perform \emph{the worst}. In small, fast problems where our knowledge base is small
+and few inferences are necessary we would expect indexing to be unnecessary and
+only introduce complexity. Figure \ref{fig:worst} presents the superposition runtime
+of all versions for problems where this time was less than 5 seconds; which makes up 43
+of our 50 problems. The results
+are presented in order of superposition time for unindexed \beagle.
+
 \begin{figure}[h]
   \includegraphics[trim=2.45cm 6cm 8cm 3cm,clip,width=\textwidth]{resources/suptimetrends}
   \caption{Superposition time comparison for three versions of \beagle\ for small problems
-  (under 5 seconds of superposition)}
+  (under 5 seconds of superposition).}
+  \label{fig:worst}
 \end{figure}
+
+As expected, indexing does not achieve the 35-95\% improvement which
+we have observed for the whole problem set. Up until about problem 33, where
+the unindexed time goes over 1.5 seconds, the indexed versions of \beagle\ typically
+perform about the same or worse than the unindexed version. After this point we
+begin to see indexing provide a notable improvement; particularly in our enhanced
+version. By inserting trend lines we can see that original \beagle\ and the standard
+indexing version of beagle are achieving similar performance overall; and our enhanced
+version begins to come out on top after about problem 30. This shows us that
+even though indexing would not normally apply to these simple problems our tailored
+optimisations have made it worthwhile.
 
 \subsection{Results for Large Problems}
 \label{sec:large}
 
+More relevant to indexing performance are the results of large problems. When our
+knowledge base consists of several thousand Clauses it no longer becomes practical
+to search through them for inference matches and Term indexing becomes far more vital.
+Furthermore for each inference we perform our knowledge base grows and this problem will become worse.
+In this section we will discuss the results of large problems where many thousands of
+inferences are performed; in which we expect Fingerprint Indexing to improve performance
+significantly.
+
 \subsubsection{Most Significant Superposition Results}
 
+First of all we will examine the problems for which a significant amount of time
+is spent on superposition. These problems make up the 7 out of 50 problems which
+we did not consider in Section \ref{sec:small}. Table \ref{tab:bigsup} shows the
+superposition count and timing results for these 7 problems against all 3 versions
+of \beagle; sorted in order of time spent in the unindexed version.
+
+ \begin{table}[H]\begin{center}
+  \caption{Superposition counts and time for the 7 most extreme problem examples.}
+  \label{tab:bigsup}
+\begin{tabular}{| l || r | r || r | r || r | r |} \cline{2-7}
+\multicolumn{1}{ c }{} & \multicolumn{2}{ |c|| }{\textbf{Enhanced}} & \multicolumn{2}{ c|| }{\textbf{Standard}} & \multicolumn{2}{ c| }{\textbf{Unmodified}} \\ \cline{1-7}
+Problem&Sup Count&Sup Time&Sup Count&Sup Time&Sup Count&Sup Time\\  \hline
+PUZ038-1.p& 2656   &24.59&  2656   &33.30 & 2579   & 22.6\\
+DAT050=1.p& 52438  &17.53&  65908  &31.54 & 111277 & 48.62\\
+DAT039=1.p& 11249  &13.20&  11278  &22.51 & 63897  & 130.77\\
+DAT040=1.p& 10551  &14.49&  11765  &21.29 & 73775  & 190.71\\
+DAT038=1.p& 10344  &12.53&  11848  &24.04 & 132216 & 294.86\\
+DAT043=1.p& 15422  &18.67&  12865  &26.08 & \textbf{N/A} & \textbf{N/A} \\
+DAT048=1.p& 14186  &17.65&  16462  &35.77 & \textbf{N/A} & \textbf{N/A} \\ \hline
+\end{tabular}\end{center}\end{table}
+
+Of particular note are the two final problems, which the original version of \beagle\ 
+was unable to solve and timed out after 8 hours. These two problems present
+the second and third most superposition time for the enhanced version.
+
 \subsubsection{Most Significant Negative Unit Simplification Results}
+
+ \begin{table}[H]\begin{center}
+  \caption{Negative Unit Simplification counts and time for the 4 most extreme problem examples.}
+\begin{tabular}{| l || r | r || r | r || r | r |} \cline{2-7}
+\multicolumn{1}{ c }{} & \multicolumn{2}{ |c|| }{\textbf{Enhanced}} & \multicolumn{2}{ c|| }{\textbf{Standard}} & \multicolumn{2}{ c| }{\textbf{Unmodified}} \\ \cline{1-7}
+Problem&Neg Count&Neg Time&Neg Count&Neg Time&Neg Count&Neg Time\\  \hline
+DAT039=1.p&15&0.14&15&0.2&73&4.84\\
+DAT040=1.p&17&0.13&16&0.2&81&5.94\\
+DAT050=1.p&1743&0.71&2252&1.33&1414&6.24\\
+DAT038=1.p&10&0.14&10&0.19&104&14.05\\\hline
+\end{tabular}\end{center}\end{table}
+
+53\%, 60\% and a whopping 97\%.
 
 \section{Comparing Various Fingerprint Sampling Positions}
 
