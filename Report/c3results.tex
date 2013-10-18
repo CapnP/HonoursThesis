@@ -87,6 +87,7 @@ his paper.
 
 \begin{table}[H]\begin{center}
   \caption{Totalled inference counts and indexing statistics for various versions of \beagle.}
+  \label{tab:vercount}
 \begin{tabular}{| l || r | r | r || r | r | r |}  \cline{2-7}
 \multicolumn{1}{ c }{} & \multicolumn{3}{ |c|| }{\textbf{Inference Counts}} & \multicolumn{3}{ c| }{\textbf{Indexing Results}} \\ \cline{1-7}
 Version&Sup&Demod&NegUnit&TotalFound&SupFP&SimpFP\\  \cline{1-7}
@@ -97,6 +98,7 @@ Version&Sup&Demod&NegUnit&TotalFound&SupFP&SimpFP\\  \cline{1-7}
 
 \begin{table}[H]\begin{center}
   \caption{Totalled timing results for various versions of \beagle.}
+  \label{tab:vertimes}
 \begin{tabular}{| l || r | r | r | r | r | r |}  \cline{2-7}
 \multicolumn{1}{ c }{} & \multicolumn{6}{| c| }{\textbf{Time Spent (seconds)}} \\ \cline{1-7}
 Version&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-7}
@@ -108,7 +110,13 @@ Version&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-7}
 \footnotetext[1]{This version failed to solve two problems within 8 hours (28800 seconds).
 These results are not included in the totals. See verbose table of results (Section \ref{sec:unres})}
 
-\subsection{Performance Against Indexing Metrics}
+\subsection{Totalled Performance Against Indexing Metrics}
+
+In this section we will discuss the results we see in the tables of total results
+across the problem set (Tables \ref{tab:vercount} and \ref{tab:vertimes}); in
+relation to the performance metrics we discussed in Section \ref{sec:metrics}.
+Performance results for each individual problem are available in Appendix \ref{app:app1}
+and will be discussed below in Sections \ref{sec:small} and \ref{sec:large}.
 
 \subsubsection{Total Time}
 Looking only at the final total runtime for the three programs it would appear as
@@ -204,7 +212,9 @@ improved superposition by 2 milliseconds per inference, a 12\% improvement,
 and our enhanced version has improved it by 6 milliseconds, a 35\% improvement.
 While this is a far call from the 95\% improvement which total run time initially
 implied it still presents a fantastic final result. Negative Unit Simplification
-produces a phenomenal 94\% improvement, down to 1 millisecond per simplification from 17.5.
+produces a phenomenal 94\% improvement, down to 1 millisecond per simplification from 17.5
+(we will examine how this improvement occurred when examining individual problem
+results in Section \ref{sec:large}).
 Unfortunately demodulation does not produce the positive results we see in the other
 inference rules and in fact our indexed versions perform far worse than the original
 version of \beagle.
@@ -216,23 +226,41 @@ this problem takes up about 60\% of the total time spent on demodulation. Despit
 this, not a single demodulation inference is performed; resulting in over \emph{38 million}
 false positives for indexing simplification (which constitutes over 95\% of the
 total simplification false positives for both versions). This puzzle seems to present
-a `worst case scenario' for demodulation indexing and produces results far beyond the norm.
+a `worst case scenario' for demodulation indexing and produces results far outside the norm.
 Thus it is reasonable to exclude it as an outlier and consider demodulation results
 without this problem included.
 
 When excluding PUZ037-1.p we observe 0.29, 0.39 and 0.31 milliseconds per demodulation
-for the unmodified, standard and enhanced versions respectively.
+for the unmodified, standard and enhanced versions respectively. Even though we no
+longer see the significant loss of performance from Table \ref{tab:peri}, our
+indexed versions are still performing slightly worse than original \beagle. Realistically
+they are performing about the same; considering a 0.1 millisecond margin of error. Unfortunately
+it seems as though \beagle's current implementation of demodulation is not well suited
+to indexing. This is perhaps due to the fact that demodulation must still loop
+over all subterms of its query Clause; but avoiding this would require very significant
+modification to \beagle's main loop (as simplification currently only applies to
+the Clause selected from \verb!new!, see Section \ref{sec:mloop} and \ref{sec:demod}).
+On the other hand it is possible that the issue arises simply from
+the specific problem set we are testing against; since in many of results we observe
+very few or even zero demodulation operations. More testing is required to determine
+if restructuring \beagle\ to improve demodulation could be worthwhile.
 
 
 \subsection{Results for Small Problems}
+\label{sec:small}
 
 \begin{figure}[h]
-  \includegraphics[trim=2.45cm 5cm 8cm 3cm,clip,width=\textwidth]{resources/suptimetrends}
+  \includegraphics[trim=2.45cm 6cm 8cm 3cm,clip,width=\textwidth]{resources/suptimetrends}
   \caption{Superposition time comparison for three versions of \beagle\ for small problems
   (under 5 seconds of superposition)}
 \end{figure}
 
 \subsection{Results for Large Problems}
+\label{sec:large}
+
+\subsubsection{Most Significant Superposition Results}
+
+\subsubsection{Most Significant Negative Unit Simplification Results}
 
 \section{Comparing Various Fingerprint Sampling Positions}
 
