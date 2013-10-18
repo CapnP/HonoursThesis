@@ -83,7 +83,8 @@ test we will have both the standard and the enhanced versions sample the followi
 positions:
   \[\epsilon,\  1,\  2,\  3,\  1.1,\  1.2\]
 This set is named FP6M by \citeN{shulz12}, and it achieved the best performance in
-his paper.
+his paper. The following Tables (\ref{tab:vercount} and \ref{tab:vertimes})
+provide the totalled performance results for the three versions
 
 \begin{table}[H]\begin{center}
   \caption{Totalled inference counts and indexing statistics for various versions of \beagle.}
@@ -328,7 +329,7 @@ the key inferences which allowed the problem to be solved.
 \subsubsection{Most Significant Negative Unit Simplification Results}
 
 Back in Section \ref{sec:metricperf} we observed a 94\% improvement for each
-Negative Unit Simplification performed, down to 1 millisecond from 17.5. We will
+Negative Unit Simplification performed, down to 1 millisecond per simplification from 17.5. We will
 now look at the problems which most stress the Negative Unit Simplification rule
 and attempt to explain this tremendous performance increase. Looking at verbatim
 results from Appendix \ref{app:app1} we can observe that there are four problems
@@ -350,9 +351,25 @@ DAT050=1.p&1743&0.71&2252&1.33&1414&6.24\\
 DAT038=1.p&10&0.14&10&0.19&104&14.05\\\hline
 \end{tabular}\end{center}\end{table}
 
-53\%, 60\% and a whopping 97\%.
+The most interesting example problem here is DAT038=1.p, where we can see the unmodified
+version spends an enormous amount of time checking for Negative Unit Simplifications;
+but in the end performs comparatively few. This problem must have generated a large
+number of negative unit Clauses which were not necessarily applicable for
+Negative Unit Simplification; resulting in a great deal of unnecessary computation
+for unindexed \beagle. In terms of time spent per inference, 
+unindexed \beagle requires 135 milliseconds for each simplification;
+which is nearly \emph{eight times} its norm. It is worth noting at this point that DAT038=1.p \emph{is not} a lone outlier; and
+in particular we see very similar (though not quite as extreme) results in DAT039=1.p and DAT040=1.p.
+These problems are also made relevant by the fact that our indexed versions are suffering
+from the same issue of excessive negative unit Clause generation.
+However, they are much more capable of coping with large quantities of negative Literals.
+As a result they do see worse than average simplification times here but perform
+far better than unindexed \beagle. 
 
 \section{Comparing Various Fingerprint Sampling Positions}
+
+Now that we have thoroughly explored and compared the three different versions of
+\beagle\ 
 
   \begin{itemize}
   \item FP3W: Samples 3 positions to a maximum depth of 2. While this set creates
