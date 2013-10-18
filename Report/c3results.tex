@@ -111,6 +111,7 @@ Version&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-7}
 These results are not included in the totals. See verbose table of results (Section \ref{sec:unres})}
 
 \subsection{Totalled Performance Against Indexing Metrics}
+\label{sec:metricperf}
 
 In this section we will discuss the results we see in the tables of total results
 across the problem set (Tables \ref{tab:vercount} and \ref{tab:vertimes}); in
@@ -310,18 +311,36 @@ DAT050=1.p& 52438  &17.53&  65908  &31.54 & 111277 & 48.62\\
 DAT039=1.p& 11249  &13.20&  11278  &22.51 & 63897  & 130.77\\
 DAT040=1.p& 10551  &14.49&  11765  &21.29 & 73775  & 190.71\\
 DAT038=1.p& 10344  &12.53&  11848  &24.04 & 132216 & 294.86\\
-DAT043=1.p& 15422  &18.67&  12865  &26.08 & \textbf{N/A} & \textbf{N/A} \\
-DAT048=1.p& 14186  &17.65&  16462  &35.77 & \textbf{N/A} & \textbf{N/A} \\ \hline
+DAT043=1.p& 15422  &18.67&  12865  &26.08 & \textbf{N/A}\footnotemark[1] & \textbf{N/A}\footnotemark[1] \\
+DAT048=1.p& 14186  &17.65&  16462  &35.77 & \textbf{N/A}\footnotemark[1] & \textbf{N/A}\footnotemark[1] \\ \hline
 \end{tabular}\end{center}\end{table}
 
+\footnotetext[1]{These results are not included as the problem could not be solved within 8 hours (28800 seconds).}
+
 Of particular note are the two final problems, which the original version of \beagle\ 
-was unable to solve and timed out after 8 hours. These two problems present
-the second and third most superposition time for the enhanced version.
+was unable to solve and timed out after 8 hours. In our final enhanced version these two problems
+also present some of the largest times for superposition inferences; but in this case
+they are no longer than \emph{twenty seconds}. This can
+be partially considered a fluke of inference ordering; but without the ability
+to rapidly apply inferences with indexing it would not have been possible to reach
+the key inferences which allowed the problem to be solved.
 
 \subsubsection{Most Significant Negative Unit Simplification Results}
 
+Back in Section \ref{sec:metricperf} we observed a 94\% improvement for each
+Negative Unit Simplification performed, down to 1 millisecond from 17.5. We will
+now look at the problems which most stress the Negative Unit Simplification rule
+and attempt to explain this tremendous performance increase. Looking at verbatim
+results from Appendix \ref{app:app1} we can observe that there are four problems
+from DAT for which Negative Unit Simplification takes an abnormally large portion
+of time. In fact, for unindexed \beagle\ these four problems
+cover over 97\% of the time spent performing Negative Unit Simplification! Table
+\ref{tab:bigneg} lists the four problems along with their performance in the
+three versions of the prover.
+
  \begin{table}[H]\begin{center}
   \caption{Negative Unit Simplification counts and time for the 4 most extreme problem examples.}
+  \label{tab:bigneg}
 \begin{tabular}{| l || r | r || r | r || r | r |} \cline{2-7}
 \multicolumn{1}{ c }{} & \multicolumn{2}{ |c|| }{\textbf{Enhanced}} & \multicolumn{2}{ c|| }{\textbf{Standard}} & \multicolumn{2}{ c| }{\textbf{Unmodified}} \\ \cline{1-7}
 Problem&Neg Count&Neg Time&Neg Count&Neg Time&Neg Count&Neg Time\\  \hline
