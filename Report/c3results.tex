@@ -12,25 +12,20 @@
 \label{sec:preindexing}
 
 We have stated several times throughout this report that the key area of improvement for \beagle
-is in clause resolution. However we have yet to provide any evidence to that fact.
+is in locating Terms to apply inference. It was determined through analysis of the main loop
+that the two areas which performed this operation were superposition and simplification.
+However, we have yet to provide hard evidence that these two components result in the
+most significant portion of \beagle's runtime.
 Here we provide some results from initial investigations (before Fingerprint Indexing
-was implemented) used to identify the key areas of improvement for \beagle.
+was implemented) which were used to confirm our suspicions from the analysis of \beagle's code.
 
 \subsection{Indexing Simplification and Matching}
 
-Refer to results for instrumentation; showing what may be improved with indexing.
+After implementing superposition the VisualVM tests were attempted again, with the intent
+of confirming that Fingerprint Indexing was performing adequately before moving
+on to index simplification.
 
-
-\section{Indexing Metrics}
-\label{sec:metrics}
-In order to instrument the final version of \beagle\ with term indexing
-we will no longer use VisualVM. 
-
-Instead we shall introduce timing calls throughout the program 
-
-Also includes number of inferences and false positive counts.
-
-\subsection{Problem Selection}
+\section{Problem Selection}
 \label{sec:problems}
 
 We will wish to compare many different versions of \beagle, making a full run of TPTP
@@ -41,7 +36,34 @@ In creating this test we must be \emph{fair} in the sense of not selecting
 problems which favour indexing; but we also are not interested in problems where
 indexing is not used.
 
-\subsection{Speed}
+\section{Indexing Metrics}
+\label{sec:metrics}
+In order to measure the success of the final version of \beagle\ with term indexing
+we will no longer use VisualVM. This program is well suited to our earlier task
+of finding bottlenecks; but it will cause problems when analysing performance of a completed program.
+In particular attaching VisualVM to the Scala process will introduce significant overhead
+which will introduce inaccuracy in our results. Furthermore, as we have seen above,
+it can be difficult to determine what inference rules are taking up the most time
+when we only see the time spent in low-level common functions.
+
+So, as an alternative to VisualVM we will instead perform all our timing manually
+by injecting stopwatches into \beagle's code. This will allow us to directly
+time the use of each inference rule at the top level. For the purpose of our analysis
+we will time 6 sections of \beagle:
+\begin{itemize}
+\item \textbf{Indexing}: Total time spent adding Terms to any of the Fingerprint Indices.
+\item \textbf{Retrieving}: Total time spent retrieving Terms from any of the Fingerprint Indices.
+\item \textbf{Superposition}: Total time spent performing Superposition (includes time spent
+querying the index)
+\item \textbf{Demodulation}: Total time spent performing Demodulation (includes time spent
+querying the index)
+\item \textbf{Negative Unit Simplification}: Total time spent performing Negative Unit Simplification (includes time spent
+querying the index)
+\item \textbf{Total}: Total time for the whole proof process. This \emph{does not} include
+set-up time such as parsing and interpreting the input file and initial memory allocation.
+\end{itemize}
+At this point it is important to discuss the effectiveness of comparing totalled timing
+results. 
 
 \subsection{False Positives}
 Explain this metric and how it impacts performance.
@@ -63,6 +85,12 @@ huge number of positions; but this would not yield any speed improvement. Balanc
 length is key.
 
 \subsection{Runtime Per Inference}
+
+Best performance measure
+
+Note that this metric does not require any additional code in \beagle. Since we
+have total times and counts for each inference rule the runtime per inference can
+be calculated after each test.
 
 \section{Comparing Versions of \Beagle}
 \label{sec:indexresults}
