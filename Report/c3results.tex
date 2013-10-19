@@ -8,28 +8,58 @@
 \section{Instrumenting Beagle}
 \label{section:instr}
 
-\subsection{Beagle Before Indexing}
-\label{sec:preindexing}
-
 We have stated several times throughout this report that the key area of improvement for \beagle
 is in locating Terms to apply inference. It was determined through analysis of the main loop
 that the two areas which performed this operation were superposition and simplification.
 However, we have yet to provide hard evidence that these two components result in the
 most significant portion of \beagle's runtime.
-Here we provide some results from initial investigations (before Fingerprint Indexing
+This section contains some results from initial investigations (before Fingerprint Indexing
 was implemented) which were used to confirm our suspicions from the analysis of \beagle's code.
 
-\subsection{Indexing Simplification and Matching}
+These investigations were performed using \emph{VisualVM}, a too for Java virtual machine
+instrumentation which is capable of automatically profiling code; that is, identifying
+which functions require the most computation time \cite{visualvm}. This tool can
+be used for Scala projects because compiled Scala code runs on the Java virtual machine;
+but the results can be difficult to interpret. This is due to the fact that Scala
+creates additional functions and renames existing ones when translating into Java.
+Figure \ref{fig:visvm} shows some typical results when instrumenting \beagle\ over
+a single logic problem.
 
-After implementing superposition the VisualVM tests were attempted again, with the intent
-of confirming that Fingerprint Indexing was performing adequately before moving
-on to index simplification.
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{resources/visualvm}
+  \caption{Typical results when instrumenting \beagle\  in VisualVM.}
+  \label{fig:visvm}
+\end{figure}
+
+In the screenshot we can see there are two functions which together take up about
+74\% of the total runtime. These two functions consistently took up most of \beagle's
+computation time when this instrumentation was run against a wide range of problems.
+For readability the function names are re-stated here:
+\begin{itemize}
+\item[]beagle.fol.Term\$\$anonfun\$matchers\$1.\textbf{liftedTree\$1()}
+\item[]beagle.fol.unification\$.\textbf{matchToList}\$1()
+\end{itemize}
+Knowing that these two functions take the most computation time does not immediately
+help us with knowing the bottleneck which we must improve. To figure that out we must
+trace the two functions back to where they are called from. We can see from the
+names above that the first function is part Term Scala file (where Term objects and their
+operations are defined) and the second is from unification Scala file (a collection
+of tools for performing unification and subsumption checks). Both functions are
+used during the process of attempting to match or unify Term objects, a process
+which is in turn only used during Superposition and Simplification. So we have confirmed
+that \beagle's main bottleneck is in these two operations; in particular by attempting
+to unify or match a great number of Terms. Thus by introducing Term Indexing we will
+be directly reducing strain on \beagle's most significant performance bottleneck.
 
 \section{Problem Selection}
 \label{sec:problems}
 
+In order to test the performance of the completed implementation of Fingerprint Indexing
+we will make use of problems from TPTP, the Thousands of Problems for Theorem Provers
+library \cite{tptp}.
 We will wish to compare many different versions of \beagle, making a full run of TPTP
-exceedingly impractical given the available time and resources (\citeN{shulz12}
+for each version
+exceedingly impractical; especially considering the available time and resources (\citeN{shulz12}
 made use of the University of Miami \emph{Peagsus Cluster} to run his tests). Thus
 we must select a subset of problems which we may perform our tests against.
 In creating this test we must be \emph{fair} in the sense of not selecting
@@ -38,6 +68,8 @@ indexing is not used.
 
 \section{Indexing Metrics}
 \label{sec:metrics}
+
+\subsection{Speed}
 In order to measure the success of the final version of \beagle\ with term indexing
 we will no longer use VisualVM. This program is well suited to our earlier task
 of finding bottlenecks; but it will cause problems when analysing performance of a completed program.
