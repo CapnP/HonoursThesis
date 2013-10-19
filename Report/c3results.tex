@@ -31,6 +31,8 @@ Instead we shall introduce timing calls throughout the program
 Also includes number of inferences and false positive counts.
 
 \subsection{Problem Selection}
+\label{sec:problems}
+
 We will wish to compare many different versions of \beagle, making a full run of TPTP
 exceedingly impractical given the available time and resources (\citeN{shulz12}
 made use of the University of Miami \emph{Peagsus Cluster} to run his tests). Thus
@@ -66,8 +68,8 @@ length is key.
 \label{sec:indexresults}
 
 In this section we present results and analysis for performance against the TPTP
-problems and metrics discussed in Section \ref{sec:metrics} above. We discuss
-three different versions of the prover:
+problems and metrics discussed in Section \ref{sec:metrics} above. We will perform
+an in-depth comparison of three different versions of the prover:
 \begin{itemize}
 \item \textbf{Unmodified:} \beagle\ at the commencement of this project; without
 any use of Fingerprint Indexing.
@@ -84,7 +86,10 @@ positions:
   \[\epsilon,\  1,\  2,\  3,\  1.1,\  1.2\]
 This set is named FP6M by \citeN{shulz12}, and it achieved the best performance in
 his paper. The following Tables (\ref{tab:vercount} and \ref{tab:vertimes})
-provide the totalled performance results for the three versions
+provide the totalled performance results for the three versions over the set of
+50 selected problems (See Section \ref{sec:problems}). We will discuss these results
+as a whole and then proceed to analyse results for specific problems; available in
+Appendix \ref{app:app1}.
 
 \begin{table}[H]\begin{center}
   \caption{Totalled inference counts and indexing statistics for various versions of \beagle.}
@@ -369,7 +374,24 @@ far better than unindexed \beagle.
 \section{Comparing Various Fingerprint Sampling Positions}
 
 Now that we have thoroughly explored and compared the three different versions of
-\beagle\ 
+\beagle\ it is now worth considering the impact of different Fingerprint Indexing
+configurations; in particular the set of positions being sampled. 
+By increasing the number of positions sampled we should
+expect a decrease in false positive rate, since Terms retrieved from the Index will
+be compatible for unification at more points. Unfortunately however this does
+not necessarily correspond to an increase in overall performance.
+The set of positions determines how long each Term Fingerprint is and thus decides the depth of our Index
+tree (See Section \ref{sec:fpindex}). With a more complex Index structure each
+retrieval of compatible Terms will take more computation and more time. It is
+therefore important that we strike a balance between accurate comparisons and
+quick comparisons.
+
+A wide variety
+of sampling configurations was tested by \citeN{shulz12}, so our primary goals
+here are to cross-reference our results with his and confirm which set best balances Fingerprint length.
+For this purpose we will compare 6 of the best performing sampling sets proposed by
+Shulz. The sets we will be comparing are as follows: (see Section \ref{sec:terminology}
+for an explanation of position syntax)
 
   \begin{itemize}
   \item FP3W: Samples 3 positions to a maximum depth of 2. While this set creates
@@ -379,7 +401,8 @@ Now that we have thoroughly explored and compared the three different versions o
   \item FP4M: Samples 4 positions to a maximum depth of 3.
   \[\epsilon,\  1,\  2,\  1.1\]
   \item FP6M: Samples 6 positions to a maximum depth of 3. This set produced the
-  best performance in the tests by \citeN{shulz12}.
+  best performance in the tests by \citeN{shulz12}, and was used for the version
+  comparisons in Section \ref{sec:indexresults}.
   \[\epsilon,\  1,\  2,\  3,\  1.1,\  1.2\]
   \item FP7: Samples 7 positions to a maximum depth of 3.
   \[\epsilon,\  1,\  2,\  1.1,\  1.2,\  2.1,\  2.2\]
@@ -389,31 +412,81 @@ Now that we have thoroughly explored and compared the three different versions o
   \end{itemize}
 
 
+Tables \ref{tab:fingcount} and \ref{tab:fingtime} provide the total performance
+for each Fingerprint sampling set. These totals are taken over \emph{49} of our
+50 problems. PUZ037-1.p has been excluded from these results since (as we discussed
+in Section \ref{sec:metricperf}) it presents an exceptional `worst case' for demodulation
+indexing; making results including it difficult to compare (particularly for simplification
+false positives). Verbatim results for each problem along with total results over all
+50 problems are available in Appendix \ref{app:app2}.
+
 \begin{table}[H]\begin{center}
   \caption[]{Totalled inference counts and indexing statistics for various Fingerprint sampling sets.\footnotemark[1]}
+  \label{tab:fingcount}
 \begin{tabular}{| l || r | r | r || r | r | r |}  \cline{2-7}
 \multicolumn{1}{ c }{} & \multicolumn{3}{ |c|| }{\textbf{Inference Counts}} & \multicolumn{3}{ c| }{\textbf{Indexing Results}} \\ \cline{1-7}
 Sample Set&Sup&Demod&NegUnit&TotalFound&SupFP&SimpFP\\  \cline{1-7}
 \textbf{FP3W}&162218&42402&2472&13913606&69429&1815992\\
 \textbf{FP4M}&147798&35709&1963&13469779&26847&1851515\\
 \textbf{FP6M}&144505&35326&1959&12601762&16406&1694731\\
-\textbf{FP7}&159055&41005&2440&13011130&21281&1596575\\
+\textbf{FP7}&160641&41435&2453&13017546&14166&1557268\\
 \textbf{FP8X2}&159385&40876&2438&12819184&11229&1602033\\ \hline 
 \end{tabular}\end{center}\end{table}
 
 \begin{table}[H]\begin{center}
   \caption[]{Totalled timing results for various Fingerprint sampling sets.\footnotemark[1]}
+  \label{tab:fingtime}
 \begin{tabular}{| l || r | r | r | r | r | r |}  \cline{2-7}
 \multicolumn{1}{ c }{} & \multicolumn{6}{| c| }{\textbf{Time Spent (seconds)}} \\ \cline{1-7}
 Sample Set&Indexing&Retrieving&Sup&Demod&NegUnit&Total\\  \cline{1-7}
 \textbf{FP3W}&11.52&14.02&170.37&9.26&1.78&237.75\\
 \textbf{FP4M}&13.09&14.12&164.95&9.51&1.82&230.68\\
 \textbf{FP6M}&16.82&16.5&159.93&10.78&2.11&229.59\\
-\textbf{FP7}&19.98&18.74&170.83&12.37&2.37&249.22\\
+\textbf{FP7}&20.62&19.22&170.89&12.55&2.5&250.8\\
 \textbf{FP8X2}&45.56&32.59&181.43&21.45&4.06&294.8\\ \hline 
 \end{tabular}\end{center}\end{table}
 
 \footnotetext[1]{Excludes problem PUZ037-1.p}
+
+False positives are the main statistic we expect to be impacted by altering
+position sets. Notice that when only sampling 3 positions we see a huge number
+of superposition false positives, which more than halves when we move up to the FP4M set. Each
+extra position we sample drops the superposition false positive count further;
+though no other drops are as significant as the drop when moving from 3 positions to 4.
+The false positives for simplification are also on a falling trend; but not quite as
+consistently or uniformly as the false positives for superposition.
+
+Recall that a decrease in false positives does not necessarily imply a decrease
+in performance. Consider the difference between time results for FP3W and FP4M. Sampling
+an extra position only saves us about 5 seconds of superposition time; despite the
+fact that we cut false positives in half. This trend continues when we add two positions
+to FP6M. Between FP4M and FP6M we observe a saving of 5 seconds during superposition;
+but after the extra time required to index and retrieve terms we only save just over
+a second in total runtime. After 6 positions the trend of gentle performance increase
+reverses; and as expected we have reached a point where increasing indexing accuracy
+is no longer worthwhile. On the extreme far end of the scale where we sample 16
+positions (FP8X2) overall performance has dropped significantly. Even though FP8X2
+has a sixth the amount of false positives that FP3W has it takes nearly a minute
+longer to solve all 49 problems.
+
+These results line up with our expectations for how Fingerprint lengths impact
+performance; and with the results from \cite{shulz12}. Like Shulz, our best result
+was given by FP6M. It is only the best set by a very small margin however; and
+both tests of smaller sets perform essentially the same if we consider a reasonable
+margin of error. It would appear as though the set used for Fingerprint Indexing
+does not have a significant impact on performance so long as Fingerprint length
+is kept within a range of about 3 to 6.
+
+There is another interesting phenomenon in these results which we have not yet discussed.
+The total time spent on both simplification rules
+(Demodulation and Negative Unit Simplification) gets uniformly worse as we add
+sampling positions; quite significantly in the case of Demodulation. Notice that
+regardless of how many positions we sample we always observe a large count for 
+simplification false positives; with only a 12\% decrease from FP3W to FP8X2.
+This implies that the extra sampling positions are not as useful for simplification
+indexing, resulting in us only observing the loss of performance from complicating
+Term retrieval. 
+
 %%% Local Variables: 
 %%% mode: latex
 %%% TeX-master: "thesis"
