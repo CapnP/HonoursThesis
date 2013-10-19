@@ -485,7 +485,11 @@ regardless of how many positions we sample we always observe a large count for
 simplification false positives; with only a 12\% decrease from FP3W to FP8X2.
 This implies that the extra sampling positions are not as useful for simplification
 indexing, resulting in us only observing the loss of performance from complicating
-Term retrieval. 
+Term retrieval. This is possibly due to the fact that for simplification we
+only ever index unit Clauses; which will often be quite simple compared to the
+wide array of Terms seen in the superposition index. Smaller terms are less likely
+to be able to make use of more sampling positions, which would explain why adding
+them does not result in increased performance.
 
 %%% Local Variables: 
 %%% mode: latex
