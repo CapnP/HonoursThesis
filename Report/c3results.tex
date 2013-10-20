@@ -5,18 +5,31 @@
 \chapter{Results}
 \label{cha:results}
 
+Chapter \ref{cha:method} has provided a complete account of how Fingerprint Indexing
+was added to \beagle, along with some original improvements designed to tailor it
+to the \HSWAC. Our task now is to determine how effective Fingerprint Indexing
+has been at improving \beagle's proving process. This chapter covers the process
+of testing the performance of various versions of \beagle. This includes determining
+how best to define and measure performance, comparisons between indexed and unindexed \beagle\ and
+comparisons between different Fingerprint Index configurations.
+
+We will also provide some
+results taken before Fingerprint Indexing had been implemented; which were used
+in conjunction with our static analysis from Section \ref{sec:mloop} to
+identify weak points which could be improved with Term Indexing.
+
 \section{Instrumenting Beagle}
 \label{section:instr}
 
-We have stated several times throughout this report that the key area of improvement for \beagle
-is in locating Terms to apply inference. It was determined through analysis of the main loop
-that the two areas which performed this operation were superposition and simplification.
+We have stated several times throughout this report that the key area of improvement for \beagle\
+is in locating Terms to apply inference. It was determined through static analysis of the main loop
+that the two areas which performed this sort of search were superposition and simplification (see Section \ref{sec:mloop}).
 However, we have yet to provide hard evidence that these two components result in the
 most significant portion of \beagle's runtime.
-This section contains some results from initial investigations (before Fingerprint Indexing
-was implemented) which were used to confirm our suspicions from the analysis of \beagle's code.
+This section contains some results from initial investigations (from before Fingerprint Indexing
+was implemented) which were used to confirm our suspicions regarding the superposition and simplification performance bottlenecks.
 
-These investigations were performed using \emph{VisualVM}, a too for Java virtual machine
+These investigations were performed using \emph{VisualVM}, a tool for Java virtual machine
 instrumentation which is capable of automatically profiling code; that is, identifying
 which functions require the most computation time \cite{visualvm}. This tool can
 be used for Scala projects because compiled Scala code runs on the Java virtual machine;
@@ -33,7 +46,7 @@ a single logic problem.
 
 In the screenshot we can see there are two functions which together take up about
 74\% of the total runtime. These two functions consistently took up most of \beagle's
-computation time when this instrumentation was run against a wide range of problems.
+computation time when VisualvM instrumentation was performed for a wide range of problems.
 For readability the function names are re-stated here:
 \begin{itemize}
 \item[]beagle.fol.Term\$\$anonfun\$matchers\$1.\textbf{liftedTree\$1()}
@@ -42,13 +55,14 @@ For readability the function names are re-stated here:
 Knowing that these two functions take the most computation time does not immediately
 help us with knowing the bottleneck which we must improve. To figure that out we must
 trace the two functions back to where they are called from. We can see from the
-names above that the first function is part Term Scala file (where Term objects and their
-operations are defined) and the second is from unification Scala file (a collection
+names above that the first function is part of the Term Scala file (where Term objects and their
+operations are defined) and the second is from the unification Scala file (a collection
 of tools for performing unification and subsumption checks). Both functions are
 used during the process of attempting to match or unify Term objects, a process
 which is in turn only used during Superposition and Simplification. So we have confirmed
-that \beagle's main bottleneck is in these two operations; in particular by attempting
-to unify or match a great number of Terms. Thus by introducing Term Indexing we will
+that \beagle's main bottleneck is part of these two operations; specifically when they attempt
+to unify or match a great number of Terms. Thus by introducing Term Indexing
+(which drastically reduces the number of Terms we attempt inference on) we will
 be directly reducing strain on \beagle's most significant performance bottleneck.
 
 \section{Problem Selection}
@@ -95,6 +109,8 @@ we propose 3 major performance indicators, total run time, \emph{false positives
 and run time \emph{per inference}.
 
 \subsection{Total Run Time}
+\label{sec:runtime}
+
 The most obvious performance metric for any program is run time or speed.
 In order to measure time in our final test runs 
 we will no longer be using VisualVM as in Section \ref{section:instr}. This program is well suited to our earlier task
@@ -156,9 +172,16 @@ give the original given definition of a false positive.
 
 \subsection{Runtime Per Inference}
 
-Best performance measure
+In Section \ref{sec:runtime} above we mentioned that total runtime can be misleading
+due to ordering flukes; where a version of \beagle\ may perform better since it
+arbitrarily performed a key inference early on. Thus a better performance indicator
+is time spent \emph{per inference}, where we take the number of inferences required into
+account. This metric gives us a direct and clear indication of performance which
+(unlike the other metrics above) cannot be misinterpreted. Run time per inference
+is the most relevant performance indicator and the core of what this project
+has been trying to improve with Term Indexing.
 
-Note that this metric does not require any additional code in \beagle. Since we
+Note that calculating the run time per inference does not require any additional code in \beagle. Since we
 have total times and counts for each inference rule the runtime per inference can
 be calculated after each test.
 
