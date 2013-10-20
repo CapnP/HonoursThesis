@@ -62,9 +62,20 @@ for each version
 exceedingly impractical; especially considering the available time and resources (\citeN{shulz12}
 made use of the University of Miami \emph{Peagsus Cluster} to run his tests). Thus
 we must select a subset of problems which we may perform our tests against.
-In creating this test we must be \emph{fair} in the sense of not selecting
+This subset will consist of 50 TPTP problems across four problem categories.
+\begin{itemize}
+\item 10 Arithmetic (ARI) Problems.
+\item 20 Data (DAT) Problems.
+\item 10 Puzzle (PUZ) Problems.
+\item 10 Group Theory (GRP) Problems.
+\end{itemize}
+In selecting the problems above we must be \emph{fair} in the sense of not selecting
 problems which favour indexing; but we also are not interested in problems where
-indexing is not used.
+indexing is not used. To achieve this we will select problems sequentially wherever
+possible, preventing problems from being picked out specifically for exceptional indexing
+performance. Unfortunately in the case of the PUZ and GRP problems some problems had
+to be skipped over due to being slight modifications of the previous problem, instantly solvable by all versions,
+or in a couple cases not solvable by any version of \beagle.
 
 \section{Indexing Metrics}
 \label{sec:metrics}
