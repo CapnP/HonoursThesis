@@ -64,35 +64,50 @@ made use of the University of Miami \emph{Peagsus Cluster} to run his tests). Th
 we must select a subset of problems which we may perform our tests against.
 This subset will consist of 50 TPTP problems across four problem categories.
 \begin{itemize}
-\item 10 Arithmetic (ARI) Problems.
-\item 20 Data (DAT) Problems.
-\item 10 Puzzle (PUZ) Problems.
-\item 10 Group Theory (GRP) Problems.
+\item 10 \textbf{Arithmetic} (ARI) Problems. These problems are extremely relevant
+to \beagle, as they allow it to make significant use of the integer arithmetic
+background reasoning module. Unfortunately this makes ARI problems too easy for \beagle\ 
+and most of them are solvable instantly without any foreground inferences. This makes
+them completely irrelevant to indexing; hence we only include a selection of the 10 most complex ARI problems. 
+\item 20 \textbf{Data} (DAT) Problems. Data problems are generally quite large and
+require a large number of logical inferences to perform array manipulation operations.
+This makes them perfect for testing Term Indexing.
+\item 10 \textbf{Puzzle} (PUZ) Problems. Logic puzzles which are usually quite
+complex but occasionally can be solved instantly.
+\item 10 \textbf{Group Theory} (GRP) Problems. Usually quite complex but occasionally
+boil down to modular arithmetic problems which are solved instantly by the background prover.
 \end{itemize}
 In selecting the problems above we must be \emph{fair} in the sense of not selecting
 problems which favour indexing; but we also are not interested in problems where
 indexing is not used. To achieve this we will select problems sequentially wherever
-possible, preventing problems from being picked out specifically for exceptional indexing
-performance. Unfortunately in the case of the PUZ and GRP problems some problems had
-to be skipped over due to being slight modifications of the previous problem, instantly solvable by all versions,
-or in a couple cases not solvable by any version of \beagle.
+possible, which prevents us from picking out specific problems where indexing
+performs exceptionally. Unfortunately in the case of the PUZ and GRP some problems had
+to be skipped over due to being slight modifications of the previous problem, instantly solvable by all versions
+or (in a few cases) not solvable by any version of \beagle. For a full
+list of all the problems being tested against refer to Appendix \ref{app:app1}.
 
 \section{Indexing Metrics}
 \label{sec:metrics}
 
-\subsection{Speed}
-In order to measure the success of the final version of \beagle\ with term indexing
-we will no longer use VisualVM. This program is well suited to our earlier task
-of finding bottlenecks; but it will cause problems when analysing performance of a completed program.
-In particular attaching VisualVM to the Scala process will introduce significant overhead
-which will introduce inaccuracy in our results. Furthermore, as we have seen above,
-it can be difficult to determine what inference rules are taking up the most time
-when we only see the time spent in low-level common functions.
+Before we may begin our test runs we must decide precisely what we are testing for, that is,
+what we are using to measure \beagle's performance. In this section
+we propose 3 major performance indicators, total run time, \emph{false positives} (for indexing)
+and run time \emph{per inference}.
+
+\subsection{Total Run Time}
+The most obvious performance metric for any program is run time or speed.
+In order to measure time in our final test runs 
+we will no longer be using VisualVM as in Section \ref{section:instr}. This program is well suited to our earlier task
+of finding bottlenecks; but it will cause problems when attempting to analyse performance of a completed program.
+In particular, attaching VisualVM to the Scala process will introduce significant overhead;
+introducing variance and inaccuracy in our results. Furthermore, as we have seen in Section \ref{section:instr},
+it can be difficult to determine how long is spent in each high-level inference rule
+when we only see the computation time for bottom-level helper functions.
 
 So, as an alternative to VisualVM we will instead perform all our timing manually
 by injecting stopwatches into \beagle's code. This will allow us to directly
-time the use of each inference rule at the top level. For the purpose of our analysis
-we will time 6 sections of \beagle:
+time each of the inference rules at the top level. For the purpose of our analysis
+we will be timing 6 sections of \beagle:
 \begin{itemize}
 \item \textbf{Indexing}: Total time spent adding Terms to any of the Fingerprint Indices.
 \item \textbf{Retrieving}: Total time spent retrieving Terms from any of the Fingerprint Indices.
@@ -106,26 +121,38 @@ querying the index)
 set-up time such as parsing and interpreting the input file and initial memory allocation.
 \end{itemize}
 At this point it is important to discuss the effectiveness of comparing totalled timing
-results. 
+results. While being the most intuitive measure of performance it can be misleading;
+since (essentially through chance) different versions of \beagle\ will attempt logical
+inferences in different orders. This can result in a version `getting lucky' and solving
+a problem instantly where others get stuck. Thus in our results we will also include
+a count for how many times each inference rule was used; which we may then take
+into consideration when comparing results.
 
 \subsection{False Positives}
-Explain this metric and how it impacts performance.
 
-Not as good results due to extreme other conditions on inference rules.
-refer to differences in background rules. Also matching subterms!
-Cheap throwaway FPs are not a concern.
-totally useless even. Comment on change in how they are measured.
+A \emph{false positive} refers to a Term retrieved from a Fingerprint Index which does not
+result in an applicable inference. Each false positive results in wasted computation;
+making them a decent indicator of an Index's overall usefulness when solving a problem. That being said,
+we must take a great deal of care in interpreting the false positive count, as
+a low count does not necessarily indicate good overall performance. By na\"{\i}vley
+boosting the size of the position sampling set it is possible to drop the false
+positive count arbitrarily low; but this will result in an overcomplicated Index which
+takes a long time to retrieve compatible Terms. Thus rather than strictly desiring a
+low false positive count our goal for best performance is to balance the count with Fingerprint length.
 
-We observe many, even after a myriad of optimisations. Notice
-that this is due to the structure of beagle; many retrieved terms
-are cheaply thrown out due to other conditions (such as being a parent
-term, being ordered, etc.) and do not significantly impact performance.
-
-Refer to email from Stephan. compare false positive results
-
-It is possible to na\"{\i}vley boost false positives to 0 by indexing a
-huge number of positions; but this would not yield any speed improvement. Balancing false positive count with fingerprint
-length is key.
+In some initial testing, \beagle\ with indexing exhibited extremely high false positive
+counts. After an email correspondence with Stephan \citeN{shulz12} these counts were determined
+too high for Fingerprint Indexing to possibly be working correctly. After some analysis
+it was determined that many thousands of Terms retrieved from the index successfully unified but failed to
+perform a inference due to the large number of extra restrictions the \HSWAC places
+on superposition (see Section \ref{sec:calc}). Thus the definition of a false positive
+was slightly modified in \beagle\ to be a retrieved Term which does not successfully
+\emph{unify}, no longer including any Terms which are cheaply discarded due to conditions
+of the calculus. This allows \beagle's false positive count to be more comparable
+to other indexing techniques based on the traditional superposition calculus.
+Our test statistics will also include a count for the total number of terms retrieved
+from Fingerprint Indices, from which subtracting the number of inferences will
+give the original given definition of a false positive.
 
 \subsection{Runtime Per Inference}
 
