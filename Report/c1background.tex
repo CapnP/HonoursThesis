@@ -6,29 +6,35 @@
 \label{cha:background}
 
 \section{First-Order Logic Terms and Notation}
-\label{sec:fol}
+\label{sec:terminology}
 
 This thesis focuses around the extension of \beagle, a \emph{first-order logic} (FOL) theorem prover.
-In order to understand beagle's purpose and functions a basic understanding of the FOL logical system
-is required. This section provides a rudimentary overview of FOL syntax and uses;
-but also includes an explanation of any specialised terms and notation used throughout the paper.
+In order to understand beagle's purpose and functions a basic understanding of first order logic
+is required. Provided here is a brief glossary of important FOL terminology used throughout the paper.
 
-\subsection{FOL basics}
-\notes{
-Should contain
+\subsubsection{Logic Expressions}
+
 \begin{itemize}
-\item Variables
-\item Symbols
-\item Predicates
-\item Quantifiers
-\item Notion of soundness and completeness
-\item Description of a 'calculus'
-\end{itemize}}
+\item \textbf{Variable:}
+\item \textbf{Function Symbol:}
+\item \textbf{Term:}
+\item \textbf{Equation:}
+\item \textbf{Literal:} An equation or a \emph{negated} equation, 
+\item \textbf{Clause:} In this paper we use clause to refer specifically to a \emph{conjunctive normal form} clause,
+which is a collection of literals joined with the logical OR operator.
+\end{itemize}
 
-\subsection{FOL with Equality and Ordering}
+\subsubsection{Logic Calculus}
 
-\subsection{Important Terminology}
-\label{sec:terminology}
+A \emph{calculus} refers to a set of rules 
+
+\subsubsection{Soundness and Completeness}
+
+A logical calculus may be \emph{sound} and/or \emph{complete}. A calculus
+is sound if it cannot be used to derive an expression which is not truly a theorem.
+A calculus is complete if it can be used to derive all true theorems in any logical
+system. Incomplete calculi can occasionally be useful in special cases; but unsound
+calculi are generally useless.
 
 \subsubsection{Positions}
 Many concepts in this paper require the ability to precisely point out a specific
@@ -46,11 +52,14 @@ does not exist in the term we return Nil. Consider the following example:
 \[t = f(a, g(a, x, y), b)\]
 \[t|_{\epsilon} = f \quad\quad t|_{1} = a \quad\quad  t|_{2.2} = x \quad\quad  t|_{2.3.3} = \text{Nil} \quad\quad  t|_{3.2} = \text{Nil}\]
 
-\subsubsection{Substitution}
+\subsubsection{Substitutions}
 
-\subsubsection{Subsumption}
-
-\subsubsection{Unification}
+\begin{itemize}
+\item \textbf{Unification:} expressions $s$ and $t$ are \emph{unifiable} if there exists a substitution
+$\sigma$ such that $s\sigma = t\sigma$. Unifiable terms will have a unique \emph{most general unifier} (mgu).
+\item \textbf{Subsumption:} an expression $s$ \emph{subsumes} $t$ if there exists a substitution
+$\sigma$ such that $s\sigma = t$. This can also be stated as $t$ is an \emph{instance} of $s$.
+\end{itemize}
 
 %\subsection{Popular Problems in First Order Logic}
 
@@ -61,9 +70,9 @@ does not exist in the term we return Nil. Consider the following example:
 
 \begin{align*}
 \textbf{Positive Superposition} &&& \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{(s[r] \approx t \lor C \lor D)\sigma}
-\intertext{\tcent{Where $\sigma = $ mgu $(l,u)$, and $u$ is not a variable}}
+\intertext{\tcent{Where $\sigma = $ mgu $(l,u)$ and $u$ is not a variable}}
 \textbf{Negative Superposition} &&& \frac{l \approx r \lor C\quad \quad s[u] \not\approx t \lor D}{(s[r] \not\approx t \lor C \lor D)\sigma}
-\intertext{\tcent{Where $\sigma = $ mgu $(l,u)$, and $u$ is not a variable}}
+\intertext{\tcent{Where $\sigma = $ mgu $(l,u)$ and $u$ is not a variable}}
 \textbf{Equality Resolution}    &&& \frac{s \not\approx t \lor C}{C\sigma}
 \intertext{\tcent{Where $\sigma = $ mgu $(s,t)$}}
 \textbf{Equality Factoring}     &&& \frac{l \approx r \lor s \approx t \lor C}{(l \approx t \lor r \not \approx t \lor C)\sigma}
