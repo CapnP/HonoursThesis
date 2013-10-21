@@ -24,7 +24,8 @@ is provided here.
 \item \textbf{Function Symbol:} Functions with an \emph{arity} describing how many
 arguments they take. Arity 0 functions are referred to as \emph{constants}.
 \item \textbf{Term:} An expression made up entirely of function applications and variables.
-\item \textbf{Subterm:} A term contained within another term.
+\item \textbf{Subterm:} A term contained within another term. $s[u]$ denotes that
+$u$ is a subterm of $s$.
 \item \textbf{Equation:} an \emph{equality} statement, such as $s = t$ where $s$
 and $t$ are terms. Equations can be used to \emph{emulate} other predicates
 by adding reserved constants for \emph{true} and \emph{false}. For example $isEmpty(s) = true$.
@@ -76,12 +77,16 @@ $\sigma$ such that $s\sigma = t\sigma$. Unifiable terms will have a unique \emph
 $\sigma$ such that $s\sigma = t$. This can also be stated as $t$ is an \emph{instance} of $s$.
 \end{itemize}
 
-%\subsection{Popular Problems in First Order Logic}
+\pagebreak
 
 \subsection{The Superposition Calculus}
 \label{sec:supcalc}
 
-\cite{supcalc} \cite{smartmatch}
+\Beagle's logical calculus, the \HSWAC, is based
+on an existing popular set of inference rules known as the Superposition Calculus.
+The inference rules are provided here for reference; without explanation since their hierarchic
+variants will be explored later in detail (see Sections \ref{sec:calc} and \ref{ref:indsup}).
+Refer to \cite{supcalc} and \cite{smartmatch} for readings related to the development of the Superposition Calculus.
 
 \begin{align*}
 \textbf{Positive Superposition} &&& \frac{l \approx r \lor C\quad \quad s[u] \approx t \lor D}{(s[r] \approx t \lor C \lor D)\sigma}
@@ -93,7 +98,7 @@ $\sigma$ such that $s\sigma = t$. This can also be stated as $t$ is an \emph{ins
 \textbf{Equality Factoring}     &&& \frac{l \approx r \lor s \approx t \lor C}{(l \approx t \lor r \not \approx t \lor C)\sigma}
 \intertext{\tcent{Where $\sigma = $ mgu $(s,l)$}}
 \end{align*}
-
+\vspace{-2cm}
 
 \section{Automated Reasoning and Theorem Proving}
 \label{sec:proving}
@@ -289,6 +294,7 @@ The example Fingerprint Index above (Figure \ref{fig:fpindex}) actually contains
 the darker grey leaf sets are all the sets compatible with the query term $j(e, g(x))$.
 
 \subsection{Position Variants}
+\label{sec:posvar}
 
 The performance of Fingerprint Indexing depends greatly on the set of positions sampled
 to create term fingerprints. Sampling an enormous number of positions will result in
@@ -337,31 +343,42 @@ incorporate essentially any collection of facts; but in order to be worthwhile
 the collection should be extremely large or infinite.
 
 \Beagle\ itself is a resolution theorem prover like the examples above (Section \ref{sec:proving})
-which implements this background reasoning calculus. This section provides a brief
-summary of the capabilities of \beagle\ and the \HSWAC. For a detailed specification
+which implements this background reasoning calculus. It is intended as a `proof of concept' to
+demonstrate the capabilities of the \HSWAC. This section provides a brief
+summary of the calculus and its implementation. For a detailed specification
 of the precise advantages of the calculus refer to \cite{baum13}.
 
 \subsection{Hierarchic Reasoning}
 \label{sec:hier}
+
+Understanding the inference rules of the \HSWAC\ will require some hierarchic reasoning
+terminology and background knowledge.
 
 Hierachic reasoning involves two provers, the \emph{foreground} prover and the
 \emph{background} prover. The foreground prover behaves like a traditional first
 order logic prover (like the examples in Section \ref{sec:proving}) and uses the
 calculus inference rules to produce new facts. The background prover exists entirely
 to implement the background module described above. Each of the provers has its own
-set of function symbols and variables; and background variables are marked as either
-\emph{abstraction} or \emph{ordinary}.
+set of function symbols and variables; and background constants are referred to as
+\emph{domain elements} (integers in the case of integer arithmetic).
+Background variables are marked as either
+\emph{abstraction} or \emph{ordinary}, and background expressions are called \emph{pure} if
+they do not contain any ordinary background variables.
 
+Hierarchic reasoning system also requires an ordering $\succ$ on terms and literals. This ordering
+must fulfil a range number of conditions such as well-foundedness (there exists a smallest element),
+foreground terms are larger than background terms and background terms are larger than
+domain elements. $\succ$ must also be \emph{total on ground terms}, meaning that
+any terms $s$ and $t$ which do not contain any variables will have either $s \succ t$
+or $t \succ s$.
 
-%The hierarchic reasoning system also involves an ordering on terms.
-
-The logical calculus behind {\beagle} is not the first occurrence of using a hierarchy for
+Note that the logical calculus behind {\beagle} is not the first occurrence of using a hierarchy for
 logical reasoning. A calculus was developed by \citeN{bach94} to take advantage
-of this technique. Note that Waldmann continued on to co-write the paper outlining
+of this technique, and Waldmann continued on to co-write the paper outlining
 {\HSWA} \cite{baum13}.
 
 \subsection{Weak Abstraction}
-In order to keep the \emph{foreground} and \emph{background} reasoning
+In order to keep the foreground and background reasoning
 systems segregated it is necessary to clearly split a clause into its foreground
 and background parts. This is where the process of \emph{weak abstraction} comes in.
 
@@ -375,12 +392,10 @@ where abstraction is performed exhaustively until no literal contains both foreg
 and background operators.
 
 In their recent paper however, \citeN{baum13} discovered that the process 
-of full abstraction can destroy completeness. They then go on to propose a new
+of full abstraction can destroy completeness under particular interpretations. They then go on to propose a new
 variety of abstraction which they refer to as \emph{weak} abstraction. 
 In weak abstraction only \emph{maximal background subterms which are
-neither domain elements nor variables} are abstracted. Domain elements refer
-to constant values in the background reasoning system; such as integers the case of
-integer arithmetic. A maximal background subterm
+neither domain elements nor variables} are abstracted. A maximal background subterm
 is a background subterm not contained in any other background subterm. Abstracted terms are replaced
 with abstraction variables in the case of pure background terms, or ordinary variables
 in the case of impure background terms. See the paper itself for weak abstraction
@@ -395,7 +410,7 @@ conditions to accommodate background reasoning. These conditions include respect
 term/literal orderings and disallowing the use of pure background terms.
 
 The results of any inferences must also have weak abstraction performed on them. This
-ensures that we only ever have weakly abstracted terms in our logical system. The
+ensures that we only ever have weakly abstracted terms in our knowledge base. The
 base inference rules follow, taken directly from Section 6 of the {\HSWA} paper \cite{baum13}.
 See Section \ref{sec:supcalc} to compare these rules to the original
 superposition calculus.
@@ -426,7 +441,7 @@ superposition calculus.
 (iii) $(s \not\approx t)\sigma$ is strictly maximal in $(s \not\approx t \lor C)\sigma$}}
 \textbf{Equality Factoring}     &&& \frac{l \approx r \lor s \approx t \lor C}{\text{abstr}((l \approx t \lor r \not \approx t \lor C)\sigma)}
 \intertext{\tcent{Where 
-(i) $\sigma = $ simple mgu $(l,u)$,
+(i) $\sigma = $ simple mgu $(l,s)$,
 (ii) $r\sigma \not\succeq l\sigma$,
 (iii) $t\sigma \not\succeq s\sigma$,
 (iv) $l$ and $s$ are not pure background terms, and
@@ -442,23 +457,27 @@ complete. This inference rule does not require searching for unifiers or matcher
 and is therefore not relevant to term indexing. Refer to \cite{baum13} for its
 definition and usage.
 
-\subsection{\Beagle's Shortcomings}
+\subsection{\Beagle's Major Shortcomings}
 \label{sec:shortcomings}
 Notice that in the above rules for superposition there are two clauses used
 to perform the inference. This means that to use it we must search for two clauses
 which meet all the required conditions. This is obviously a time consuming process;
 and in the current implementation of \beagle\ this search is performed by comparing
-each possible pair of clauses. This results in an $O(n^2$) search which essentially amounts to the \emph{worst case}
-performance for inference.
+each possible pair of clauses. This results in an $O(n^2$) search, which essentially amounts to the \emph{worst case}
+performance for these inference rules.
 
-The main condition of these rules is that the terms
-$l$ and $u$ are unifiable. The goal of this project is to use Fingerprint Indexing to improve
-this search by retrieving likely matches for this rule and any others like it.
+The goal of this project is to implement Fingerprint Indexing for \beagle.
+This index could be used collect terms/clauses which are likely to fulfil the unification
+condition of superposition (condition (i)); significantly restricting the search space required.
 
+Both Equality Resolution and Equality Factoring also require the existence of a
+simple unifier $\sigma$, so it would seem as though Term Indexing is also applicable to these rules.
+However, these rules only search for unifiable terms within a single clause; which is too small a search space
+for indexing to be worthwhile.
 
 \section{Tools Used}
 
-\subsection{Scala}
+\subsubsection{Scala}
 \label{sec:scala}
 
 \Beagle\ is written in \emph{Scala}, the Scalable Language. Scala
@@ -466,18 +485,17 @@ is a functional language and may be confusing to those who are not familiar with
 functional programming paradigm. This thesis will contain occasional snippets of
 Scala code; but note that any snippets used will be accompanied by an explanation
 and in general an understanding of Scala/functional programming is not required.
-
 \cite{scala}
 
-\subsection{VisualVM}
-\cite{visualvm}
-
-\subsection{Eclipse}
+\subsubsection{Eclipse}
 \label{sec:eclipse}
-Integration with Scala IDE and ScalaTest
 
-\cite{eclipse}
-\cite{scalaide}
+Making modifications to \beagle\ will prove exceedingly difficult without a fully
+featured development environment. Code for this project was developed in \emph{Eclipse}
+with the assistance the the \emph{Scala IDE} extension; which allowed simple navigation
+and error checking \cite{eclipse} \cite{scalaide}. 
+Eclipse was integrated with the \emph{ScalaTest} module which allows the creation
+of simple unit tests; used to ensure code correctness.
 \cite{scalatest}
 
 %%% Local Variables: 
