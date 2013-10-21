@@ -5,17 +5,26 @@
 \chapter{Introduction}
 \label{cha:intro}
 
-\section{Goals}
+This thesis provides a detailed account of how an optimisation technique known
+as Term Indexing was added to the \beagle\ first order logic theorem prover. \Beagle\ 
+is a \emph{resolution} prover which 
 
-\section{Motivation}
+\section{Goals and Motivation}
 \label{sec:mot}
 
-\begin{itemize}
-\item Describe beagle
-\item Advantages of beagle
-\item drawbacks
-\item some intstrumentation
-\end{itemize}
+\subsection{Current Performance of Beagle}
+
+The primary goal of this project is the implementation of Fingerprint Indexing
+for the \beagle\ theorem prover.
+\Beagle\ currently lacks any decent 
+
+\subsection{Cross Validating Fingerprint Indexing}
+
+Fingerprint indexing itself is a very new technique; introduced for the first
+time in \cite{shulz12}. At the time of writing this paper presented the only
+implementation of Fingerprint Indexing. By implementing the technique in \beagle\ 
+we will be providing the Term Indexing field with more evidence regarding the
+overall performance of Fingerprint Indexing. 
 
 \section{Structure of this Report}
 \label{sec:framework}
@@ -24,7 +33,23 @@ In this report we will...
 
 \subsection{Background}
 
+The background chapter (Chapter \ref{cha:background}) provides necessary background material required to understand
+the concepts used in implementing Fingerprint Indexing.
+
+This includes a literature review where we discuss 
+\begin{itemize}
+\item Reference glossary of important logic terms.
+\item Definition of Term Indexing
+\item
+\end{itemize}
+
+It will also provide
+an in depth explanation of how Fingeprint Indexing works including its advantages
+over other Term Indexing techniques.
+
 \subsection{Method}
+
+The method chapter (Chapter \ref{cha:method})
 
 \subsection{Results}
 
