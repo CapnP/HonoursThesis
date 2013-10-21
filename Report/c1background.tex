@@ -5,28 +5,39 @@
 \chapter{Background}
 \label{cha:background}
 
-\section{First-Order Logic Terms and Notation}
+\section{First Order Logic Terms and Notation}
 \label{sec:terminology}
 
-This thesis focuses around the extension of \beagle, a \emph{first-order logic} (FOL) theorem prover.
+This thesis focuses around the extension of \beagle, a \emph{first order logic} (FOL) theorem prover.
+Specifically \beagle\ operates on first order logic \emph{with equality}, where the only
+true \emph{predicates} (boolean functions) are $=$ (the equality operator), $\lor$ (logical OR),  and
+$\lnot$ (negation). Other predicates (including $\land$, the logical AND operator) can be defined
+in terms of these three operations.
 In order to understand beagle's purpose and functions a basic understanding of first order logic
-is required. Provided here is a brief glossary of important FOL terminology used throughout the paper.
+with equality is required; but for reference a brief glossary of important terminology used throughout the paper
+is provided here.
 
 \subsubsection{Logic Expressions}
 
 \begin{itemize}
-\item \textbf{Variable:}
-\item \textbf{Function Symbol:}
-\item \textbf{Term:}
-\item \textbf{Equation:}
-\item \textbf{Literal:} An equation or a \emph{negated} equation, 
-\item \textbf{Clause:} In this paper we use clause to refer specifically to a \emph{conjunctive normal form} clause,
-which is a collection of literals joined with the logical OR operator.
+\item \textbf{Variable:} A general symbol which may be replaced by another term.
+\item \textbf{Function Symbol:} Functions with an \emph{arity} describing how many
+arguments they take. Arity 0 functions are referred to as \emph{constants}.
+\item \textbf{Term:} An expression made up entirely of function applications and variables.
+\item \textbf{Subterm:} A term contained within another term.
+\item \textbf{Equation:} an \emph{equality} statement, such as $s = t$ where $s$
+and $t$ are terms. Equations can be used to \emph{emulate} other predicates
+by adding reserved constants for \emph{true} and \emph{false}. For example $isEmpty(s) = true$.
+\item \textbf{Literal:} An equation or a \emph{negated} equation. For example $\lnot (s = t)$,
+written $s \neq t$.
+\item \textbf{Clause:} Throughout this paper we use clause to refer specifically to a \emph{conjunctive normal form} clause,
+which is a collection of literals joined with $\lor$.
 \end{itemize}
 
 \subsubsection{Logic Calculus}
 
-A \emph{calculus} refers to a set of rules 
+A \emph{calculus} refers to a set of rules which can be used to infer new information
+from a knowledge base; usually by combining two or more clauses.
 
 \subsubsection{Soundness and Completeness}
 
@@ -53,6 +64,10 @@ does not exist in the term we return Nil. Consider the following example:
 \[t|_{\epsilon} = f \quad\quad t|_{1} = a \quad\quad  t|_{2.2} = x \quad\quad  t|_{2.3.3} = \text{Nil} \quad\quad  t|_{3.2} = \text{Nil}\]
 
 \subsubsection{Substitutions}
+
+A \emph{substitution} is a function which replaces one or more variables in an expression
+with another term. Substitutions are required to define two important relations between
+expressions:
 
 \begin{itemize}
 \item \textbf{Unification:} expressions $s$ and $t$ are \emph{unifiable} if there exists a substitution
@@ -84,28 +99,32 @@ $\sigma$ such that $s\sigma = t$. This can also be stated as $t$ is an \emph{ins
 \label{sec:proving}
 
 Automated Reasoning is a rapidly growing field of research where computer programs
-are used to solve formal logic problems; typically stated in first-order logic.
+are used to solve formal logic problems; typically stated in first order logic.
+The most common variety are \emph{resolution} provers. These take as input a knowledge
+base of theorems and a \emph{query} logic statement. The query can be proven a theorem
+by adding its \emph{negation} to the knowledge base and repeatedly attempting inference rules
+until arriving at a contradiction.
 
 Some existing resolution theorem provers include:
 
-\subsection{SPASS}
+\begin{itemize}
+\item \textbf{SPASS}
 \cite{spass}
-
-\subsection{Vampire}
+\item \textbf{Vampire}
 \cite{vampire}
-
-\subsection{E}
+\item \textbf{E}
 \cite{eprover}
+
+\end{itemize}
 
 \section{Term Indexing}
 \label{sec:indexing}
 
-
 Term indexing is a technique used to better locate clauses and terms for which inference rules
-in a calculus will apply. In particular, indexers are used to find all terms which
-will or are likely to \emph{unify} or \emph{match}; which is a typical condition
-of any inference rule (for example all rules for the superposition calculus
-in Section \ref{sec:supcalc} require some unifier $\sigma$).
+in a calculus will apply. In particular, these indices are used to find all terms which
+will or are likely to \emph{unify} with, \emph{subsume} or be subsumed by a query term. These relations are typical conditions
+of first order logic inference rules, for example all rules for the superposition calculus
+in Section \ref{sec:supcalc} require some unifier $\sigma$.
 The process of implementing Term Indexing forms the core of this paper. Our goal
 is to implement a recent technique known as Fingerprint Indexing (see Section \ref{sec:fingerprint});
 but for examples and comparison we present here some other techniques.
@@ -116,6 +135,8 @@ with some results comparing them.
 Top symbol hashing simply compares the outermost symbol of any two terms and checks
 that they are compatible. For example, for the term $f(a,x)$ it would simply look
 at the symbol $f$ and present any other term with the top symbol $f$ (or a variable) as compatible.
+All terms compatible in this manner could be retrieved instantly with a standard
+single layer hash map.
 
 Top symbol hashing is provided as a simple example; it is very rudimentary and
 is certainly not in active use by any popular theorem provers.
@@ -131,9 +152,10 @@ complex process requiring a backtracking algorithm.
 
 This technique can be extended by keeping track of variable names; as opposed to
 replacing them all with a *. This extension makes Discrimination Trees a \emph{perfect} indexing technique in that anything
-returned by the indexer is guaranteed to be unifiable\cite{mccune}. In practice
-this extension can result in an unnecessarily large index which takes
-a considerable amount of to retrieve terms.
+returned by the indexer is guaranteed to be unifiable\cite{mccune}. While this extension sounds
+ideal, in practice it can result in a large index which takes
+a considerable amount of time to retrieve terms. This performance
+loss is often enough to offset any gain from implementing perfect indexing.
 
 Discrimination Trees have another distinct disadvantage in that their tree data
 structure can grow arbitrarily large depending on the size and variety of observed terms.
@@ -141,14 +163,23 @@ structure can grow arbitrarily large depending on the size and variety of observ
 \subsubsection{Path Indexing}
 
 Path Indexing is currently in active use in the Vampire theorem prover \cite{vampire}.
+It behaves similarly to Discrimination Trees but rather than mapping out entire terms
+it only maps a selection of \emph{paths}. A path in a term is a lists of function symbols
+ending in a variable or constant, generated by following an argument of each function application.
+For example there are two paths in $f(g(h(a), x))$, $[f, g, h, a]$ and $[f,g,x]$.
+
+Terms are stored in a tree structure according to which paths they possess; and retrieval
+is performed by finding terms in the tree which have compatible paths. This process
+is not straightforward and requires a backtracking algorithm with repeated use of
+the costly set intersection operation.
 
 \section{Fingerprint Indexing}
 \label{sec:fingerprint}
 
 \emph{Fingerprint Indexing} is a recent technique developed by \citeN{shulz12}, the creator
 of the E prover. It works by computing a \emph{fingerprint} for each logic term;
-which can compared for unification or match compatibility. 
-Unlike some of the example techniques above,
+which can then be compared for unification or match compatibility. 
+Like most of the example techniques above,
 Fingerprint Indexing is \emph{non-perfect} in that compatible fingerprints will not
 always imply that the associated terms successfully unify/match. The technique
 makes up for this by being adjustable to arbitrary levels of precision; ranging between
@@ -162,16 +193,15 @@ A term's \emph{fingerprint} is a list of \emph{fingerprint features} which
 indicate what the term looks like at a given position. The 4 possible
 fingerprint features are:
 \begin{itemize}
-\item \textbf{A}: the term has a variable at the position.
-\item $f$ (any function or constant in the current system): This
-feature indicates that $f$ is at the given position in the term.
-\item \textbf{B}: the position does not exist in the term, but can be created
+\item $f$ (any function or constant in the current system): The term has an application of $f$ at the given position.
+\item \textbf{A}: The term has a variable at the position.
+\item \textbf{B}: The position does not exist in the term, but can be created
 by expanding a variable via substitution.
-\item \textbf{N}: the position does not exist and cannot be created.
+\item \textbf{N}: The position does not exist and cannot be created.
 \end{itemize}
-Term fingerprints are computed with respect to a list of positions. We do this by simply
+Term fingerprints are computed with respect to a list of positions; by
 computing which feature exists at each position. We will now revisit the example from
-the explanation of term positions (Section \label{sec:terminology}) to show
+the explanation of term positions (in Section \label{sec:terminology}) to show
 the computation of a fingerprint. In the example $\{f,g\}$ are functions, $\{a,b\}$ are
 constants and $\{x,y\}$ are variables.
 \[t = f(a, g(a, x, y), b)\]
@@ -243,14 +273,16 @@ of a new technique rather than implementing something old.
 \section{The \Beagle\ Theorem Prover}
 \label{sec:beagle}
 
-{\Beagle} was developed by Peter Baumgartner et al. of NICTA. as a proof of concept,
-with the intention of demonstrating the capabilities of the \emph{\HSWAC}. This
-calculus allows the incorporation of prior knowledge via \emph{background reasoning} modules. \cite{baum13}
+{\Beagle} was developed by Peter Baumgartner et al. of NICTA as a proof of concept,
+with the intention of demonstrating the capabilities of the \emph{\HSWAC} \cite{baum13}. This
+calculus allows the incorporation of prior knowledge via \emph{background reasoning} modules. 
 These modules act as a sort of `black box' which we can use to rapidly prove
 facts about background terms; without the need to convert them to an equivalent first-order logic
-formulation. As a simple example we will think of the background reasoning module
-as implementing integer arithmetic, but in practice these modules can be used to
-incorporate essentially any collection of knowledge.
+formulation. For example we may think of the background reasoning module
+as implementing integer arithmetic, in which case any arithmetic theorem like $5+5=10$ can be proven instantly.
+In practice these modules can be used to
+incorporate essentially any collection of facts; but in order to be worthwhile
+the collection should be extremely large or infinite.
 
 \Beagle\ itself is a resolution theorem prover like the examples above (Section \ref{sec:proving})
 which implements this background reasoning calculus. This section provides a brief
@@ -276,16 +308,16 @@ where a subterm within a clause may be replaced by a fresh variable.
 \[\textbf{Abstraction}\quad\quad \frac{C[t]}{t\not\approx X \lor C[X]}\]
 %In more intuitive English terms, this process says \emph{"If $t$ is equal to $X$ then we may replace it for $X$"}.
 In a hierarchical calculus abstraction can be used to introduce new abstraction variables to take the place
-of any background subterms. \citeN{bach94} extended this form of derivation to what they called \emph{full-abstraction},
+of any background subterms. \citeN{bach94} extended this form of derivation to what they called \emph{full abstraction},
 where abstraction is performed exhaustively until no literal contains both foreground
 and background operators.
 
 In their recent paper however, \citeN{baum13} discovered that the process 
-of full abstraction can destroy completeness; and they then go on to propose a new
+of full abstraction can destroy completeness. They then go on to propose a new
 variety of abstraction which they refer to as \emph{weak} abstraction. 
 In weak abstraction only \emph{maximal background subterms which are
 neither domain elements nor variables} are abstracted. Domain elements refer
-to constant values in the background reasoning system, like 1 or 2 in the case of
+to constant values in the background reasoning system; such as integers the case of
 integer arithmetic. A maximal background subterm
 is a background subterm not contained in any other background subterm. Abstracted terms are replaced
 with abstraction variables in the case of pure background terms, or ordinary variables
@@ -342,7 +374,7 @@ Note the use of a slightly different unification operator, for \emph{simple} mgu
 This operator only produces unifiers where abstraction variables are mapped
 to pure background terms.
 
-Beyond these standard rules the full \HSWAC also includes a special
+Beyond these standard rules the full \HSWAC\ also includes a special
 rule known as Define; which is required for the calculus to be sufficiently
 complete. This inference rule does not require searching for unifiers or matchers
 and is therefore not relevant to term indexing. Refer to \cite{baum13} for its
@@ -354,7 +386,10 @@ Notice that in the above rules for superposition there are two clauses used
 to perform the inference. This means that to use it we must search for two clauses
 which meet all the required conditions. This is obviously a time consuming process;
 and in the current implementation of \beagle\ this search is performed by comparing
-each possible pair of clauses. The main condition of these rules is that the terms
+each possible pair of clauses. This results in an $O(n^2$) search which essentially amounts to \emph{worst case}
+performance for inference performance.
+
+The main condition of these rules is that the terms
 $l$ and $u$ are unifiable. The goal of this project is to use Fingerprint Indexing to improve
 this search by retrieving likely matches for this rule and any others like it.
 

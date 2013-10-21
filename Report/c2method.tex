@@ -43,11 +43,11 @@ are contained within an Eqn (for Equation) object, which may be ordered ($\to$)
 or unordered ($=$). Equations are then directly passed to a Literal container
 which stores whether the Equation is positive or negative (true or false). A list
 of Literals is maintained for each Clause which are in turn stored in a ClauseSet.
-These lists are to be interpreted in \emph{Conjunctive Normal Form} (See Section \ref{sec:fol})
+These lists are to be interpreted in \emph{Conjunctive Normal Form} (See Section \ref{sec:terminology})
 and thus their ordering is not relevant; save for retrieving specific Clauses / Literals.
 
 This structure is fairly typical and quite directly translates the definitions
-from Section \ref{sec:fol}. The structure could potentially be shortened by
+from Section \ref{sec:terminology}. The structure could potentially be shortened by
 removing the Equation object and having Literals directly contain the left and right Terms;
 but this would be inconsistent with most first-order logic literature and could cause confusion.
 

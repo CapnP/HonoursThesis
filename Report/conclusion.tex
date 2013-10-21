@@ -32,6 +32,17 @@ tremendous amount of memory.
 
 \subsubsection{Symbol count / Other Features}
 \subsubsection{Retrieval Caching}
+
+I believe retrieval caching could be used to significant effect for superposition
+indexing; in particular for the \emph{into case} described in section \ref{ref:indsup}.
+In this case we must loop over each subterm, meaning that we repeatedly query the index
+for trivial bottom-level terms like a single function symbol or variable. These cases
+could be cached and retrieved instantly.
+
+Implementing this cache would require great care as any newly indexed terms must
+also be added to any matching cache sets. This puts a restriction on how many queries
+can be cached since each extra one slows down the process of adding to the index.
+
 \subsubsection{Dynamic Fingerprinting}
 Negligible due to length/FP balance. Can make static ones arbitrarily good.
 
