@@ -12,10 +12,9 @@ This thesis focuses around the extension of \beagle, a \emph{first order logic} 
 Specifically \beagle\ operates on first order logic \emph{with equality}, where the only
 true \emph{predicates} (boolean functions) are $=$ (the equality operator), $\lor$ (logical OR),  and
 $\lnot$ (negation). Other predicates (including $\land$, the logical AND operator) can be defined
-in terms of these three operations.
-In order to understand beagle's purpose and functions a basic understanding of first order logic
-with equality is required; but for reference a brief glossary of important terminology used throughout the paper
-is provided here.
+in terms of these three operations. A basic understanding of first order logic with equality is required
+in order to fully understand \beagle\ and how it may be extended. However, for reference only,
+a brief glossary of important terminology used throughout the paper is provided here.
 
 \subsubsection{Logic Expressions}
 
@@ -28,7 +27,8 @@ arguments they take. Arity 0 functions are referred to as \emph{constants}.
 $u$ is a subterm of $s$.
 \item \textbf{Equation:} an \emph{equality} statement, such as $s = t$ where $s$
 and $t$ are terms. Equations can be used to \emph{emulate} other predicates
-by adding reserved constants for \emph{true} and \emph{false}. For example $isEmpty(s) = true$.
+by adding reserved constants for \emph{true} and \emph{false}. For example consider the equation $isEmpty(s) = true$, which
+is emulating an $isEmpty$ predicate.
 \item \textbf{Literal:} An equation or a \emph{negated} equation. For example $\lnot (s = t)$,
 written $s \neq t$.
 \item \textbf{Clause:} Throughout this paper we use clause to refer specifically to a \emph{conjunctive normal form} clause,
@@ -71,9 +71,9 @@ with another term. Substitutions are required to define two important relations 
 expressions:
 
 \begin{itemize}
-\item \textbf{Unification:} expressions $s$ and $t$ are \emph{unifiable} if there exists a substitution
+\item \textbf{Unification:} Two expressions $s$ and $t$ are \emph{unifiable} if there exists a substitution
 $\sigma$ such that $s\sigma = t\sigma$. Unifiable terms will have a unique \emph{most general unifier} (mgu).
-\item \textbf{Subsumption:} an expression $s$ \emph{subsumes} $t$ if there exists a substitution
+\item \textbf{Subsumption:} An expression $s$ \emph{subsumes} $t$ if there exists a substitution
 $\sigma$ such that $s\sigma = t$. This can also be stated as $t$ is an \emph{instance} of $s$.
 \end{itemize}
 
@@ -84,8 +84,8 @@ $\sigma$ such that $s\sigma = t$. This can also be stated as $t$ is an \emph{ins
 
 \Beagle's logical calculus, the \HSWAC, is based
 on an existing popular set of inference rules known as the Superposition Calculus.
-The inference rules are provided here for reference; without explanation since their hierarchic
-variants will be explored later in detail (see Sections \ref{sec:calc} and \ref{ref:indsup}).
+The inference rules are provided here for reference; but without explanation since their hierarchic
+variants will be later explored in great detail (see Sections \ref{sec:calc} and \ref{ref:indsup}).
 Refer to \cite{supcalc} and \cite{smartmatch} for readings related to the development of the Superposition Calculus.
 
 \begin{align*}
@@ -127,9 +127,9 @@ Some existing resolution theorem provers include:
 
 Term indexing is a technique used to better locate clauses and terms for which inference rules
 in a calculus will apply. In particular, these indices are used to find all terms which
-will or are likely to \emph{unify} with, \emph{subsume} or be subsumed by a query term. These relations are typical conditions
-of first order logic inference rules, for example all rules for the superposition calculus
-in Section \ref{sec:supcalc} require some unifier $\sigma$.
+will or are likely to \emph{unify} with, \emph{subsume} or \emph{be subsumed by} a query term. These relations are typical conditions
+of first order logic inference rules; in particular, every rule in the Superposition Calculus
+(described in Section \ref{sec:supcalc} above) requires some unifier $\sigma$.
 The process of implementing Term Indexing forms the core of this paper. Our goal
 is to implement a recent technique known as Fingerprint Indexing (see Section \ref{sec:fingerprint});
 but for examples and comparison we present here some other techniques.
@@ -157,7 +157,7 @@ complex process requiring a backtracking algorithm.
 
 This technique can be extended by keeping track of variable names; as opposed to
 replacing them all with a *. This extension makes Discrimination Trees a \emph{perfect} indexing technique in that anything
-returned by the indexer is guaranteed to be unifiable\cite{mccune}. While this extension sounds
+returned by the indexer is guaranteed to be unifiable \cite{mccune}. While this extension sounds
 ideal, in practice it can result in a large index which takes
 a considerable amount of time to retrieve terms. This performance
 loss is often enough to offset any gain from implementing perfect indexing.
@@ -183,10 +183,10 @@ the costly set intersection operation.
 
 \emph{Fingerprint Indexing} is a recent technique developed by \citeN{shulz12}, the creator
 of the E prover. It works by computing a \emph{fingerprint} for each logic term;
-which can then be compared for unification or match compatibility. 
+which can then be compared for unification or subsumption compatibility. 
 Like most of the example techniques above,
 Fingerprint Indexing is \emph{non-perfect} in that compatible fingerprints will not
-always imply that the associated terms successfully unify/match. The technique
+always imply that the associated terms successfully unify or subsume one another. The technique
 makes up for this by being adjustable to arbitrary levels of precision; ranging between
 what essentially amounts to Top-Symbol Hashing (See section \ref{sec:indexing})
 to comprehensive, but slow to compute, term comparisons.
@@ -246,7 +246,7 @@ In order to retrieve terms from a Fingerprint Index we must find all the leaf se
 which are \emph{compatible} with the fingerprint of a query term. For two fingerprints
 to be compatible they need not necessarily be equal; but each of their fingerprint
 features compared pairwise must be marked with a \compY\ in the relevant comparison table.
-Which table is relevant depends on the substitution operation we are indexing for;
+Which table is relevant depends on the substitution operation we are indexing for:
 Table \ref{tab:unif} for unification and Table \ref{tab:match} for subsumption.
 
 \begin{table}[H]\begin{center}
@@ -316,7 +316,7 @@ terms, and many more than these few exist. Considering this, it becomes a natura
 why has Fingerprint Indexing been chosen as the focus of this paper?
 
 One major reason is for using Fingerprint Indexing is that it is \emph{new}. Many of the indexing
-techniques summarised in \cite{indexing} have been around since the 1960s, and all of
+techniques summarised in \cite{indexing} have been around since the early 1990s, and all of
 them have been implemented and thoroughly tested multiple times. Fingerprint
 Indexing however has (at the time of writing) only ever been implemented by \citeN{shulz12}
 as part of his testing. Hopefully by providing a second (from scratch and entirely independent)

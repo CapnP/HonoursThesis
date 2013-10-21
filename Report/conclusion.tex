@@ -5,8 +5,7 @@
 \chapter{Conclusion}
 \label{cha:conclusion}
 
-\section{The Benefits of Term Indexing for the \Beagle\ Theorem Prover }
-\label{sec:why}
+\section{}
 
 \section{Future Improvements}
 \label{sec:future}
@@ -15,7 +14,6 @@ Here we list some thoughts on possible improvements to \beagle\ and Fingerprint
 indexing in general; which were either not relevant to the current work or
 were not investigated due to time constraints.
 
-\subsection{More Thorough Testing}
 
 \subsection{Extended Data Structures}
 The focus of this thesis has been with high-level logical improvements. Here
@@ -28,30 +26,43 @@ tremendous amount of memory.
 
 \subsection{More Fingerprint Indices}
 
-\subsection{Extensions to Fingerprint Indexing}
+When we applied Fingerprint Indexing to simplification in Section \ref{sec:simp}
+we created two new indices for unit clauses rather than re-using the superposition
+index; which will generally contain thousands of terms useless to simplification.
 
-\subsubsection{Symbol count / Other Features}
-\subsubsection{Retrieval Caching}
+It is possible that more performance could be squeezed out of creating more Fingerprint
+Indices to handle other special cases. Take the Equality Factoring rule for instance
+(See Section \ref{sec:calc}). We dismissed the notion of applying indexing to this rule
+since it only needs to look for unifiable terms within a single clause. 
+
+\subsection{Retrieval Caching}
+In the case that many retrievals for the same query term are observed it may increase
+performance to \emph{cache} the compatible set of terms so that they may be retrieved
+instantly the next time the term is queried.
 
 I believe retrieval caching could be used to significant effect for superposition
 indexing; in particular for the \emph{into case} described in section \ref{ref:indsup}.
 In this case we must loop over each subterm, meaning that we repeatedly query the index
-for trivial bottom-level terms like a single function symbol or variable. These cases
+for trivial bottom-level terms; such as a single function symbol or variable. These cases
 could be cached and retrieved instantly.
 
 Implementing this cache would require great care as any newly indexed terms must
 also be added to any matching cache sets. This puts a restriction on how many queries
 can be cached since each extra one slows down the process of adding to the index.
 
-\subsubsection{Dynamic Fingerprinting}
+\subsection{Dynamic Fingerprinting}
 Negligible due to length/FP balance. Can make static ones arbitrarily good.
 
 Tailoring to a problem is good though, consider example where many \textbf{B}sare generated,
  but the position cannot be reached due to a maximum function arity.
 
+%\subsubsection{Symbol count / Other Features}
+\subsection{More Thorough Testing}
+
 \subsection{Comparing Indexing Techniques}
 
-\section{Final Thoughts}
+\section{The Benefits of Term Indexing for the \Beagle\ Theorem Prover }
+\label{sec:why}
 
 By considering more indepth results we were able to better rate the performance
 of Fingerprint Indexing rather than just rate it on runtime.
