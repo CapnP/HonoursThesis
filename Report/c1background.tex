@@ -285,8 +285,8 @@ fingerprint feature. We proceed down the tree until we reach the leaf sets; at w
 point we collect them all together with the \emph{union} operation. Note that this
 is far cheaper than computing set intersections which is required for Path Indexing.
 
-The example Fingerprint Index above (Figure \ref{fig:fpindex}) actually contains a retrieval example;
-the darker grey leaf sets are the sets compatible with the term $j(e, g(x))$.
+The example Fingerprint Index above (Figure \ref{fig:fpindex}) actually contains an example of term retrieval;
+the darker grey leaf sets are all the sets compatible with the query term $j(e, g(x))$.
 
 \subsection{Position Variants}
 
@@ -317,6 +317,11 @@ as part of his testing. Hopefully by providing a second (from scratch and entire
 implementation of Fingerprint Indexing we can confirm the results by Shulz and
 solidify Fingerprint Indexing as a viable competitor in the field.
 
+Another reason for using this technique is that it is very configurable (in terms
+of sampling positions); and lends itself to custom optimisations and extensions.
+For example it is possible to customise the set of fingerprint features by implementing a new comparison table;
+which could allow more in-depth comparisons in special cases.
+
 \section{The \Beagle\ Theorem Prover}
 \label{sec:beagle}
 
@@ -325,7 +330,7 @@ with the intention of demonstrating the capabilities of the \emph{\HSWAC} \cite{
 calculus allows the incorporation of prior knowledge via \emph{background reasoning} modules. 
 These modules act as a sort of `black box' which we can use to rapidly prove
 facts about background terms; without the need to convert them to an equivalent first order logic
-formulation. For example we may think of the background reasoning module
+formulation. As an example we may think of the background reasoning module
 as implementing integer arithmetic, in which case any arithmetic theorem like $5+5=10$ can be proven instantly.
 In practice these modules can be used to
 incorporate essentially any collection of facts; but in order to be worthwhile
@@ -338,12 +343,22 @@ of the precise advantages of the calculus refer to \cite{baum13}.
 
 \subsection{Hierarchic Reasoning}
 \label{sec:hier}
+
+Hierachic reasoning involves two provers, the \emph{foreground} prover and the
+\emph{background} prover. The foreground prover behaves like a traditional first
+order logic prover (like the examples in Section \ref{sec:proving}) and uses the
+calculus inference rules to produce new facts. The background prover exists entirely
+to implement the background module described above. Each of the provers has its own
+set of function symbols and variables; and background variables are marked as either
+\emph{abstraction} or \emph{ordinary}.
+
+
+%The hierarchic reasoning system also involves an ordering on terms.
+
 The logical calculus behind {\beagle} is not the first occurrence of using a hierarchy for
 logical reasoning. A calculus was developed by \citeN{bach94} to take advantage
 of this technique. Note that Waldmann continued on to co-write the paper outlining
 {\HSWA} \cite{baum13}.
-
-%The hierarchic reasoning system also involves an ordering on terms.
 
 \subsection{Weak Abstraction}
 In order to keep the \emph{foreground} and \emph{background} reasoning
@@ -377,7 +392,7 @@ examples and details of how this process affects completeness.
 The base inference rules for the {\HSWAC} are essentially identical to the standard 
 superposition calculus; except for the fact that they come with many additional
 conditions to accommodate background reasoning. These conditions include respecting
-clause orderings and disallowing the use of pure background terms.
+term/literal orderings and disallowing the use of pure background terms.
 
 The results of any inferences must also have weak abstraction performed on them. This
 ensures that we only ever have weakly abstracted terms in our logical system. The
