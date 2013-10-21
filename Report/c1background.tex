@@ -217,9 +217,8 @@ data structure known as the \emph{Fingerprint Index}.
 This data structure is very reminiscent of a Discrimination Tree (See section \ref{sec:indexing})
 and works similarly. To add a term to the index we (starting from the root node) follow/create
 branches labelled with the fingerprint features of the term's fingerprint. Once the fingerprint has run
-out we store the term in a leaf set. This process subtly indicates the key difference
-between the Fingerprint Index and a Discrimination Tree: since all term fingerprints
-are the same length, the Index has a fixed depth.
+out we store the term in a leaf set. Figure \ref{fig:fpindex} presents an example Fingerprint
+Index; built by sampling positions $\epsilon$, 1 and 2 for a variety of terms.
 
 \begin{figure}[H]
   \centering
@@ -229,10 +228,24 @@ are the same length, the Index has a fixed depth.
    \label{fig:fpindex}
 \end{figure}
 
+The Fingerprint Index has two key advantages which set it apart from the tree data
+structures used by Discrimination Trees and Path Indexing. First of all, since all
+term fingerprints are the same length the index has a fixed depth which does not grow overtime. The index's branching
+factor can increase but this does not add as much complexity as the significant growth
+of a Discrimination Tree. The second (and most important) advantage is that
+retrieval is comparatively simple since it only requires the cheap set \emph{union} operation.
+
 \subsection{Comparing Fingerprints and Retrieving}
 
-\begin{table}[h]\begin{center}
-  \caption{Fingerprint Feature compare table for Unification \protect\cite[p6]{shulz12}}
+In order to retrieve terms from a Fingerprint Index we must find all the leaf sets
+which are \emph{compatible} with the fingerprint of a query term. For two fingerprints
+to be compatible they need not necessarily be equal; but each of their fingerprint
+features compared pairwise must be marked with a \compY\ in the relevant comparison table.
+Which table is relevant depends on the substitution operation we are indexing for;
+Table \ref{tab:unif} for unification and Table \ref{tab:match} for subsumption.
+
+\begin{table}[H]\begin{center}
+  \caption{Fingerprint Feature compare table for Unification (symmetrical). $f_1$ and $f_2$ represent arbitrary distinct function symbols. \protect\cite[p6]{shulz12}}
   \label{tab:unif}
   \begin{tabular}{| c || c | c | c | c | c |}
   \hline
@@ -245,8 +258,8 @@ are the same length, the Index has a fixed depth.
   \end{tabular}
 \end{center}\end{table}
 
-\begin{table}[h]\begin{center}
-  \caption{Fingerprint Feature compare table for Matching \protect\cite[p6]{shulz12}}
+\begin{table}[H]\begin{center}
+  \caption{Fingerprint Feature compare table for Subsumption (down subsumes across). $f_1$ and $f_2$ represent arbitrary distinct function symbols. \protect\cite[p6]{shulz12}}
   \label{tab:match}
   \begin{tabular}{| c || c | c | c | c | c |}
   \hline
@@ -259,16 +272,50 @@ are the same length, the Index has a fixed depth.
   \end{tabular}
 \end{center}\end{table}
 
+As an example consider the terms $j(e, g(x))$ and $j(x,y)$ being compared for unification
+when sampling positions $\epsilon$, 1 and 2. The fingerprints are $[j, e, g]$ and $[j,$ \textbf{A}, \textbf{A}$]$. 
+$j$ is compatible with itself, so the first comparison is marked \compY. \textbf{A} is compatible with
+any function symbol, so the second and third comparisons are also marked \compY; and
+we have that the two terms are potentially compatible for unification.
+
+To retrieve a full set of compatible terms from the Fingerprint Index we generate
+the query term's fingerprint and proceed to traverse the index tree one fingerprint
+feature at a time, going down any branch which is compatible with the current
+fingerprint feature. We proceed down the tree until we reach the leaf sets; at which
+point we collect them all together with the \emph{union} operation. Note that this
+is far cheaper than computing set intersections which is required for Path Indexing.
+
+The example Fingerprint Index above (Figure \ref{fig:fpindex}) actually contains a retrieval example;
+the darker grey leaf sets are the sets compatible with the term $j(e, g(x))$.
+
 \subsection{Position Variants}
+
+The performance of Fingerprint Indexing depends greatly on the set of positions sampled
+to create term fingerprints. Sampling an enormous number of positions will result in
+almost every term retrieved being truly unifiable; but the Fingerprint Index will
+be so large and unwieldy that overall performance will steeply decrease.
+
+The key to achieving great performance with Fingerprint Indexing is to balance
+fingerprint length with retrieval accuracy. \citeN{shulz12} performed some experiments
+comparing a variety of position sampling sets. The best performing set sampled
+6 positions:
+  \[\epsilon,\  1,\  2,\  3,\  1.1,\  1.2\]
+As part of the Fingerprint Indexing implementation for \beagle\ we will also test
+a variety of sampling sets; hopefully cross-validating the results from \citeN{shulz12}.
 
 \subsection{Why Fingerprint Indexing?}
 
 In Section \ref{sec:indexing} we described several other techniques for indexing
-terms, and many more than these few exist. It is then a natural question to ask:
+terms, and many more than these few exist. Considering this, it becomes a natural question to ask:
 why has Fingerprint Indexing been chosen as the focus of this paper?
 
-Primarily due to how configurable it is. Also interesting to observe success
-of a new technique rather than implementing something old.
+One major reason is for using Fingerprint Indexing is that it is \emph{new}. Many of the indexing
+techniques summarised in \cite{indexing} have been around since the 1960s, and all of
+them have been implemented and thoroughly tested multiple times. Fingerprint
+Indexing however has (at the time of writing) only ever been implemented by \citeN{shulz12}
+as part of his testing. Hopefully by providing a second (from scratch and entirely independent)
+implementation of Fingerprint Indexing we can confirm the results by Shulz and
+solidify Fingerprint Indexing as a viable competitor in the field.
 
 \section{The \Beagle\ Theorem Prover}
 \label{sec:beagle}
@@ -277,7 +324,7 @@ of a new technique rather than implementing something old.
 with the intention of demonstrating the capabilities of the \emph{\HSWAC} \cite{baum13}. This
 calculus allows the incorporation of prior knowledge via \emph{background reasoning} modules. 
 These modules act as a sort of `black box' which we can use to rapidly prove
-facts about background terms; without the need to convert them to an equivalent first-order logic
+facts about background terms; without the need to convert them to an equivalent first order logic
 formulation. For example we may think of the background reasoning module
 as implementing integer arithmetic, in which case any arithmetic theorem like $5+5=10$ can be proven instantly.
 In practice these modules can be used to
@@ -386,8 +433,8 @@ Notice that in the above rules for superposition there are two clauses used
 to perform the inference. This means that to use it we must search for two clauses
 which meet all the required conditions. This is obviously a time consuming process;
 and in the current implementation of \beagle\ this search is performed by comparing
-each possible pair of clauses. This results in an $O(n^2$) search which essentially amounts to \emph{worst case}
-performance for inference performance.
+each possible pair of clauses. This results in an $O(n^2$) search which essentially amounts to the \emph{worst case}
+performance for inference.
 
 The main condition of these rules is that the terms
 $l$ and $u$ are unifiable. The goal of this project is to use Fingerprint Indexing to improve
