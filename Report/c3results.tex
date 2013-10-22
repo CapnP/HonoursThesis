@@ -46,7 +46,7 @@ a single logic problem.
 
 In the screenshot we can see there are two functions which together take up about
 74\% of the total runtime. These two functions consistently took up most of \beagle's
-computation time when VisualvM instrumentation was performed for a wide range of problems.
+computation time when VisualVM instrumentation was performed for a wide range of problems.
 For readability the function names are re-stated here:
 \begin{itemize}
 \item[]beagle.fol.Term\$\$anonfun\$matchers\$1.\textbf{liftedTree\$1()}
@@ -55,11 +55,11 @@ For readability the function names are re-stated here:
 Knowing that these two functions take the most computation time does not immediately
 help us with knowing the bottleneck which we must improve. To figure that out we must
 trace the two functions back to where they are called from. We can see from the
-names above that the first function is part of the Term Scala file (where Term objects and their
-operations are defined) and the second is from the unification Scala file (a collection
+names above that the first function is part of the \emph{Term} Scala file (where Term objects and their
+operations are defined) and the second is from the \emph{unification} Scala file (a collection
 of tools for performing unification and subsumption checks). Both functions are
 used during the process of attempting to match or unify Term objects, a process
-which is in turn only used during Superposition and Simplification. So we have confirmed
+which is in turn only used during superposition and simplification. So we have confirmed
 that \beagle's main bottleneck is part of these two operations; specifically when they attempt
 to unify or match a great number of Terms. Thus by introducing Term Indexing
 (which drastically reduces the number of Terms we attempt inference on) we will
@@ -80,8 +80,8 @@ This subset will consist of 50 TPTP problems across four problem categories.
 \begin{itemize}
 \item 10 \textbf{Arithmetic} (ARI) Problems. These problems are extremely relevant
 to \beagle, as they allow it to make significant use of the integer arithmetic
-background reasoning module. Unfortunately this makes ARI problems too easy for \beagle\ 
-and most of them are solvable instantly without any foreground inferences. This makes
+background reasoning module. Unfortunately this makes ARI problems too easy for \beagle,
+and many of them are solvable instantly without any foreground inferences. This makes
 them completely irrelevant to indexing; hence we only include a selection of the 10 most complex ARI problems. 
 \item 20 \textbf{Data} (DAT) Problems. Data problems are generally quite large and
 require a large number of logical inferences to perform array manipulation operations.
@@ -92,11 +92,11 @@ complex but occasionally can be solved instantly.
 boil down to modular arithmetic problems which are solved instantly by the background prover.
 \end{itemize}
 In selecting the problems above we must be \emph{fair} in the sense of not selecting
-problems which favour indexing; but we also are not interested in problems where
+problems which favour indexing, but we also are not interested in problems where
 indexing is not used. To achieve this we will select problems sequentially wherever
 possible, which prevents us from picking out specific problems where indexing
-performs exceptionally. Unfortunately in the case of the PUZ and GRP some problems had
-to be skipped over due to being slight modifications of the previous problem, instantly solvable by all versions
+performs exceptionally. Unfortunately some of the PUZ and GRP problems had
+to be skipped over due to being only slight modifications of the previous problem, instantly solvable by all versions
 or (in a few cases) not solvable by any version of \beagle. For a full
 list of all the problems being tested against refer to Appendix \ref{app:app1}.
 
@@ -128,13 +128,13 @@ we will be timing 6 sections of \beagle:
 \item \textbf{Indexing}: Total time spent adding Terms to any of the Fingerprint Indices.
 \item \textbf{Retrieving}: Total time spent retrieving Terms from any of the Fingerprint Indices.
 \item \textbf{Superposition}: Total time spent performing Superposition (includes time spent
-querying the index)
+querying the index).
 \item \textbf{Demodulation}: Total time spent performing Demodulation (includes time spent
-querying the index)
+querying the index).
 \item \textbf{Negative Unit Simplification}: Total time spent performing Negative Unit Simplification (includes time spent
-querying the index)
+querying the index).
 \item \textbf{Total}: Total time for the whole proof process. This \emph{does not} include
-set-up time such as parsing and interpreting the input file and initial memory allocation.
+setup time such as parsing and interpreting the input file and initial memory allocation.
 \end{itemize}
 At this point it is important to discuss the effectiveness of comparing totalled timing
 results. While being the most intuitive measure of performance it can be misleading;
@@ -165,7 +165,7 @@ on superposition (see Section \ref{sec:calc}). Thus the definition of a false po
 was slightly modified in \beagle\ to be a retrieved Term which does not successfully
 \emph{unify}, no longer including any Terms which are cheaply discarded due to conditions
 of the calculus. This allows \beagle's false positive count to be more comparable
-to other indexing techniques based on the traditional superposition calculus.
+to that of other indexing implementations which use the traditional superposition calculus.
 Our test statistics will also include a count for the total number of terms retrieved
 from Fingerprint Indices, from which subtracting the number of inferences will
 give the original given definition of a false positive.
@@ -366,9 +366,10 @@ indexed versions are still performing slightly worse than original \beagle. Real
 they are performing about the same; considering a 0.1 millisecond margin of error. Unfortunately
 it seems as though \beagle's current implementation of demodulation is not well suited
 to indexing. This is perhaps due to the fact that demodulation must still loop
-over all subterms of its query Clause; but avoiding this would require very significant
-modification to \beagle's main loop (as simplification currently only applies to
-the Clause selected from \verb!new!, see Section \ref{sec:mloop} and \ref{sec:demod}).
+over all subterms of its query Clause. This problem could potentially be avoided by
+indexing demodulation in the other direction; but this would require very significant
+modification to \beagle's main loop (as demodulation currently only applies to
+the single Clause selected from \verb!new!, see Section \ref{sec:mloop} and \ref{sec:demod}).
 On the other hand it is possible that the issue arises simply from
 the specific problem set we are testing against; since in many of results we observe
 very few or even zero demodulation operations. More testing is required to determine
@@ -413,8 +414,8 @@ optimisations have made it worthwhile.
 
 More relevant to indexing performance are the results of large problems. When our
 knowledge base consists of several thousand Clauses it no longer becomes practical
-to search through them for inference matches and Term indexing becomes far more vital.
-Furthermore for each inference we perform our knowledge base grows and this problem will become worse.
+to search through them for inference matches, and Term indexing becomes far more vital.
+Furthermore, for each inference we perform our knowledge base grows and this problem will become worse.
 In this section we will discuss the results of large problems where many thousands of
 inferences are performed; in which we expect Fingerprint Indexing to improve performance
 significantly.
@@ -452,6 +453,16 @@ be partially considered a fluke of inference ordering; but without the ability
 to rapidly apply inferences with indexing it would not have been possible to reach
 the key inferences which allowed the problem to be solved.
 
+For the largest problem which unmodified \beagle\ was eventually able to solve (DAT038=1.p)
+the improvement when adding Term Indexing is staggering. Our enhanced version
+requires 1.2 milliseconds per superposition inference in this problem versus 2.2
+for the original, an improvement of just under 50\%! Most other DAT results above
+exhibit similar performance gains.
+It may seem unfair to herald the results of only a few problems, but they precisely embody
+what we set out to improve with Fingerprint Indexing: large and complex problems requiring many
+thousands of inferences.
+
+
 \subsubsection{Most Significant Negative Unit Simplification Results}
 
 Back in Section \ref{sec:metricperf} we observed a 94\% improvement for each
@@ -483,7 +494,7 @@ but in the end performs comparatively few. This problem must have generated a la
 number of negative unit Clauses which were not necessarily applicable for
 Negative Unit Simplification; resulting in a great deal of unnecessary computation
 for unindexed \beagle. In terms of time spent per inference, 
-unindexed \beagle requires 135 milliseconds for each simplification;
+unindexed \beagle\ requires 135 milliseconds for each simplification;
 which is nearly \emph{eight times} its norm. It is worth noting at this point that DAT038=1.p \emph{is not} a lone outlier; and
 in particular we see very similar (though not quite as extreme) results in DAT039=1.p and DAT040=1.p.
 These problems are also made relevant by the fact that our indexed versions are suffering
@@ -496,7 +507,7 @@ far better than unindexed \beagle.
 \label{sec:fingcomp}
 
 Now that we have thoroughly explored and compared the three different versions of
-\beagle\ it is now worth considering the impact of different Fingerprint Indexing
+\beagle\ it is worth considering the impact of different Fingerprint Indexing
 configurations; in particular the set of positions being sampled. 
 By increasing the number of positions sampled we should
 expect a decrease in false positive rate, since Terms retrieved from the Index will
@@ -594,6 +605,8 @@ is no longer worthwhile. On the extreme far end of the scale where we sample 16
 positions (FP8X2) overall performance has dropped significantly. Even though FP8X2
 has a sixth the amount of false positives that FP3W has it takes nearly a minute
 longer to solve all 49 problems.
+
+\pagebreak
 
 These results line up with our expectations for how Fingerprint lengths impact
 performance; and with the results from \cite{shulz12}. Like Shulz, our best result
