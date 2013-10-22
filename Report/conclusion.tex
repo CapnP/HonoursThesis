@@ -5,24 +5,32 @@
 \chapter{Conclusion}
 \label{cha:conclusion}
 
-\section{}
+\section{Implementing Fingerprint Indexing for \Beagle}
 
 \section{Future Improvements}
 \label{sec:future}
 
 Here we list some thoughts on possible improvements to \beagle\ and Fingerprint
 indexing in general; which were either not relevant to the current work or
-were not investigated due to time constraints.
+were not thoroughly investigated due to time constraints.
 
 
-\subsection{Extended Data Structures}
-The focus of this thesis has been with high-level logical improvements. Here
-we present some thoughts on how 'low-level' speed could be saved at the cost of memory.
+\subsection{Inverted Data Structure}
+\label{sec:refd}
 
-Drop the tree structure. Have an entry for each possible fingerprint and add terms
-to each bin they are compatible with during indexing. Moves runtime from
-retrieval (called VERY often) to indexing (called barely ever, comparatively) but requires a
-tremendous amount of memory.
+Terms are only \emph{added} to the Fingerprint Index when we infer new information;
+but index \emph{retrieval} is attempted constantly at a high frequency. It is possible
+that by moving computation from index retrieval over to index addition some time could
+be saved.
+
+This could be achieved by having each term maintain a its own set of terms which
+are compatible with it. Keeping these sets up-to-date would be very difficult; as we would
+need to locate the compatible terms of any newly inferred ones. This would require a standard
+Fingerprint Index on top of the reversed one. When we consider that indexing superposition
+would also need to take subterms into account, this technique would require
+an exceptionally large memory overhead and term addition would become exceedingly difficult.
+Thus it is unlikely that this idea merits any real performance improvement; except
+perhaps in very particular cases.
 
 \subsection{More Fingerprint Indices}
 
@@ -33,15 +41,19 @@ index; which will generally contain thousands of terms useless to simplification
 It is possible that more performance could be squeezed out of creating more Fingerprint
 Indices to handle other special cases. Take the Equality Factoring rule for instance
 (See Section \ref{sec:calc}). We dismissed the notion of applying indexing to this rule
-since it only needs to look for unifiable terms within a single clause. 
+since it only needs to look for unifiable terms within a single clause. It is possible
+that the performance of Equality Factoring could be improved by giving each clause
+its own `mini-index' which indexes only its own literals. Unfortunately this technique
+could only hope to improve performance in the case of \emph{enormous} individual clauses.
 
 \subsection{Retrieval Caching}
 In the case that many retrievals for the same query term are observed it may increase
 performance to \emph{cache} the compatible set of terms so that they may be retrieved
-instantly the next time the term is queried.
+instantly the next time the term is queried. Essentially this is a scaled back version
+of the over-ambitious index reversion proposed in Section \ref{sec:refd}.
 
 I believe retrieval caching could be used to significant effect for superposition
-indexing; in particular for the \emph{into case} described in section \ref{ref:indsup}.
+indexing; in particular for the \emph{into case} described in Section \ref{ref:indsup}.
 In this case we must loop over each subterm, meaning that we repeatedly query the index
 for trivial bottom-level terms; such as a single function symbol or variable. These cases
 could be cached and retrieved instantly.
@@ -49,17 +61,42 @@ could be cached and retrieved instantly.
 Implementing this cache would require great care as any newly indexed terms must
 also be added to any matching cache sets. This puts a restriction on how many queries
 can be cached since each extra one slows down the process of adding to the index.
+Alternatively cache sets could be discarded when a new term is added; reducing their
+usefulness but ensuring correctness.
 
-\subsection{Dynamic Fingerprinting}
-Negligible due to length/FP balance. Can make static ones arbitrarily good.
+\subsection{Dynamic Position Sets}
+We discovered in the results for varied position sampling sets (Section \ref{sec:fingcomp}) that
+small fingerprints can perform exceedingly well even when observing a tremendous
+amount of false positives.
+Thus it may be possible to increase performance by automatically tailoring the position
+set to the current problem (during \beagle's initial setup). For example, if we know
+that most terms generated will be distinguishable based on the top symbol alone
+then we would probably achieve peak performance by indexing only a couple of positions.
+The problem here is that we could never predict what terms generated during the inference process will look like.
 
-Tailoring to a problem is good though, consider example where many \textbf{B}sare generated,
- but the position cannot be reached due to a maximum function arity.
+Thus I propose \emph{Dynamic Position Sets}, where we start \beagle\ off with a
+very large set of positions (say FP8X2) and remove positions over time if they
+are determined to be hindering performance. This would require a more complex Fingerprint
+Index tree which is capable of performing this removal operation within a reasonable
+time frame. Note that \emph{adding} positions would be much more difficult since
+we would need to re-sample all terms in the index.
 
-%\subsubsection{Symbol count / Other Features}
-\subsection{More Thorough Testing}
+\subsection{More Thorough Tests and Comparisons}
 
-\subsection{Comparing Indexing Techniques}
+Unfortunately due to the time and resources available it was not viable to run
+all versions of \beagle\ over the full collection of TPTP problems. This would
+be worthwhile since a more in depth comparison 
+of \beagle\ versions would better solidify the performance increase given by Fingerprint Indexing.
+However, since we were careful to be \emph{fair}
+while selecting problems it is unlikely that observed results would stray far
+from our conclusions.
+
+It would also be interesting to compare the performance of Fingerprint Indexing
+to other techniques. Unfortunately, comparing against indexing implementations in theorem provers other
+than \beagle\ would not provide relevant results, due to \beagle's rather
+exceptional calculus. Thus comparing various techniques would require a full
+implementation of each one within \beagle, a task which is obviously outside the scope of the current
+project. 
 
 \section{The Benefits of Term Indexing for the \Beagle\ Theorem Prover }
 \label{sec:why}

@@ -12,13 +12,21 @@ is a \emph{resolution} prover which
 \section{Goals and Motivation}
 \label{sec:mot}
 
-\subsection{Current Performance of Beagle}
-
 The primary goal of this project is the implementation of Term Indexing
-for the \beagle\ theorem prover. 
-\Beagle\ was created essentially as a demonstration or proof of concept for the \emph{\HSWAC} \cite{baum13}.
-This logical calculus allows the inclusion of \emph{background reasoning modules}
-which allow the instant 
+for the \beagle\ theorem prover. \Beagle\ implments a rather unique set of logic rules known as the \emph{\HSWAC} \cite{baum13}.
+This logical calculus allows the inclusion of \emph{background reasoning} modules,
+which implement a system of prior knowledge; for example the rules of integer arithmetic.
+
+\Beagle\ was created rapidly as a demonstration and testbed for the capabilities
+of its heirachic reasoning system. As such, it is lacking many key features required
+to make it a viable competitor against existing theorem provers. The most significant
+feature which is yet to be implemented is \emph{Term Indexing}. Term Indexing exists
+to efficently locate logic expressions which are likely applicable to calculus \emph{inference rules},
+used to generate new knowledge. Without this feature \beagle\ locates inference clauses
+via a worst-case $O(n^)$ search; attempting each pair of clauses until a rule applies.
+
+The specific indexing technique which will be implemented is Fingerprint Indexing.
+
 
 \subsection{Measuring Performance}
 
@@ -27,16 +35,29 @@ how it has affected \beagle's performance.
 
 \subsection{Cross Validating Fingerprint Indexing}
 
-Fingerprint indexing itself is a very new technique; introduced for the first
-time in \cite{shulz12}. At the time of writing this paper presented the only
-implementation of Fingerprint Indexing. By implementing the technique in \beagle\ 
+Fingerprint indexing itself was introduced for the first
+time in \cite{shulz12}; and at the time of writing the only
+implementation of Fingerprint Indexing was for Shulz's tests. By implementing this new technique in \beagle\ 
 we will be providing the Term Indexing field with more evidence regarding the
 overall performance of Fingerprint Indexing.
+
+Performance results for Fingerprint Indexing in \cite{shulz12} appear very promising;
+and if the \beagle\ implementation can achieve similar improvements we will
+have solidifed Fingerprint Indexing as a major competitor in the field of Term Indexing.
 
 \subsection{Improving Fingerprint Indexing}
 
 Another side-goal of the project is to investigate and implement original
-improvements to Fingerprint Indexing. 
+improvements to Fingerprint Indexing.
+This can be achieved by \emph{tailoring} Fingerprint Indexing to \beagle\ 
+and heirachic reasoning. Specifically it may be possible to take
+advantage of the large number of conditions that the \HSWAC\ places on
+its inference rules.
+
+It may also be possible to find improvements to Fingerprint Indexing which
+apply more generally. General improvements will be explored; but considering
+that tailored improvements would result in more significant performane increases they
+are considered somewhat `out of scope' for this project.
 
 \section{Structure of this Report}
 \label{sec:framework}
