@@ -6,8 +6,9 @@
 \label{cha:intro}
 
 This thesis provides a detailed account of how an optimisation technique known
-as Term Indexing was added to the \beagle\ first order logic theorem prover. \Beagle\ 
-is a \emph{resolution} prover which 
+as Term Indexing was added to the \beagle\ first order logic theorem prover. This
+introductory chapter provides an overview of the goals and motiviation for this project,
+along with a brief summary of what the whole paper will cover.
 
 \section{Goals and Motivation}
 \label{sec:mot}
@@ -23,10 +24,14 @@ to make it a viable competitor against existing theorem provers. The most signif
 feature which is yet to be implemented is \emph{Term Indexing}. Term Indexing exists
 to efficently locate logic expressions which are likely applicable to calculus \emph{inference rules},
 used to generate new knowledge. Without this feature \beagle\ locates inference clauses
-via a worst-case $O(n^)$ search; attempting each pair of clauses until a rule applies.
+via a worst-case $O(n^2)$ search; trying each possible pair of clauses until a rule applies.
 
-The specific indexing technique which will be implemented is Fingerprint Indexing.
-
+The specific indexing technique which will be implemented is Fingerprint Indexing;
+a very recent technique developed by Stehpan \citeN{shulz12}. It works by computing
+a set of features for a each term, known as their \emph{fingerprints}, which can then
+be compared for compatability. The details of this implementation form the core
+of this thesis; which will include a detailed description of Fingerprint Indexing
+and an account of how it was built and tested.
 
 \subsection{Measuring Performance}
 
