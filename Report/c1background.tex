@@ -331,8 +331,8 @@ which could allow more in-depth comparisons in special cases.
 \section{The \Beagle\ Theorem Prover}
 \label{sec:beagle}
 
-{\Beagle} was developed by Peter Baumgartner et al. of NICTA as a proof of concept,
-with the intention of demonstrating the capabilities of the \emph{\HSWAC} \cite{baum13}. This
+{\Beagle} was developed by Peter Baumgartner et al. of NICTA to test a new
+and experimental logical calculus known as the  \emph{\HSWAC} \cite{baum13}. This
 calculus allows the incorporation of prior knowledge via \emph{background reasoning} modules. 
 These modules act as a sort of `black box' which we can use to rapidly prove
 facts about background terms; without the need to convert them to an equivalent first order logic
@@ -365,9 +365,9 @@ Background variables are marked as either
 \emph{abstraction} or \emph{ordinary}, and background expressions are called \emph{pure} if
 they do not contain any ordinary background variables.
 
-Hierarchic reasoning system also requires an ordering $\succ$ on terms and literals. This ordering
-must fulfil a range number of conditions such as well-foundedness (there exists a smallest element),
-foreground terms are larger than background terms and background terms are larger than
+Hierarchic reasoning systems also require an ordering $\succ$ on terms and literals. This ordering
+must fulfil a range number of conditions such as well-foundedness (there exists a smallest element), 
+foreground terms must be larger than background terms and background terms must be larger than
 domain elements. $\succ$ must also be \emph{total on ground terms}, meaning that
 any terms $s$ and $t$ which do not contain any variables will have either $s \succ t$
 or $t \succ s$.

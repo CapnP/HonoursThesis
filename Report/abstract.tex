@@ -6,6 +6,34 @@
 \label{cha:abstract}
 \addcontentsline{toc}{chapter}{Abstract}
 
+Term Indexing is an optimisation technique for logical theorem provers which
+restricts the search space when attempting to find clauses which fulfill the conditions
+of inference rules. This is done by allowing the rapid retrieval of all terms which
+are likely to \emph{unify} with a query term. This paper describes in detail
+the process of implementing a particular Term Indexing technique, Fingerprint
+Indexing, for a new theorem prover known as \beagle. This includes all initial investigations
+for how and where indexing could be applied, building the index itself and finally applying the
+index to \beagle's inference rules.
+Fingerprint Indexing was applied to three of \beagle's inference rules: superposition (the most costly and most often used rule),
+demodulation and negative unit simplification. Two distinct versions of indexing were
+created, the standard implementation of Fingerprint Indexing and an \emph{enhanced}
+version which applies some original optimisations.
+These two implementations of \beagle\ were tested alongside unindexed \beagle\ 
+against a set of 50 relevant problems from the TPTP library. The standard version
+of indexing only increased performance for large problems well-suited to indexing;
+but the enhanced version remained useful even in simple problems where indexing would
+not normally be worthwhile.
+For each superposition inference the final enhanced implementation of Fingerprint Indexing exhibited a
+35\% runtime improvement on average; and up to 50\% for large problems.
+Each negative unit simplification had its runtime decreased by 94\% on average,
+but since the rule is not applied as often as superposition this did not contribute as
+significantly to overall runtime. Some tests were also performed to compare
+a variety of Fingerprint Indexing configurations. Results from these tests
+matched those seen in the paper first propsing Fingerprint Indexing; cross-validitating
+both results and solidfying Fingerprint Indexing as a major competitor
+in the Term Indexing field.
+
+
 %%% Local Variables: 
 %%% mode: latex
 %%% TeX-master: "thesis"
