@@ -7,8 +7,40 @@
 
 \section{Implementing Fingerprint Indexing for \Beagle}
 
-The theorem prover \beagle now possesses a complete implementation of Fingerprint
-Indexing. 
+This report has covered in detail how Term Indexing was added to \beagle;
+involving initial research on Term Indexing, constructing the index, instating it
+to active use, adding optimisations and finally instrumenting and measuring performance of the final implementation.
+
+Our initial research included selecting Fingerprint Indexing as our desired indexing technique.
+Fingerprint Indexing was chosen for its relative simplicity over other indexing techniques
+and for being a new technique which has not reached its full potential. Other
+research conducted prior to implementation included gaining a thorough understanding
+of existing \beagle\ code and the logical calculus it implements: the \HSWAC.
+
+Constructing our Fingerprint Index required a complex Fingerprint Index data structure
+along with the ability to insert and retrieve terms. Our prior research indicated that
+our index would need to be capable of indexing all possible \emph{subterms}; requiring
+some caution that identical subterms were not overwritten.
+
+Actually making use of our index required referring again to our earlier research in order to
+find what areas of \beagle\ may be improved with indexing. Two main blocks
+of code were found applicable; the superposition inference rule and simplification
+of clauses. Indexing superposition required significant re-structuring of \beagle's
+inference code and separate implementations of the \emph{from} and \emph{into} cases.
+Indexing simplification required adding two new Fingerprint Indices with different
+configurations; built exclusively to index unit clauses.
+
+This paper also discussed some original optimisations made to Fingerprint Indexing.
+These optimisations worked by taking advantage of restrictions in the \HSWAC\ and
+its natural segregation of terms into foreground and background parts.
+
+After completing the implementation and optimisation of Fingerprint Indexing its performance
+was evaluated against a carefully selected set of logic problems. Performance over this
+set of problems was used to compare a variety of indexed versions of \beagle\ with each other and the original unindexed version. 
+Section \ref{sec:why} will recap the results of performance testing and what
+has been achieved by implementing Fingerprint Indexing. However, prior to this final statement,
+we will discuss some alternative optimisation ideas conceived during the course of the project;
+which did not make it to the implementation stage.
 
 \section{Future Improvements}
 \label{sec:future}
@@ -106,7 +138,7 @@ project.
 
 With \beagle\ now fully augmented with Fingerprint Indexing its performance
 has improved significantly. The standard Fingerprint Indexing implementation was
-able to improve performance significantly for large problems; and allow some
+able to improve performance for large problems; allowing some
 problems which where previously unsolvable in 8 hours be solved in under a minute.
 Our results have shown that adding calculus specific tailored
 enhancements further improves performance; decreasing the runtime of each superposition inference by 35\%
