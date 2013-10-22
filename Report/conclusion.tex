@@ -7,6 +7,9 @@
 
 \section{Implementing Fingerprint Indexing for \Beagle}
 
+The theorem prover \beagle now possesses a complete implementation of Fingerprint
+Indexing. 
+
 \section{Future Improvements}
 \label{sec:future}
 
@@ -52,7 +55,7 @@ performance to \emph{cache} the compatible set of terms so that they may be retr
 instantly the next time the term is queried. Essentially this is a scaled back version
 of the over-ambitious index reversion proposed in Section \ref{sec:refd}.
 
-I believe retrieval caching could be used to significant effect for superposition
+Retrieval caching could potentially be used to significant effect for superposition
 indexing; in particular for the \emph{into case} described in Section \ref{ref:indsup}.
 In this case we must loop over each subterm, meaning that we repeatedly query the index
 for trivial bottom-level terms; such as a single function symbol or variable. These cases
@@ -61,7 +64,7 @@ could be cached and retrieved instantly.
 Implementing this cache would require great care as any newly indexed terms must
 also be added to any matching cache sets. This puts a restriction on how many queries
 can be cached since each extra one slows down the process of adding to the index.
-Alternatively cache sets could be discarded when a new term is added; reducing their
+Alternatively, cache sets could be discarded when a new term is added; reducing their
 usefulness but ensuring correctness.
 
 \subsection{Dynamic Position Sets}
@@ -74,11 +77,11 @@ that most terms generated will be distinguishable based on the top symbol alone
 then we would probably achieve peak performance by indexing only a couple of positions.
 The problem here is that we could never predict what terms generated during the inference process will look like.
 
-Thus I propose \emph{Dynamic Position Sets}, where we start \beagle\ off with a
+Consider then the possibility of \emph{Dynamic Position Sets}, where we start \beagle\ off with a
 very large set of positions (say FP8X2) and remove positions over time if they
 are determined to be hindering performance. This would require a more complex Fingerprint
 Index tree which is capable of performing this removal operation within a reasonable
-time frame. Note that \emph{adding} positions would be much more difficult since
+time frame. Note that \emph{adding} positions would be much more difficult than removing them, since
 we would need to re-sample all terms in the index.
 
 \subsection{More Thorough Tests and Comparisons}
@@ -101,8 +104,29 @@ project.
 \section{The Benefits of Term Indexing for the \Beagle\ Theorem Prover }
 \label{sec:why}
 
-By considering more indepth results we were able to better rate the performance
-of Fingerprint Indexing rather than just rate it on runtime.
+With \beagle\ now fully augmented with Fingerprint Indexing its performance
+has improved significantly. The standard Fingerprint Indexing implementation was
+able to improve performance significantly for large problems; and allow some
+problems which where previously unsolvable in 8 hours be solved in under a minute.
+Our results have shown that adding calculus specific tailored
+enhancements further improves performance; decreasing the runtime of each superposition inference by 35\%
+on average and up to 50\% for large problems (not including the problems which unindexed \beagle\ could not solve,
+where an improvement of at least 90\% was observed). This enhanced version
+was also able to successfully improve performance for many small and simple problems,
+where indexing should have only served to overcomplicate the inference process.
+
+By comparing a variety of Fingerprint Index configurations we were able to
+identify the optimal range for fingerprint lengths. These results matched well
+with the results by Stephan \citeN{shulz12}, cross validating and confirming both.
+We were also able to provide a more in depth analysis of Fingerprint Indexing performance due
+to considering of a variety of performance metrics; rather than just total runtime.
+This analysis was able to solidify and confirm Shulz's proposition that Fingerprint
+Indexing is viable to compete with any other current Term Indexing technique.
+
+By adding Term Indexing to the \beagle\ theorem prover we have significantly increased
+its viability as a competitor in the field. The \HSWAC\ may now be applied to a range
+of problems which were previously intractable; allowing the continued use of \beagle\ for
+the research of automated hierarchic reasoning.
 
 %%% Local Variables: 
 %%% mode: latex

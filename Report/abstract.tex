@@ -20,8 +20,9 @@ created, the standard implementation of Fingerprint Indexing and an \emph{enhanc
 version which applies some original optimisations.
 These two implementations of \beagle\ were tested alongside unindexed \beagle\ 
 against a set of 50 relevant problems from the TPTP library. The standard version
-of indexing only increased performance for large problems well-suited to indexing;
-but the enhanced version remained useful even in simple problems where indexing would
+of indexing was able to significantly increase performance for large problems well-suited to indexing;
+solving in under a minute a couple of problems which unindexed \beagle\ could not solve at all.
+Remarkably, the enhanced version remained useful even in simple problems where indexing would
 not normally be worthwhile.
 For each superposition inference the final enhanced implementation of Fingerprint Indexing exhibited a
 35\% runtime improvement on average; and up to 50\% for large problems.
